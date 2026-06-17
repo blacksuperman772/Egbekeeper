@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — EdgeKeeper</title>
+  <meta name="description" content="EdgeKeeper membership — Resident $59/mo, Fellow $119/mo, Private Office $349/mo. Choose your depth of AI mentorship." />
+  <meta property="og:title" content="EdgeKeeper Pricing — Private Mentorship Plans" />
+  <meta property="og:description" content="Resident, Fellow, or Private Office. Choose the depth of your EdgeKeeper mentorship relationship." />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://edgekeeper.io/pricing.html" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
+  <!-- Paystack inline popup -->
+  <script src="https://js.paystack.co/v2/inline.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:    #050505;
+      --obsidian: #0a0a0a;
+      --stone:    #111111;
+      --surface:  #161616;
+      --lift:     #191919;
+      --border:   #1e1e1e;
+      --dim:      #2a2a2a;
+      --muted:    #525252;
+      --faint:    #868f97;
+      --text:     #d4d0c8;
+      --bright:   #e8e4dc;
+      --white:    #f5f2ec;
+      --gold:     #b8a06a;
+      --gold-dim: #7a6a45;
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'Inter', sans-serif;
+      --mono:     'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.7;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    /* ── CUSTOM CURSOR ─────────────────────────────────────────── */
+    #cursor {
+      position: fixed;
+      width: 8px; height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width .2s, height .2s, background .2s;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(184,160,106,0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all .12s ease;
+    }
+    body:has(a:hover) #cursor,
+    body:has(button:hover) #cursor { width: 14px; height: 14px; }
+
+    /* ── NAV ───────────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 28px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(5,5,5,0.95) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--white);
+      text-decoration: none;
+      position: relative;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+      position: relative;
+    }
+    .nav-links a {
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--faint);
+      text-decoration: none;
+      transition: color .3s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--text); }
+    .nav-links a.active { color: var(--gold); }
+    .nav-cta {
+      position: relative;
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: transparent;
+      border: 1px solid rgba(184,160,106,0.35);
+      padding: 10px 24px;
+      cursor: none;
+      transition: all .3s;
+      text-decoration: none;
+    }
+    .nav-cta:hover {
+      background: rgba(184,160,106,0.08);
+      border-color: var(--gold);
+    }
+
+    /* ── PAGE LAYOUT ──────────────────────────────────────────── */
+    .page-wrap {
+      padding-top: 120px;
+    }
+    .section-inner {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 60px;
+    }
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      justify-content: center;
+    }
+    .section-label::before {
+      content: '';
+      width: 32px; height: 1px;
+      background: var(--gold-dim);
+      flex-shrink: 0;
+    }
+    .section-label::after {
+      content: '';
+      width: 32px; height: 1px;
+      background: var(--gold-dim);
+      flex-shrink: 0;
+    }
+
+    /* ── REVEAL ───────────────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ── HERO ──────────────────────────────────────────────────── */
+    .pricing-hero {
+      padding: 80px 0 100px;
+      text-align: center;
+      background: var(--black);
+      position: relative;
+    }
+    .pricing-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse at top, rgba(184,160,106,0.05) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    .hero-headline {
+      font-family: var(--serif);
+      font-size: clamp(2.8rem, 5vw, 4rem);
+      font-weight: 300;
+      line-height: 1.1;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .hero-sub {
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: var(--faint);
+      max-width: 520px;
+      margin: 0 auto 52px;
+      line-height: 1.8;
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    /* ── TOGGLE ───────────────────────────────────────────────── */
+    .billing-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    .toggle-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--faint);
+      transition: color .3s;
+      cursor: none;
+    }
+    .toggle-label.active { color: var(--white); }
+    .toggle-track {
+      position: relative;
+      width: 44px; height: 24px;
+      background: var(--stone);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: none;
+      transition: border-color .3s;
+    }
+    .toggle-track:hover { border-color: var(--gold-dim); }
+    .toggle-thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 16px; height: 16px;
+      background: var(--gold-dim);
+      border-radius: 50%;
+      transition: transform .3s cubic-bezier(.4,0,.2,1), background .3s;
+    }
+    .toggle-track.annual .toggle-thumb {
+      transform: translateX(20px);
+      background: var(--gold);
+    }
+    .save-chip {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid rgba(184,160,106,0.3);
+      padding: 3px 10px;
+      border-radius: 2px;
+    }
+
+    /* ── PRICING CARDS ────────────────────────────────────────── */
+    .cards-section {
+      padding: 80px 0 120px;
+      background: var(--black);
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--border);
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .price-card {
+      background: var(--black);
+      padding: 52px 44px;
+      position: relative;
+      transition: background .35s;
+      display: flex;
+      flex-direction: column;
+    }
+    .price-card:hover { background: var(--lift); }
+    .price-card.featured {
+      background: var(--stone);
+      border: 1px solid rgba(184,160,106,0.25);
+      margin: -1px;
+    }
+    .price-card.featured:hover { background: var(--lift); }
+    .price-card.featured::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+    .featured-badge {
+      position: absolute;
+      top: 20px; right: 20px;
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      border: 1px solid rgba(184,160,106,0.2);
+      padding: 4px 10px;
+    }
+    .card-tier {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 28px;
+    }
+    .price-card.featured .card-tier { color: var(--gold); }
+    .card-price {
+      font-family: var(--serif);
+      font-size: 3.2rem;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .card-price .currency {
+      font-size: 1.4rem;
+      color: var(--faint);
+      vertical-align: top;
+      margin-top: 8px;
+      display: inline-block;
+    }
+    .card-price .period {
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: var(--muted);
+    }
+    .card-price .price-num { display: inline-block; }
+    .card-cadence {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      min-height: 20px;
+    }
+    .save-inline {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      border: 1px solid rgba(184,160,106,0.25);
+      padding: 2px 8px;
+      display: inline-block;
+      margin-bottom: 36px;
+    }
+    .save-inline.hidden { visibility: hidden; }
+    .card-features {
+      list-style: none;
+      margin-bottom: 44px;
+      flex: 1;
+    }
+    .card-features li {
+      font-size: 0.82rem;
+      color: var(--faint);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      line-height: 1.5;
+    }
+    .card-features li .check {
+      color: var(--gold);
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .card-features li .dash {
+      color: var(--muted);
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .card-features li.included { color: var(--text); }
+    .card-cta {
+      display: block;
+      text-align: center;
+      padding: 14px 24px;
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: none;
+      transition: all .3s;
+      border-radius: 6px;
+      color: var(--faint);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+    .card-cta:hover {
+      color: var(--text);
+      border-color: var(--dim);
+    }
+    .price-card.featured .card-cta {
+      color: var(--gold);
+      border: 1px solid rgba(184,160,106,0.45);
+      background: rgba(184,160,106,0.05);
+    }
+    .price-card.featured .card-cta:hover {
+      background: rgba(184,160,106,0.12);
+      border-color: var(--gold);
+    }
+    .card-contact {
+      text-align: center;
+      padding: 14px 24px;
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: default;
+    }
+
+    /* Institutional card */
+    .price-card.institutional {
+      background: var(--obsidian);
+      grid-column: span 1;
+    }
+    .price-card.institutional .card-price {
+      font-size: 2rem;
+      color: var(--faint);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── COMPARISON TABLE ─────────────────────────────────────── */
+    .table-section {
+      padding: 0 0 120px;
+      background: var(--black);
+    }
+    .table-heading {
+      text-align: center;
+      margin-bottom: 52px;
+    }
+    .table-heading h2 {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      font-weight: 300;
+      color: var(--white);
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+    }
+    .comparison-table th {
+      padding: 20px 28px;
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--faint);
+      border-bottom: 1px solid var(--border);
+      background: var(--stone);
+    }
+    .comparison-table th:first-child { color: var(--muted); }
+    .comparison-table th.featured-col { color: var(--gold); }
+    .comparison-table td {
+      padding: 16px 28px;
+      font-size: 0.82rem;
+      color: var(--faint);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .comparison-table td:first-child {
+      color: var(--text);
+      font-size: 0.8rem;
+    }
+    .comparison-table td.featured-col {
+      background: rgba(184,160,106,0.02);
+    }
+    .comparison-table tr:hover td { background: var(--stone); }
+    .comparison-table tr:hover td.featured-col { background: rgba(184,160,106,0.05); }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .check-gold { color: var(--gold); font-size: 0.85rem; }
+    .dash-muted { color: var(--muted); }
+    .val-text { color: var(--text); }
+
+    /* ── GUARANTEE ────────────────────────────────────────────── */
+    .guarantee-section {
+      padding: 120px 0;
+      background: var(--obsidian);
+      text-align: center;
+    }
+    .guarantee-inner {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .guarantee-num {
+      font-family: var(--serif);
+      font-size: 5rem;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .guarantee-num span {
+      font-size: 2rem;
+      color: var(--gold-dim);
+    }
+    .guarantee-title {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 32px;
+    }
+    .guarantee-body {
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--faint);
+      line-height: 1.85;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* ── FAQ ──────────────────────────────────────────────────── */
+    .faq-section {
+      padding: 120px 0;
+      background: var(--black);
+    }
+    .faq-header {
+      text-align: center;
+      margin-bottom: 72px;
+    }
+    .faq-header h2 {
+      font-family: var(--serif);
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 300;
+      color: var(--white);
+    }
+    .faq-list {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+    }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 28px 32px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      cursor: none;
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 300;
+      color: var(--text);
+      transition: background .25s, color .25s;
+    }
+    .faq-question:hover { background: var(--stone); color: var(--white); }
+    .faq-question.open { background: var(--stone); color: var(--white); }
+    .faq-icon {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--gold-dim);
+      transition: transform .3s, border-color .3s;
+    }
+    .faq-question.open .faq-icon {
+      transform: rotate(45deg);
+      border-color: var(--gold-dim);
+      color: var(--gold);
+    }
+    .faq-answer {
+      display: none;
+      padding: 0 32px 28px;
+      font-size: 0.88rem;
+      color: var(--faint);
+      line-height: 1.85;
+      border-top: 1px solid var(--border);
+      background: var(--stone);
+    }
+    .faq-answer.open { display: block; }
+
+    /* ── FINAL CTA ────────────────────────────────────────────── */
+    .final-cta {
+      padding: 160px 0;
+      background: var(--obsidian);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .final-cta::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(184,160,106,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .final-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 32px;
+    }
+    .final-headline {
+      font-family: var(--serif);
+      font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--white);
+      margin-bottom: 52px;
+      position: relative;
+    }
+    .final-ctas {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-mentor {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 38px;
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: none;
+      transition: all .4s;
+      border-radius: 6px;
+    }
+    .btn-mike {
+      background: rgba(184,160,106,0.08);
+      border: 1px solid rgba(184,160,106,0.4);
+      color: var(--gold);
+    }
+    .btn-mike:hover {
+      background: rgba(184,160,106,0.16);
+      border-color: var(--gold);
+    }
+    .btn-ashley {
+      background: rgba(74,92,74,0.1);
+      border: 1px solid rgba(107,140,107,0.35);
+      color: #6b8c6b;
+    }
+    .btn-ashley:hover {
+      background: rgba(74,92,74,0.2);
+      border-color: #6b8c6b;
+    }
+    .btn-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+    .btn-mike .btn-dot { background: var(--gold); }
+    .btn-ashley .btn-dot { background: #6b8c6b; }
+
+    /* ── FOOTER ───────────────────────────────────────────────── */
+    footer {
+      padding: 60px;
+      background: var(--black);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-logo {
+      font-family: var(--serif);
+      font-size: 0.9rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .footer-logo span { color: var(--gold-dim); }
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--dim);
+    }
+    .footer-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--dim);
+      text-decoration: none;
+      transition: color .3s;
+    }
+    .footer-links a:hover { color: var(--muted); }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 20px 24px; }
+      .nav-links { display: none; }
+      .section-inner { padding: 0 24px; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .comparison-table { font-size: 0.78rem; }
+      .comparison-table th,
+      .comparison-table td { padding: 14px 16px; }
+      footer { flex-direction: column; gap: 24px; text-align: center; }
+    }
+    @media (max-width: 640px) {
+      .hero-headline { font-size: 2.2rem; }
+      .billing-toggle { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="edgekeeper.html" class="nav-logo">Edge<span>K</span>eeper</a>
+  <ul class="nav-links">
+    <li><a href="edgekeeper.html#institution">Philosophy</a></li>
+    <li><a href="edgekeeper.html#mentors">Mentors</a></li>
+    <li><a href="edgekeeper.html#how">Process</a></li>
+    <li><a href="pricing.html" class="active">Pricing</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:20px;">
+    <a href="auth.html" style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--faint);text-decoration:none;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--faint)'">Sign In</a>
+    <a href="auth.html" class="nav-cta">Apply</a>
+  </div>
+</nav>
+
+<!-- PAGE WRAP -->
+<div class="page-wrap">
+
+  <!-- HERO -->
+  <section class="pricing-hero">
+    <img src="/assets/workspace-ambient.png" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0.06;pointer-events:none;z-index:0;" />
+    <div class="section-inner" style="position:relative;z-index:1;">
+      <p class="hero-label">Pricing</p>
+      <h1 class="hero-headline">Protection for serious traders.</h1>
+      <p class="hero-sub">Not a subscription. A commitment to the version of yourself that doesn't break under pressure.</p>
+      <div class="billing-toggle" id="billingToggle">
+        <span class="toggle-label active" id="labelMonthly">Monthly</span>
+        <div class="toggle-track" id="toggleTrack">
+          <div class="toggle-thumb"></div>
+        </div>
+        <span class="toggle-label" id="labelAnnual">Annual</span>
+        <span class="save-chip">Save 17%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING CARDS -->
+  <section class="cards-section">
+    <div class="section-inner">
+      <div class="cards-grid reveal" style="grid-template-columns: repeat(4, 1fr);">
+
+        <!-- TRIAL -->
+        <div class="price-card">
+          <div class="card-tier">Trial</div>
+          <div class="card-price">
+            <span class="price-num" style="font-size:2rem;">Free</span>
+          </div>
+          <div class="card-cadence">7 exchanges · one real session</div>
+          <ul class="card-features">
+            <li class="included"><span class="check">✓</span> Choose Mike or Ashley</li>
+            <li class="included"><span class="check">✓</span> 7 mentor exchanges</li>
+            <li class="included"><span class="check">✓</span> 3 journal entries</li>
+            <li><span class="dash">—</span> Persistent memory</li>
+            <li><span class="dash">—</span> Rule engine</li>
+            <li class="included"><span class="check">✓</span> Voice sessions — 1 / month</li>
+            <li><span class="dash">—</span> Guardian Layer</li>
+          </ul>
+          <button class="card-cta" onclick="window.location='/onboarding.html?plan=free'">Start your first session</button>
+        </div>
+
+        <!-- RESIDENT -->
+        <div class="price-card">
+          <div class="card-tier">Resident</div>
+          <div class="card-price">
+            <span class="currency">$</span><span class="price-num" data-monthly="59" data-annual="590">59</span><span class="period"> <span class="cadence-inline">/mo</span></span>
+          </div>
+          <div class="card-cadence" id="cadence-starter">Billed monthly</div>
+          <div class="save-inline hidden" id="save-starter">Save $118 / year</div>
+          <ul class="card-features">
+            <li class="included"><span class="check">✓</span> Both mentors — Mike and Ashley</li>
+            <li class="included"><span class="check">✓</span> 500 mentor exchanges / month</li>
+            <li class="included"><span class="check">✓</span> Full memory — grows every session</li>
+            <li class="included"><span class="check">✓</span> Journal — unlimited</li>
+            <li class="included"><span class="check">✓</span> Trading rules engine</li>
+            <li class="included"><span class="check">✓</span> Behavior analytics</li>
+            <li class="included"><span class="check">✓</span> Decision Passport</li>
+            <li class="included"><span class="check">✓</span> Voice sessions — 3 / month</li>
+            <li><span class="dash">—</span> Guardian Layer</li>
+          </ul>
+          <button class="card-cta" data-plan="starter" onclick="initiateCheckout('starter')">Become a Resident</button>
+        </div>
+
+        <!-- FELLOW (featured) -->
+        <div class="price-card featured">
+          <div class="featured-badge">The Full System</div>
+          <div class="card-tier">Fellow</div>
+          <div class="card-price">
+            <span class="currency">$</span><span class="price-num" data-monthly="119" data-annual="1190">119</span><span class="period"> <span class="cadence-inline">/mo</span></span>
+          </div>
+          <div class="card-cadence" id="cadence-pro">Billed monthly</div>
+          <div class="save-inline hidden" id="save-pro">Save $238 / year</div>
+          <ul class="card-features">
+            <li class="included"><span class="check">✓</span> Both mentors — Mike and Ashley</li>
+            <li class="included"><span class="check">✓</span> 2,000 mentor exchanges / month</li>
+            <li class="included"><span class="check">✓</span> Voice sessions — 8 / month (30 min)</li>
+            <li class="included"><span class="check">✓</span> Guardian Layer — live account monitoring</li>
+            <li class="included"><span class="check">✓</span> The Vault — intervention archive</li>
+            <li class="included"><span class="check">✓</span> Break Room — mandatory pause system</li>
+            <li class="included"><span class="check">✓</span> Monthly behavioral report</li>
+            <li class="included"><span class="check">✓</span> Priority response speed</li>
+          </ul>
+          <button class="card-cta" data-plan="pro" onclick="initiateCheckout('pro')">Become a Fellow</button>
+        </div>
+
+        <!-- PRIVATE OFFICE -->
+        <div class="price-card institutional">
+          <div class="card-tier">Private Office</div>
+          <div class="card-price">
+            <span class="currency">$</span><span class="price-num" data-monthly="349" data-annual="3490">349</span><span class="period"> <span class="cadence-inline">/mo</span></span>
+          </div>
+          <div class="card-cadence" id="cadence-institutional">Billed monthly</div>
+          <div class="save-inline hidden" id="save-institutional">Save $698 / year</div>
+          <ul class="card-features">
+            <li class="included"><span class="check">✓</span> Everything in Fellow</li>
+            <li class="included"><span class="check">✓</span> Up to 5 team seats</li>
+            <li class="included"><span class="check">✓</span> Admin dashboard — team oversight</li>
+            <li class="included"><span class="check">✓</span> Custom Guardian thresholds</li>
+            <li class="included"><span class="check">✓</span> Quarterly deep behavioral reviews</li>
+            <li class="included"><span class="check">✓</span> API access</li>
+            <li class="included"><span class="check">✓</span> White-glove onboarding</li>
+            <li class="included"><span class="check">✓</span> SLA + dedicated support</li>
+          </ul>
+          <button class="card-cta" data-plan="institutional" onclick="initiateCheckout('institutional')">Apply for Private Office</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON TABLE -->
+  <section class="table-section">
+    <div class="section-inner">
+      <div class="table-heading reveal">
+        <h2>Full comparison</h2>
+      </div>
+      <div class="reveal reveal-delay-1" style="overflow-x:auto;">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th style="width:30%">Feature</th>
+              <th>Trial</th>
+              <th>Resident</th>
+              <th class="featured-col">Fellow</th>
+              <th>Private Office</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Price</td>
+              <td class="val-text">Free</td>
+              <td class="val-text">$59 / mo</td>
+              <td class="featured-col val-text">$119 / mo</td>
+              <td class="val-text">$349 / mo</td>
+            </tr>
+            <tr>
+              <td>Mentor exchanges</td>
+              <td class="val-text">7 total</td>
+              <td class="val-text">500 / month</td>
+              <td class="featured-col val-text">2,000 / mo</td>
+              <td class="val-text">Unlimited</td>
+            </tr>
+            <tr>
+              <td>Mentors</td>
+              <td class="val-text">1</td>
+              <td class="val-text">Both (Mike &amp; Ashley)</td>
+              <td class="featured-col val-text">Both</td>
+              <td class="val-text">Both + custom</td>
+            </tr>
+            <tr>
+              <td>Persistent memory</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Journal</td>
+              <td class="val-text">3 entries</td>
+              <td><span class="check-gold">✓</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Trading rules engine</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Behavior analytics</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Decision Passport</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Voice sessions</td>
+              <td class="val-text">1 / mo</td>
+              <td class="val-text">3 / mo</td>
+              <td class="featured-col val-text">8 / month (30 min)</td>
+              <td class="val-text">8 / month + custom</td>
+            </tr>
+            <tr>
+              <td>Guardian Layer</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>The Vault</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Break Room</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Priority response speed</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Team seats</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="dash-muted">—</span></td>
+              <td class="val-text">Up to 5</td>
+            </tr>
+            <tr>
+              <td>Admin dashboard</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Custom Guardian thresholds</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Quarterly deep reviews</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>API access</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUARANTEE -->
+  <section class="guarantee-section">
+    <div class="section-inner">
+      <div class="guarantee-inner">
+        <div class="section-label reveal">Guarantee</div>
+        <div class="guarantee-num reveal reveal-delay-1">30 <span>days.</span></div>
+        <div class="guarantee-title reveal reveal-delay-2">No conditions.</div>
+        <p class="guarantee-body reveal reveal-delay-3">
+          If your first month doesn't change how you see your own trading psychology, we'll refund every dollar. No questions. No forms.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section">
+    <div class="section-inner">
+      <div class="faq-header">
+        <div class="section-label reveal">Questions</div>
+        <h2 class="reveal reveal-delay-1">Honest answers.</h2>
+      </div>
+      <div class="faq-list reveal reveal-delay-2">
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Is this a chatbot?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            No. Mike and Ashley are constructed from a decade of behavioral patterns with elite traders. They remember everything. They form opinions. They get to know you. A chatbot resets after every message. Your mentor carries a complete picture of who you are, how you trade, and what you're working on. That picture grows over months and years — not sessions.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            What makes this different from trading courses?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            You're not learning. You're working. Courses give you knowledge. EdgeKeeper gives you accountability. Each session builds on the last. Your mentor noticed what you did yesterday, what you avoided two weeks ago, and what pattern keeps showing up. The gap between knowing and doing is not closed by more information — it's closed by consistent, structured conversation with someone who won't let you off easy.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Can I switch mentors?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            You choose your primary mentor in onboarding. The Pro plan gives you access to both Mike and Ashley — their perspectives are different, and many traders find that working with both creates a more complete picture. Switching your primary mentor is possible but not trivial: your notebook is built around a relationship, and a change resets some of that context.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            What happens to my data?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            Your notebook lives with us, encrypted. Your mentor's understanding of you grows over time — every session, every journal entry, every rule you set. Cancelling doesn't delete it. We hold it for 12 months in case you return. If you do, you pick up exactly where you left off. If you don't, it's gone quietly. We don't sell data, we don't train on it externally, and we don't share it with anyone.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Is there a free trial?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            Not a free trial. Your first session with your mentor is a real session. We don't demo you. What we offer instead is a 30-day full refund guarantee — no conditions, no forms. If the work doesn't feel real in the first month, we give you everything back. That's a stronger commitment than a trial.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA BAND -->
+  <section class="final-cta">
+    <div class="section-inner">
+      <div class="final-eyebrow reveal">EdgeKeeper — Private Mentorship</div>
+      <h2 class="final-headline reveal reveal-delay-1">The work starts when you do.</h2>
+      <div class="final-ctas reveal reveal-delay-2">
+        <a href="auth.html?next=onboarding&mentor=mike" class="btn-mentor btn-mike" data-plan="starter" data-mentor="mike">
+          <span class="btn-dot"></span>
+          Begin with Mike
+        </a>
+        <a href="auth.html?next=onboarding&mentor=ashley" class="btn-mentor btn-ashley" data-plan="starter" data-mentor="ashley">
+          <span class="btn-dot"></span>
+          Begin with Ashley
+        </a>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-wrap -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Edge<span>K</span>eeper</div>
+  <p class="footer-copy">© 2026 EdgeKeeper. A Private Mentorship Institution.</p>
+  <ul class="footer-links">
+    <li><a href="edgekeeper.html#institution">Philosophy</a></li>
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+  </ul>
+</footer>
+
+<script>
+// ── CURSOR ───────────────────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animateCursor() {
+  cursor.style.left = mx + 'px';
+  cursor.style.top  = my + 'px';
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px';
+  ring.style.top  = ry + 'px';
+  requestAnimationFrame(animateCursor);
+})();
+
+// ── BILLING TOGGLE ──────────────────────────────────────────────────
+let isAnnual = false;
+
+const toggleTrack   = document.getElementById('toggleTrack');
+const labelMonthly  = document.getElementById('labelMonthly');
+const labelAnnual   = document.getElementById('labelAnnual');
+const billingToggle = document.getElementById('billingToggle');
+
+// Price display data
+const plans = {
+  starter: {
+    monthly: 59,  annual: 590,
+    saveMonthly: 59 * 12,
+    saveAnnual:  590,
+    cadenceId: 'cadence-starter',
+    saveId:    'save-starter',
+  },
+  pro: {
+    monthly: 119, annual: 1190,
+    saveMonthly: 119 * 12,
+    saveAnnual:  1190,
+    cadenceId: 'cadence-pro',
+    saveId:    'save-pro',
+  },
+  institutional: {
+    monthly: 349, annual: 3490,
+    saveMonthly: 349 * 12,
+    saveAnnual:  3490,
+    cadenceId: 'cadence-institutional',
+    saveId:    'save-institutional',
+  },
+};
+
+function updatePrices() {
+  document.querySelectorAll('.price-num').forEach(el => {
+    const monthly = parseInt(el.dataset.monthly, 10);
+    const annual  = parseInt(el.dataset.annual, 10);
+    el.textContent = isAnnual ? annual : monthly;
+  });
+  document.querySelectorAll('.cadence-inline').forEach(el => {
+    el.textContent = isAnnual ? '/yr' : '/mo';
+  });
+  Object.values(plans).forEach(plan => {
+    const cadence = document.getElementById(plan.cadenceId);
+    const saveEl  = document.getElementById(plan.saveId);
+    if (cadence) cadence.textContent = isAnnual ? 'Billed annually' : 'Billed monthly';
+    if (saveEl) {
+      if (isAnnual) {
+        const saved = plan.saveMonthly - plan.saveAnnual;
+        saveEl.textContent = `Save $${saved} / year`;
+        saveEl.classList.remove('hidden');
+      } else {
+        saveEl.classList.add('hidden');
+      }
+    }
+  });
+}
+
+function toggleBilling() {
+  isAnnual = !isAnnual;
+  toggleTrack.classList.toggle('annual', isAnnual);
+  labelMonthly.classList.toggle('active', !isAnnual);
+  labelAnnual.classList.toggle('active', isAnnual);
+  updatePrices();
+  // Update CTA links
+  document.querySelectorAll('.card-cta[data-plan]').forEach(el => {
+    const plan = el.dataset.plan;
+    el.href = `auth.html?plan=${plan}&billing=${isAnnual ? 'annual' : 'monthly'}`;
+  });
+}
+
+toggleTrack.addEventListener('click', toggleBilling);
+labelMonthly.addEventListener('click', () => { if (isAnnual) toggleBilling(); });
+labelAnnual.addEventListener('click',  () => { if (!isAnnual) toggleBilling(); });
+
+// ── PLAN SELECTION → sessionStorage ────────────────────────────────
+document.querySelectorAll('.card-cta[data-plan], .btn-mentor[data-plan]').forEach(el => {
+  el.addEventListener('click', e => {
+    const plan    = el.dataset.plan;
+    const mentor  = el.dataset.mentor || null;
+    const billing = isAnnual ? 'annual' : 'monthly';
+    sessionStorage.setItem('ek_plan',    plan);
+    sessionStorage.setItem('ek_billing', billing);
+    if (mentor) sessionStorage.setItem('ek_mentor', mentor);
+  });
+});
+
+// ── CHECKOUT — Paystack via server ──────────────────────────────────
+// If user is already logged in (ek_session cookie exists), initiate
+// payment directly. Otherwise send them through auth first.
+async function initiateCheckout(plan) {
+  const billing = isAnnual ? 'annual' : 'monthly';
+  sessionStorage.setItem('ek_plan',    plan);
+  sessionStorage.setItem('ek_billing', billing);
+
+  // ek_session is HttpOnly — cannot be read by JS. Ask the server instead.
+  let hasSession = false;
+  try {
+    const r = await fetch('/api/auth/status');
+    const d = await r.json();
+    hasSession = d.authenticated === true;
+  } catch (_) {}
+
+  if (!hasSession) {
+    // Not logged in — go through auth first; billing triggers after
+    window.location.href = `auth.html?plan=${plan}&billing=${billing}`;
+    return;
+  }
+
+  // Already logged in — call billing initiation directly
+  const btn = document.querySelector(`[data-plan="${plan}"]`);
+  const originalText = btn?.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = 'Connecting…'; }
+
+  try {
+    const res = await fetch('/api/billing/initiate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan, billing }),
+    });
+    const data = await res.json();
+
+    if (data.type === 'contact') {
+      window.location.href = `mailto:${data.email}?subject=EdgeKeeper%20Private%20Office%20Enquiry`;
+      return;
+    }
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert(data.error || 'Could not start checkout. Please try again.');
+      if (btn) { btn.disabled = false; btn.textContent = originalText; }
+    }
+  } catch (err) {
+    console.error('Checkout error:', err);
+    if (btn) { btn.disabled = false; btn.textContent = originalText; }
+  }
+}
+
+// ── FAQ ACCORDION ───────────────────────────────────────────────────
+document.querySelectorAll('.faq-question').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const answer  = btn.nextElementSibling;
+    const isOpen  = btn.classList.contains('open');
+
+    // Close all
+    document.querySelectorAll('.faq-question').forEach(b => {
+      b.classList.remove('open');
+      b.setAttribute('aria-expanded', 'false');
+    });
+    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+
+    // Open clicked (unless it was already open)
+    if (!isOpen) {
+      btn.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      answer.classList.add('open');
+    }
+  });
+});
+
+// ── HERO ENTRANCE ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const els = [
+    document.querySelector('.hero-label'),
+    document.querySelector('.hero-headline'),
+    document.querySelector('.hero-sub'),
+    document.getElementById('billingToggle'),
+  ];
+  els.forEach((el, i) => {
+    if (!el) return;
+    setTimeout(() => {
+      el.style.transition = 'opacity 1s ease, transform 1s ease';
+      el.style.opacity    = '1';
+      el.style.transform  = 'translateY(0)';
+    }, 200 + i * 160);
+  });
+});
+
+// ── REVEAL ON SCROLL ─────────────────────────────────────────────────
+const revealEls = document.querySelectorAll('.reveal');
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+revealEls.forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>

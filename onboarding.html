@@ -41,6 +41,7 @@
     #cursor-ring{ position: fixed; width: 36px; height: 36px; border: 1px solid rgba(184,160,106,0.3); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: left .1s ease, top .1s ease; }
 
     /* ── BG ── */
+    #bg-photo  { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0.055; filter: blur(2px); z-index: 0; pointer-events: none; }
     #bg-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
     /* ── SELECTOR ── */
@@ -97,6 +98,7 @@
 
     /* ARCHIVE SIDEBAR */
     #obs-archive {
+      display: none !important; /* mentor-private — never shown to user */
       width: 220px; flex-shrink: 0;
       border-right: 1px solid transparent;
       padding: 36px 24px; overflow-y: auto;
@@ -223,6 +225,7 @@
     .input-send:hover { border-color: var(--mc-dim); background: var(--mc-bg); }
     .input-send svg { width: 13px; height: 13px; }
     .input-hint { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.12em; color: var(--dim); margin-top: 8px; text-align: center; }
+    .input-privacy { font-family: var(--mono); font-size: 0.48rem; letter-spacing: 0.10em; color: rgba(80,70,55,0.7); margin-top: 5px; text-align: center; }
 
     /* TRANSITION OVERLAY */
     #transition-overlay { position: fixed; inset: 0; z-index: 500; background: var(--black); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 1s ease; }
@@ -236,17 +239,118 @@
     #transition-overlay.active .trans-btn { opacity: 1; }
     .trans-btn:hover { background: rgba(184,160,106,0.08); border-color: var(--gold); }
 
+    /* SELECTOR SIGN-IN LINK */
+    .sel-signin-row { margin-top: 36px; font-size: 0.75rem; color: var(--muted); text-align: center; }
+    .sel-signin-link { color: var(--gold-dim); text-decoration: none; transition: color .2s; }
+    .sel-signin-link:hover { color: var(--gold); }
+
+    /* ACCOUNT CREATION OVERLAY */
+    #account-overlay {
+      position: fixed; inset: 0; z-index: 600; background: var(--black);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 32px; opacity: 0; pointer-events: none; transition: opacity 0.8s ease;
+    }
+    #account-overlay.active { opacity: 1; pointer-events: all; }
+    .account-inner { max-width: 420px; width: 100%; }
+    .account-eyebrow { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--mc-dim); margin-bottom: 20px; }
+    .account-headline { font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 300; color: var(--white); line-height: 1.2; margin-bottom: 12px; }
+    .account-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.7; margin-bottom: 36px; }
+    .account-error { display: none; padding: 10px 14px; background: rgba(180,60,60,0.08); border: 1px solid rgba(180,60,60,0.2); font-size: 0.78rem; color: #c97070; margin-bottom: 16px; }
+    .acc-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .acc-field label { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .acc-field input { background: var(--stone); border: 1px solid var(--border); padding: 13px 16px; font-family: var(--sans); font-size: 0.88rem; font-weight: 300; color: var(--bright); outline: none; transition: border-color .2s; width: 100%; -webkit-appearance: none; }
+    .acc-field input:focus { border-color: var(--mc-dim); }
+    .acc-field input::placeholder { color: var(--dim); }
+    .acc-btn { width: 100%; margin-top: 8px; padding: 14px 24px; background: transparent; border: 1px solid rgba(184,160,106,0.5); font-family: var(--mono); font-size: 0.68rem; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; color: var(--white); cursor: none; transition: all .2s; }
+    .acc-btn:hover:not(:disabled) { border-color: var(--mc); background: var(--mc-bg); }
+    .acc-btn:disabled { opacity: 0.4; cursor: none; }
+    .account-signin { font-size: 0.75rem; color: var(--muted); margin-top: 28px; text-align: center; }
+    .account-signin-link { color: var(--mc-dim); text-decoration: none; transition: color .2s; }
+    .account-signin-link:hover { color: var(--mc); }
+    .account-privacy { font-family: var(--mono); font-size: 0.45rem; letter-spacing: 0.1em; color: rgba(80,70,55,0.6); margin-top: 14px; text-align: center; line-height: 1.6; }
+
     #top-center { display: flex; flex-direction: column; align-items: center; gap: 7px; }
     #room-tag { font-family: var(--mono); font-size: 0.48rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--dim); }
 
     * { scrollbar-width: none; }
     *::-webkit-scrollbar { display: none; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 600px) {
+      /* Cursor elements invisible on touch */
+      #cursor, #cursor-ring { display: none; }
+
+      /* Selector — stack mentor cards vertically */
+      .sel-cards {
+        flex-direction: column;
+        width: calc(100vw - 40px);
+        max-width: 360px;
+      }
+      .sel-card {
+        width: 100%;
+        padding: 36px 28px;
+      }
+      .sel-headline {
+        font-size: clamp(1.6rem, 6vw, 2.4rem);
+        margin-bottom: 40px;
+        padding: 0 20px;
+        text-align: center;
+      }
+      .sel-label { margin-bottom: 32px; }
+
+      /* Top bar — tighten horizontal padding */
+      #top-bar {
+        padding: 14px 16px;
+        gap: 8px;
+      }
+      .top-brand { font-size: 0.75rem; }
+      #top-center { gap: 5px; }
+      #room-tag { font-size: 0.42rem; letter-spacing: 0.18em; }
+      #mentor-display { font-size: 0.5rem; gap: 4px; }
+
+      /* Archive sidebar — hide on mobile, content lives in main pane */
+      #obs-archive { display: none; }
+
+      /* Question area — reduce horizontal padding dramatically */
+      #question-area { padding: 32px 20px; }
+      #question-frame { max-width: 100%; }
+      #question-text { font-size: clamp(1.25rem, 5vw, 1.6rem); margin-bottom: 28px; }
+
+      /* Observation card */
+      #obs-card { padding: 32px 20px; }
+      #obs-card-text { font-size: clamp(1.1rem, 4.5vw, 1.5rem); }
+
+      /* Guardian overlay */
+      #guardian-overlay { padding: 32px 20px; }
+      #guardian-q-text { font-size: clamp(1.1rem, 4.5vw, 1.4rem); margin-bottom: 28px; }
+      .guardian-opts { gap: 4px; }
+      .guardian-opt { padding: 14px 16px; min-height: 44px; }
+
+      /* Assessment overlay */
+      #assessment-overlay { padding: 32px 20px; }
+      #assessment-body { font-size: 1rem; }
+      .assessment-cta { padding: 14px 28px; font-size: 0.68rem; }
+
+      /* Input zone */
+      #input-zone { padding: 14px 16px 20px; }
+      #user-input {
+        padding: 14px 56px 14px 16px;
+        font-size: 1rem; /* prevents iOS auto-zoom */
+        min-height: 44px;
+      }
+      .input-hint { font-size: 0.48rem; }
+
+      /* Transition overlay */
+      .trans-headline { font-size: clamp(1.4rem, 5vw, 2rem); padding: 0 24px; }
+      .trans-btn { padding: 14px 28px; font-size: 0.68rem; }
+    }
   </style>
 </head>
 <body>
 
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
+<img id="bg-photo" src="/assets/onboarding-ambient.png" alt="" aria-hidden="true" />
 <canvas id="bg-canvas"></canvas>
 
 <!-- MENTOR SELECTOR -->
@@ -255,20 +359,25 @@
   <h1 class="sel-headline">Choose your<br><em>mentor.</em></h1>
   <div class="sel-cards">
     <a href="?mentor=mike" class="sel-card sel-mike" onclick="selectMentor('mike',event)">
-      <div class="sel-avatar">M</div>
+      <div class="sel-avatar" style="overflow:hidden;padding:0;">
+        <img src="/assets/mike-portrait.png" alt="Mike" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.parentNode.style.fontSize='1.4rem';this.parentNode.textContent='M';" />
+      </div>
       <div class="sel-role">Senior Mentor</div>
       <div class="sel-name">Mike</div>
-      <p class="sel-desc">Direct. Logical. He builds structure and holds you to it. Calm in the way a surgeon is calm.</p>
+      <p class="sel-desc">Direct and logical. He builds structure and holds you to it. Calm in the way a surgeon is calm.</p>
       <div class="sel-cta">Begin with Mike →</div>
     </a>
     <a href="?mentor=ashley" class="sel-card sel-ashley" onclick="selectMentor('ashley',event)">
-      <div class="sel-avatar">A</div>
+      <div class="sel-avatar" style="overflow:hidden;padding:0;">
+        <img src="/assets/ashley-portrait.png" alt="Ashley" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.parentNode.style.fontSize='1.4rem';this.parentNode.textContent='A';" />
+      </div>
       <div class="sel-role">Senior Mentor</div>
       <div class="sel-name">Ashley</div>
-      <p class="sel-desc">Warm. Observant. She notices what you don't say. Makes the work feel possible.</p>
+      <p class="sel-desc">Warm and observant. She notices what you don't say. Makes the work feel possible.</p>
       <div class="sel-cta">Begin with Ashley →</div>
     </a>
   </div>
+  <p class="sel-signin-row">Already have an account? <a href="auth.html" class="sel-signin-link">Sign in →</a></p>
 </div>
 
 <!-- INTAKE ROOM -->
@@ -349,6 +458,10 @@
           <div class="assessment-header">Intake Complete · Mentor Assessment</div>
           <div id="assessment-body"></div>
           <a href="workspace.html" id="ws-link" class="assessment-cta">Enter your workspace →</a>
+          <div id="free-upgrade-note" style="display:none; margin-top:28px; padding-top:20px; border-top:1px solid var(--border); text-align:center;">
+            <p style="font-family:var(--mono); font-size:0.62rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Want to go deeper?</p>
+            <a href="/edgekeeper.html#pricing" style="font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; color:var(--gold-dim); text-decoration:none; transition:color .2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">Unlock full mentorship →</a>
+          </div>
         </div>
       </div>
 
@@ -366,6 +479,7 @@
       </button>
     </div>
     <p class="input-hint">Enter to send · Shift+Enter for new line</p>
+    <p class="input-privacy">Your conversations are encrypted and stored only for your mentor's memory. We never share, sell, or train on what you say.</p>
   </div>
 
 </div><!-- /intake-room -->
@@ -375,14 +489,136 @@
   <p class="trans-label">EdgeKeeper · Intake Complete</p>
   <h2 class="trans-headline">I've got what I need.<br><em>Let's begin.</em></h2>
   <div class="trans-line"></div>
-  <a href="workspace.html" class="trans-btn" id="trans-btn">Enter your workspace →</a>
+  <a href="#" class="trans-btn" id="trans-btn" onclick="showAccountOverlay(); return false;">Save your session →</a>
 </div>
+
+<!-- ACCOUNT CREATION OVERLAY — shown after intake, before workspace -->
+<div id="account-overlay">
+  <div class="account-inner">
+    <div class="account-eyebrow">One last step</div>
+    <h2 class="account-headline">Save your session.</h2>
+    <p class="account-sub" id="account-sub">Your mentor built a profile on you today. Create an account to keep it — and pick up exactly where you left off.</p>
+    <div class="account-error" id="account-error"></div>
+    <div class="acc-field">
+      <label for="acc-email">Email</label>
+      <input type="email" id="acc-email" placeholder="your@email.com" autocomplete="email" />
+    </div>
+    <div class="acc-field">
+      <label for="acc-password">Password</label>
+      <input type="password" id="acc-password" placeholder="At least 8 characters" autocomplete="new-password" />
+    </div>
+    <button class="acc-btn" id="acc-btn" onclick="registerAndProceed()">Save My Session →</button>
+    <p class="account-signin">Already have an account? <a href="auth.html" class="account-signin-link">Sign in →</a></p>
+    <p class="account-privacy">Encrypted. Stored only for your mentor's memory. Never shared, sold, or used to train AI.</p>
+  </div>
+</div>
+
+<!-- Supabase JS — credentials injected by server -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
   integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ=="
   crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
+// ── SUPABASE CLIENT (credentials injected server-side) ────────────────
+const { createClient } = supabase;
+const sb = createClient(window.__EK_SUPABASE_URL__, window.__EK_SUPABASE_ANON__);
+
+// Plan chosen before arriving (from pricing CTA or URL param)
+let _plan = null;
+
+// ── ACCOUNT CREATION (runs after intake completes) ────────────────────
+function showAccountOverlay() {
+  document.getElementById('account-overlay').classList.add('active');
+  setTimeout(() => {
+    const emailEl = document.getElementById('acc-email');
+    if (emailEl) emailEl.focus();
+  }, 500);
+}
+
+async function registerAndProceed() {
+  const email    = (document.getElementById('acc-email').value || '').trim();
+  const password = document.getElementById('acc-password').value || '';
+  const errEl    = document.getElementById('account-error');
+  const btn      = document.getElementById('acc-btn');
+
+  errEl.style.display = 'none';
+
+  if (!email || !/\S+@\S+\.\S+/.test(email)) {
+    errEl.textContent = 'Enter a valid email address.'; errEl.style.display = 'block'; return;
+  }
+  if (password.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display = 'block'; return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = 'Creating your account…';
+
+  const mentorKey   = mentor?.name?.toLowerCase() || 'mike';
+  const guardianLvl = localStorage.getItem('ek_guardian') || 'warn';
+  const nbRaw       = localStorage.getItem('ek_notebook_' + mentorKey);
+  const nb          = nbRaw ? (JSON.parse(nbRaw) || {}) : {};
+
+  // Build private notes from the intake notebook
+  const noteParts = [];
+  if (nb.currentTheory) noteParts.push('Theory: ' + nb.currentTheory);
+  if (Array.isArray(nb.observations) && nb.observations.length)
+    noteParts.push('Observations:\n' + nb.observations.map(o => '- ' + (o.text || o)).join('\n'));
+  if (Array.isArray(nb.patterns) && nb.patterns.length)
+    noteParts.push('Patterns:\n' + nb.patterns.map(p => '- ' + (p.text || p)).join('\n'));
+  if (Array.isArray(nb.strengths) && nb.strengths.length)
+    noteParts.push('Strengths:\n' + nb.strengths.map(s => '- ' + s).join('\n'));
+  if (Array.isArray(nb.concerns) && nb.concerns.length)
+    noteParts.push('Concerns:\n' + nb.concerns.map(c => '- ' + c).join('\n'));
+  const privateNotes = noteParts.join('\n\n');
+
+  const northStar = Array.isArray(nb.openQuestions) && nb.openQuestions.length
+    ? nb.openQuestions[0] : '';
+
+  try {
+    const res = await fetch('/api/onboarding/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email, password,
+        mentor:        mentorKey,
+        plan:          _plan || 'free',
+        guardianLevel: guardianLvl,
+        privateNotes,
+        northStar,
+        livingId:      nb.currentTheory || '',
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not create your account.');
+
+    // Account created — sign in client-side to get session token
+    btn.textContent = 'Signing you in…';
+    const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({ email, password });
+    if (signInErr) throw new Error(signInErr.message);
+
+    // Set the session cookie the server middleware reads
+    const token = signInData?.session?.access_token;
+    if (token) {
+      document.cookie = `ek_session=${token}; path=/; SameSite=Strict; max-age=${60 * 60 * 24 * 7}`;
+    }
+
+    btn.textContent   = 'Taking you in…';
+    const isPaid      = _plan && _plan !== 'free';
+    window.location.href = isPaid
+      ? `/workspace.html?mentor=${mentorKey}&newplan=${_plan}`
+      : `/workspace.html?mentor=${mentorKey}`;
+
+  } catch (err) {
+    btn.disabled    = false;
+    btn.textContent = 'Save My Session →';
+    errEl.textContent   = err.message || 'Something went wrong. Try again.';
+    errEl.style.display = 'block';
+  }
+}
+
 // ── ESCAPE ────────────────────────────────────────────────────────────
 function escHtml(s) {
   return String(s==null?'':s)
@@ -441,22 +677,24 @@ const MENTORS = {
 };
 
 // ── STAGES ────────────────────────────────────────────────────────────
-const STAGES = ['Arrival', 'Trust', 'Human Context', 'Trading Behavior', 'Risk', 'Identity', 'Goals'];
-const TOTAL_EXCHANGES = 7;
+const STAGES_FREE = ['Arrival', 'Context', 'Behavior', 'Focus'];
+const STAGES_PAID = ['Arrival', 'Trust', 'Human Context', 'Trading Behavior', 'Risk', 'Identity', 'Goals'];
+let STAGES = STAGES_PAID;
+let TOTAL_EXCHANGES = 7; // overridden after _plan is known
 
 // ── PRESENCE CUES ─────────────────────────────────────────────────────
 const PRESENCE = {
   Mike: {
-    reading:    ['Mike is reading that.', 'Mike is listening.', 'Mike caught something.'],
-    thinking:   ['Mike is reflecting.', 'Mike is considering your answer.', 'Mike is thinking that through.'],
-    noting:     ['Mike noticed something.', 'Mike is making a note.'],
-    connecting: ['Mike is connecting a few things.', 'Mike is reconsidering something.', 'Mike is reviewing earlier answers.', 'Mike is forming a picture.'],
+    reading:    ["I'm reading that.", "I'm listening.", "I caught something."],
+    thinking:   ["I'm reflecting.", "I'm sitting with that.", "Let me think."],
+    noting:     ["I noticed something.", "I'm making a note."],
+    connecting: ["I'm connecting a few things.", "I'm reconsidering something.", "I'm forming a picture."],
   },
   Ashley: {
-    reading:    ['Ashley is reading.', 'Ashley is listening.', 'Ashley is with you.'],
-    thinking:   ['Ashley is reflecting.', 'Ashley is sitting with that.', 'Ashley is thinking.'],
-    noting:     ['Ashley noticed something.', 'Ashley is absorbing that.'],
-    connecting: ['Ashley is connecting something.', 'Ashley is thinking about what you said earlier.', 'Ashley is piecing this together.', 'Ashley is forming a picture.'],
+    reading:    ["I'm reading.", "I'm with you.", "I'm listening."],
+    thinking:   ["I'm reflecting.", "I'm sitting with that.", "Let me think."],
+    noting:     ["I noticed something.", "I'm absorbing that."],
+    connecting: ["I'm connecting something.", "I'm thinking about what you said.", "I'm piecing this together.", "I'm forming a picture."],
   },
 };
 function presenceCue(type) {
@@ -771,14 +1009,9 @@ async function sendMessage() {
 }
 
 // ── OBSERVATION CARD ──────────────────────────────────────────────────
-async function showObsCard(text) {
-  const card = document.getElementById('obs-card');
-  const txt  = document.getElementById('obs-card-text');
-  txt.textContent = escHtml(text);
-  card.classList.add('visible');
-  await sleep(3400);
-  card.classList.remove('visible');
-  await sleep(500);
+async function showObsCard(_text) {
+  // Observations are mentor-private — never surface to the user.
+  // Keep the function signature so callers need no changes.
 }
 
 function pushToArchive(text) {
@@ -840,6 +1073,11 @@ async function buildAssessment(guardianChoice) {
     .map(m => (m.role==='user' ? 'Trader' : mentor.name) + ': ' + m.content)
     .join('\n');
 
+  const isFreeAssessment = !_plan || _plan === 'free';
+  const closingLine = isFreeAssessment
+    ? 'End with — on its own line: "There\'s more here. Come back when you\'re ready to go deeper."'
+    : 'End with — on its own line: "Alright. Let\'s get to work."';
+
   const systemPrompt = `You are ${mentor.name}, a Senior Mentor at EdgeKeeper. You have just completed a private intake session with a new trader.
 
 COMPLETE INTAKE TRANSCRIPT:
@@ -851,11 +1089,11 @@ Write your final mentor assessment. No headers. No bullet points. Flowing prose 
 
 Start with: "I've got what I need."
 
-Then write 3–4 sentences covering: your overall read of this person, one strength you observed, one pattern that will need attention, and what you believe is really happening beneath the surface — the thing they may not have said directly.
+Then write ${isFreeAssessment ? '2–3' : '3–4'} sentences covering: your overall read of this person, one strength you observed, and one pattern worth watching.
 
-End with — on its own line: "Alright. Let's get to work."
+${closingLine}
 
-Under 140 words. First person. Human. Never robotic. Sound like yourself.`;
+Under ${isFreeAssessment ? '100' : '140'} words. First person. Human. Never robotic. Sound like yourself.`;
 
   try {
     const res = await fetch('/api/chat', {
@@ -878,8 +1116,15 @@ Under 140 words. First person. Human. Never robotic. Sound like yourself.`;
     document.getElementById('assessment-body').textContent = mentor.transition.replace(/\n/g,' ');
   }
 
-  document.getElementById('ws-link').href = `workspace.html?mentor=${mentor.name.toLowerCase()}`;
+  // Route to account creation — not directly to workspace
+  const wsLink = document.getElementById('ws-link');
+  wsLink.textContent = 'Save your session →';
+  wsLink.href = '#';
+  wsLink.onclick = (e) => { e.preventDefault(); showAccountOverlay(); };
   document.getElementById('assessment-overlay').classList.add('visible');
+  if (isFreeAssessment) {
+    document.getElementById('free-upgrade-note').style.display = 'block';
+  }
   setState('Present');
   // Bootstrap the mentor notebook in the background from this transcript
   bootstrapNotebook().catch(() => {});
@@ -928,11 +1173,12 @@ function buildPrompt() {
   const mKey = mentor ? mentor.name.toLowerCase() : 'mike';
   const c = CONSTITUTION[mKey] || CONSTITUTION.mike;
 
-  // Four phases of understanding — each shapes how you engage
-  const phase = exchangeCount === 0 ? 'ARRIVAL'
-              : exchangeCount <= 2  ? 'OPENING'
-              : exchangeCount <= 4  ? 'DEPTH'
-              :                       'SYNTHESIS';
+  // Phases scale to total exchange count
+  const midpoint = Math.floor(TOTAL_EXCHANGES / 2);
+  const phase = exchangeCount === 0        ? 'ARRIVAL'
+              : exchangeCount <= 1          ? 'OPENING'
+              : exchangeCount <= midpoint   ? 'DEPTH'
+              :                              'SYNTHESIS';
 
   const phaseInstructions = {
     ARRIVAL: `PHASE: ARRIVAL
@@ -1028,8 +1274,8 @@ ${phaseInstructions[phase]}
 ${theoryContext}
 
 INTAKE STAGES — move through these naturally, one at a time:
-Arrival → Trust → Human Context → Trading Behavior → Risk → Identity → Goals
-Currently on exchange ${exchangeCount} of 7.
+${STAGES.join(' → ')}
+Currently on exchange ${exchangeCount} of ${TOTAL_EXCHANGES}.
 
 YOUR INTERNAL PROCESS — before every response, silently ask:
 What is this person actually saying beneath the words?
@@ -1111,8 +1357,23 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 // ── AUTO INIT ─────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   const p = new URLSearchParams(window.location.search);
-  const m = p.get('mentor');
+
+  // Capture plan selection from pricing CTAs
+  _plan = p.get('plan') || null;
+
+  // Both free and paid get 7 exchanges — enough for the mentor's value to land.
+  const isFreeFlow = !_plan || _plan === 'free';
+  TOTAL_EXCHANGES  = 7;
+  STAGES           = isFreeFlow ? STAGES_FREE : STAGES_PAID;
+
+  // Enter key on password field submits registration
+  const pwEl = document.getElementById('acc-password');
+  if (pwEl) pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') registerAndProceed(); });
+
+  // URL param takes precedence; fall back to sessionStorage (legacy path)
+  const m = p.get('mentor') || sessionStorage.getItem('ek_mentor');
   if (m && MENTORS[m]) {
+    sessionStorage.removeItem('ek_mentor');
     document.getElementById('selector').style.display = 'none';
     selectMentor(m);
   }

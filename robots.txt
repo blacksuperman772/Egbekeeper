@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /edgekeeper.html
+Allow: /pricing.html
+Allow: /auth.html
+Allow: /privacy.html
+Allow: /terms.html
+Disallow: /workspace.html
+Disallow: /onboarding.html
+Disallow: /admin.html
+Disallow: /settings.html
+Disallow: /api/
+Disallow: /supabase/
+Disallow: /node_modules/
+
+Sitemap: https://edgekeeper.io/sitemap.xml

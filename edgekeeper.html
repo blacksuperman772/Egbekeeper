@@ -4,14 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EdgeKeeper — Protect Your Psychology Before Your Capital</title>
+  <meta name="description" content="EdgeKeeper — Private AI mentorship for serious traders. Protect your psychology before your capital. Work with Mike or Ashley, your personal trading performance mentor." />
+  <meta name="keywords" content="trading psychology, trading mentor, AI trading coach, performance psychology, prop firm, trading discipline" />
+  <meta property="og:title" content="EdgeKeeper — Private Mentorship for Traders" />
+  <meta property="og:description" content="Protect your psychology before your capital. Private AI mentorship from Mike and Ashley — built for traders who take discipline seriously." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/assets/hero-landing.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="EdgeKeeper — Private Mentorship for Traders" />
+  <meta name="twitter:description" content="Protect your psychology before your capital." />
+  <meta name="twitter:image" content="/assets/hero-landing.png" />
+  <link rel="canonical" href="https://edgekeeper.io/" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
 
-  <!-- Three.js + GSAP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" integrity="sha512-16esztaSRplJROstbIIdwX3N97V1+pZvV33ABoG1H2OyTttBxEGkTsoIVsiP1iaTtM8b3+hu2kB6pQ4Clr5yug==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" integrity="sha512-Ic9xkERjyZ1xgJ5svx3y0u3xrvfT/uPkV99LBwe68xjy/mGtO+4eURHZBW2xW4SZbFrF1Tf090XqB+EVgXnVjw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
@@ -149,13 +159,6 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-    }
-    #three-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
     }
     .hero-content {
       position: relative;
@@ -393,7 +396,7 @@
       text-transform: uppercase;
     }
 
-    /* ── 3D SCROLL NARRATIVE ───────────────────────────────────── */
+    /* ── NARRATIVE PARTICLE SCROLL ──────────────────────────────── */
     #narrative {
       height: 600vh;
       position: relative;
@@ -402,38 +405,16 @@
       position: sticky;
       top: 0;
       height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
+      background: var(--black);
     }
     #narrative-canvas {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
+      display: block;
     }
-    .narrative-scene {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 1s;
-    }
-    .narrative-scene.active { opacity: 1; }
-    .scene-text {
-      font-family: var(--serif);
-      font-size: clamp(1.8rem, 3.5vw, 3rem);
-      font-weight: 300;
-      color: var(--white);
-      text-align: center;
-      max-width: 700px;
-      padding: 0 40px;
-      line-height: 1.3;
-    }
-    .scene-text em { font-style: italic; color: var(--gold); }
 
     /* ── MENTORS ───────────────────────────────────────────────── */
     #mentors {
@@ -1144,6 +1125,105 @@
       footer { flex-direction: column; gap: 24px; text-align: center; }
       .passport-entries { grid-template-columns: 1fr; }
     }
+
+    @media (max-width: 600px) {
+      /* Cursor invisible on touch */
+      #cursor, #cursor-ring { display: none; }
+
+      /* Nav — keep logo + CTA only, reduce padding */
+      nav { padding: 16px 20px; }
+      .nav-cta { padding: 9px 16px; font-size: 0.65rem; }
+
+      /* Hero */
+      .hero-content { padding: 0 20px; }
+      .hero-sub { font-size: 0.85rem; }
+      .hero-ctas { flex-direction: column; align-items: center; gap: 12px; }
+      .btn-mentor { width: 100%; max-width: 280px; justify-content: center; padding: 16px 24px; }
+      .hero-scroll { bottom: 28px; }
+
+      /* Section padding — tighten on very small screens */
+      .section-inner { padding: 0 16px; }
+      #institution,
+      #problem,
+      #mentors,
+      #how,
+      #engine,
+      #results,
+      #passport,
+      #invitation { padding: 80px 0; }
+      #invitation { padding: 100px 0; }
+
+      /* Institution */
+      .inst-grid { gap: 48px; }
+      .inst-pillars { grid-template-columns: 1fr; }
+
+      /* Problem — behavior grid single column on very small */
+      .behavior-grid { grid-template-columns: 1fr 1fr; }
+      .behavior-item { padding: 20px 12px; }
+
+      /* Narrative — reduce scene text padding so it doesn't clip */
+      .scene-text { padding: 0 20px; font-size: clamp(1.8rem, 7vw, 3rem); }
+
+      /* Mentor cards */
+      .mentor-card { padding: 36px 24px; }
+      .mentors-intro { margin-bottom: 56px; }
+
+      /* How steps */
+      .how-steps { grid-template-columns: 1fr; }
+      .how-step { padding: 32px 24px; }
+      .step-connector { display: none; }
+
+      /* Engine */
+      .engine-grid { gap: 48px; }
+      .engine-visual { height: 280px; }
+      .detect-list { grid-template-columns: 1fr; }
+
+      /* Results */
+      .results-grid { grid-template-columns: 1fr; }
+      .result-card { padding: 36px 24px; }
+
+      /* Passport */
+      .passport-card { padding: 28px 20px; }
+      .passport-entries { grid-template-columns: 1fr; }
+      .passport-header-row { flex-direction: column; gap: 16px; }
+
+      /* Guardian section — inline-style grids need override via !important */
+      /* The 1fr 1fr and 1fr 2fr grids inside #guardian use inline styles */
+      #guardian [style*="grid-template-columns:1fr 1fr"],
+      #guardian [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+      #guardian [style*="grid-template-columns:1fr 2fr"],
+      #guardian [style*="grid-template-columns: 1fr 2fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 32px !important;
+      }
+      /* Lock level rows — stack level label above description */
+      #guardian [style*="grid-template-columns:80px 1fr"],
+      #guardian [style*="grid-template-columns: 80px 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+      /* Guardian section paddings */
+      #guardian [style*="padding:48px 44px"] {
+        padding: 32px 20px !important;
+      }
+      #guardian [style*="padding:56px 52px"] {
+        padding: 32px 20px !important;
+      }
+
+      /* Pricing */
+      .pricing-grid { grid-template-columns: 1fr; }
+      .price-card { padding: 32px 24px; }
+
+      /* Footer */
+      footer {
+        padding: 36px 20px;
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+      .footer-links { gap: 20px; justify-content: center; }
+    }
   </style>
 </head>
 <body>
@@ -1160,21 +1240,26 @@
     <li><a href="#mentors">Mentors</a></li>
     <li><a href="#how">Process</a></li>
     <li><a href="#pricing">Membership</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
   </ul>
-  <a href="#invitation" class="nav-cta">Apply</a>
+  <div style="display:flex;align-items:center;gap:20px;position:relative;">
+    <a href="/auth.html" style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--faint);text-decoration:none;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--faint)'">Sign In</a>
+    <a href="#invitation" class="nav-cta">Apply</a>
+  </div>
 </nav>
 
 <!-- HERO -->
 <section id="hero">
-  <canvas id="three-canvas"></canvas>
-  <div class="hero-content">
+  <img src="/assets/hero-landing.png" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0.18;z-index:0;pointer-events:none;" />
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(5,5,5,0.4) 0%,rgba(5,5,5,0.85) 100%);z-index:1;pointer-events:none;"></div>
+  <div class="hero-content" style="z-index:3;">
     <p class="hero-eyebrow">A Private Mentorship Institution</p>
     <h1 class="hero-headline">
       Protect your <em>psychology</em><br>before your capital.
     </h1>
     <p class="hero-sub">
-      Most traders don't fail because they lack knowledge.<br>
-      They fail because pressure changes who they become.
+      Traders fail when pressure changes who they become.<br>
+      Knowledge was never the problem.
     </p>
     <div class="hero-ctas">
       <a href="onboarding.html?mentor=mike" class="btn-mentor btn-mike">
@@ -1227,8 +1312,8 @@
       </div>
       <div>
         <div class="inst-body reveal">
-          <p>EdgeKeeper is not a trading platform. Not a signal provider. Not a journal. It is a private mentorship institution built on one foundational truth: traders do not fail from lack of knowledge — they fail from lack of identity under pressure.</p>
-          <p>We are in the business of building that identity. Through deep behavioral observation, private mentorship, and a discipline engine that compounds over time, we transform how traders relate to risk, loss, pressure, and themselves.</p>
+          <p>EdgeKeeper is a private mentorship institution built on one foundational truth: traders do not fail from lack of knowledge. They fail from lack of identity under pressure.</p>
+          <p>We are in the business of building that identity. Through behavioral observation, private mentorship, and a discipline engine that compounds over time, we change how traders relate to risk, loss, and themselves.</p>
           <p>You will not learn to predict markets here. You will learn to trust yourself inside them.</p>
         </div>
         <div class="inst-pillars reveal reveal-delay-2">
@@ -1245,7 +1330,7 @@
           <div class="pillar">
             <div class="pillar-icon">03</div>
             <div class="pillar-title">Regulation</div>
-            <div class="pillar-desc">Emotion isn't the enemy. Unmanaged emotion is.</div>
+            <div class="pillar-desc">The problem is never emotion. The problem is emotion with no container.</div>
           </div>
           <div class="pillar">
             <div class="pillar-icon">04</div>
@@ -1268,7 +1353,7 @@
         <em>what you should do.</em>
       </h2>
       <p class="problem-body reveal reveal-delay-2">
-        You've read the books. Watched the videos. Built the system. And then the market moved — and you became someone else entirely. That gap between knowledge and execution is not a strategy problem. It is a psychology problem. EdgeKeeper closes it.
+        You've read the books. Watched the videos. Built the system. And then the market moved, and you became someone else entirely. That gap between knowledge and execution is not a strategy problem. It is a psychology problem. EdgeKeeper closes it.
       </p>
       <div class="behavior-grid reveal reveal-delay-3">
         <div class="behavior-item"><span class="bi-label">Revenge Trading</span></div>
@@ -1284,35 +1369,10 @@
   </div>
 </section>
 
-<!-- NARRATIVE SCROLL -->
+<!-- NARRATIVE PARTICLE SCROLL -->
 <section id="narrative">
   <div class="narrative-sticky">
-    <canvas id="narrative-canvas"></canvas>
-    <div id="scene-0" class="narrative-scene active">
-      <p class="scene-text">
-        The market is not the problem.
-      </p>
-    </div>
-    <div id="scene-1" class="narrative-scene">
-      <p class="scene-text">
-        You are.
-      </p>
-    </div>
-    <div id="scene-2" class="narrative-scene">
-      <p class="scene-text">
-        Not permanently —<br><em>under pressure.</em>
-      </p>
-    </div>
-    <div id="scene-3" class="narrative-scene">
-      <p class="scene-text">
-        EdgeKeeper exists<br>to change that.
-      </p>
-    </div>
-    <div id="scene-4" class="narrative-scene">
-      <p class="scene-text">
-        <em>One conversation</em><br>at a time.
-      </p>
-    </div>
+    <canvas id="narrative-canvas" aria-label="Scroll to reveal: The market is not the problem. You are. Not permanently. That's exactly where we work. One conversation at a time."></canvas>
   </div>
 </section>
 
@@ -1331,12 +1391,14 @@
     <div class="mentors-grid">
       <div class="mentor-card mike reveal">
         <div class="mentor-avatar">
-          <div class="mentor-avatar-inner">M</div>
+          <div class="mentor-avatar-inner" id="mike-avatar-inner" style="background:linear-gradient(135deg,#1a1810,#2d2410);border:1px solid var(--gold-dim);color:var(--gold);overflow:hidden;padding:0;">
+            <img src="/assets/mike-portrait.png" alt="Mike" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:inherit;" onerror="this.parentNode.innerHTML='M';">
+          </div>
         </div>
         <div class="mentor-role">Senior Mentor · EdgeKeeper</div>
         <h3 class="mentor-name">Mike</h3>
         <p class="mentor-bio">
-          Mike doesn't let you off easy. He'll tell you what you already know but are avoiding. Direct, logical, and methodical — he builds structure where there is none, and holds you to it without apology. He is calm in the way a surgeon is calm.
+          Mike doesn't let you off easy. He'll tell you what you already know but are avoiding. Direct, logical, and methodical, he builds structure where there is none and holds you to it without apology. He is calm in the way a surgeon is calm.
         </p>
         <div class="mentor-traits">
           <span class="trait">Direct</span>
@@ -1354,12 +1416,13 @@
       </div>
       <div class="mentor-card ashley reveal reveal-delay-2">
         <div class="mentor-avatar">
-          <div class="mentor-avatar-inner">A</div>
+          <img src="/assets/ashley-portrait.png" alt="Ashley" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          <div class="mentor-avatar-inner" style="display:none;background:linear-gradient(135deg,#111814,#162016);border:1px solid rgba(74,92,74,0.5);color:var(--green-bright);">A</div>
         </div>
         <div class="mentor-role">Senior Mentor · EdgeKeeper</div>
         <h3 class="mentor-name">Ashley</h3>
         <p class="mentor-bio">
-          Ashley notices what you don't say. She reads between the lines — between the trades, between the journal entries. Warm but precise, she creates the space where patterns finally become visible. She's the mentor that makes the work feel possible.
+          Ashley notices what you don't say. She reads between the trades, between the journal entries, between the silences. Warm but precise, she creates the space where patterns finally become visible. She's the mentor who makes the work feel possible.
         </p>
         <div class="mentor-traits">
           <span class="trait">Empathetic</span>
@@ -1380,8 +1443,10 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section id="how">
-  <div class="section-inner">
+<section id="how" style="position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;background-image:url('/assets/workspace-ambient.png');background-size:cover;background-position:center;opacity:0.07;pointer-events:none;z-index:0;"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,#07050E 0%,transparent 30%,transparent 70%,#07050E 100%);pointer-events:none;z-index:1;"></div>
+  <div class="section-inner" style="position:relative;z-index:2;">
     <div class="how-header">
       <div class="section-label reveal" style="justify-content:center">The Process</div>
       <h2 class="how-headline reveal reveal-delay-1">
@@ -1404,13 +1469,13 @@
       <div class="how-step reveal reveal-delay-2">
         <div class="step-num">Step 03</div>
         <h3 class="step-title">Rules & Accountability</h3>
-        <p class="step-desc">You codify your personal laws. Your mentor enforces them. When you deviate, they notice. The system doesn't punish — it reflects.</p>
+        <p class="step-desc">You codify your personal laws. Your mentor enforces them. When you deviate, they notice. The system doesn't punish. It reflects.</p>
         <div class="step-connector"></div>
       </div>
       <div class="how-step reveal reveal-delay-3">
         <div class="step-num">Step 04</div>
         <h3 class="step-title">Identity Growth</h3>
-        <p class="step-desc">Over weeks and months, your Decision Passport builds. Not a profit record — a character record. Who you were. Who you became.</p>
+        <p class="step-desc">Over weeks and months, your Decision Passport builds. Not a profit record but a character record. Who you were. Who you became.</p>
       </div>
     </div>
   </div>
@@ -1426,7 +1491,7 @@
           We don't predict<br><em>markets.</em><br>We predict you.
         </h2>
         <p class="engine-body reveal reveal-delay-2">
-          EdgeKeeper's core intelligence does not analyse charts. It analyses you. Pattern recognition built specifically around behavioral deviation — the moments when the best version of you steps away and a different trader takes over.
+          EdgeKeeper's core intelligence does not analyse charts. It analyses you. Pattern recognition built specifically around behavioral deviation: the moments when the best version of you steps away and a different trader takes over.
         </p>
         <ul class="detect-list reveal reveal-delay-3">
           <li class="detect-item">Revenge trading detected</li>
@@ -1465,7 +1530,7 @@
       <div class="result-card reveal">
         <div class="result-metric">94<span>%</span></div>
         <h3 class="result-title">Rule Adherence</h3>
-        <p class="result-desc">Members who engage consistently maintain near-perfect rule adherence within 90 days — compared to under 30% before joining.</p>
+        <p class="result-desc">Members who engage consistently maintain near-perfect rule adherence within 90 days, compared to under 30% before joining.</p>
       </div>
       <div class="result-card reveal reveal-delay-1">
         <div class="result-metric">3×</div>
@@ -1475,7 +1540,7 @@
       <div class="result-card reveal reveal-delay-2">
         <div class="result-metric">—</div>
         <h3 class="result-title">Identity Evolution</h3>
-        <p class="result-desc">The metric that matters most can't be quantified. Members report a fundamental shift in who they become when pressure arrives.</p>
+        <p class="result-desc">The metric that matters most can't be quantified. Members report a fundamental change in who they become when pressure arrives.</p>
       </div>
     </div>
   </div>
@@ -1490,7 +1555,7 @@
         Your character,<br><em>logged.</em>
       </h2>
       <p class="passport-body reveal reveal-delay-2">
-        Every decision is recorded. Not profit and loss — pattern and identity. The Passport is the truest record of your trading self.
+        Every decision is recorded. Not profit and loss, but pattern and identity. The Passport is the truest record of your trading self.
       </p>
       <div class="passport-card reveal reveal-delay-3">
         <div class="passport-header-row">
@@ -1536,10 +1601,10 @@
     <div style="text-align:center; margin-bottom:80px;">
       <div class="section-label reveal" style="justify-content:center">The Guardian Layer</div>
       <h2 class="reveal reveal-delay-1" style="font-family:var(--serif);font-size:clamp(2rem,3.5vw,3rem);font-weight:300;color:var(--white);line-height:1.2;">
-        Mike doesn't just advise.<br><em style="font-style:italic;color:var(--gold);">Mike protects.</em>
+        Your mentor doesn't just advise.<br><em style="font-style:italic;color:var(--gold);">Your mentor protects.</em>
       </h2>
       <p class="reveal reveal-delay-2" style="font-size:0.9rem;color:var(--muted);max-width:520px;margin:20px auto 0;line-height:1.85;">
-        When connected to your trading account, EdgeKeeper moves from mentor to guardian. Mike sees your balance, your positions, your risk. And when you're about to become someone you won't agree with tomorrow — he steps in.
+        When connected to your trading account, EdgeKeeper moves from mentor to guardian. Your mentor sees your balance, your positions, your risk. And when you're about to become someone you won't agree with tomorrow, they step in.
       </p>
     </div>
 
@@ -1547,8 +1612,8 @@
       <!-- Account Vision -->
       <div style="padding:48px 44px;background:var(--black);">
         <div style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:20px;">Account Vision</div>
-        <h3 style="font-family:var(--serif);font-size:1.5rem;font-weight:300;color:var(--white);margin-bottom:16px;">Mike sees what you see.</h3>
-        <p style="font-size:0.85rem;color:var(--muted);line-height:1.85;margin-bottom:28px;">Connected to MetaTrader, cTrader, or TradingView, Mike monitors your balance, equity, margin, open positions, lot sizes, daily P&L, consecutive losses, and trade frequency — in real time.</p>
+        <h3 style="font-family:var(--serif);font-size:1.5rem;font-weight:300;color:var(--white);margin-bottom:16px;">Your mentor sees what you see.</h3>
+        <p style="font-size:0.85rem;color:var(--muted);line-height:1.85;margin-bottom:28px;">Connected to MetaTrader, cTrader, or TradingView, your mentor monitors your balance, equity, open positions, consecutive losses, and daily drawdown. In real time, without you reporting a single number.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);">
           <div style="padding:14px 16px;background:var(--stone);font-family:var(--mono);font-size:0.6rem;letter-spacing:0.1em;color:var(--muted);">Balance · Equity</div>
           <div style="padding:14px 16px;background:var(--stone);font-family:var(--mono);font-size:0.6rem;letter-spacing:0.1em;color:var(--muted);">Lot Size · Risk %</div>
@@ -1560,7 +1625,7 @@
       <div style="padding:48px 44px;background:var(--obsidian);">
         <div style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:20px;">Dynamic Protection</div>
         <h3 style="font-family:var(--serif);font-size:1.5rem;font-weight:300;color:var(--white);margin-bottom:16px;">Position sizing adapts to your psychology.</h3>
-        <p style="font-size:0.85rem;color:var(--muted);line-height:1.85;">On a calm, disciplined day — normal risk. After three consecutive losses with elevated emotional state — Mike quietly reduces your maximum allowed size. Not as punishment. As protection.</p>
+        <p style="font-size:0.85rem;color:var(--muted);line-height:1.85;">On a calm, disciplined day: normal risk. After consecutive losses with your emotional state elevated, your mentor quietly reduces your maximum allowed size. Not as punishment. As protection.</p>
       </div>
     </div>
 
@@ -1570,7 +1635,7 @@
         <div>
           <div style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:20px;">Emotional Lock System</div>
           <h3 style="font-family:var(--serif);font-size:1.8rem;font-weight:300;color:var(--white);margin-bottom:16px;line-height:1.2;">Five levels.<br><em style="font-style:italic;color:var(--gold);">One objective.</em></h3>
-          <p style="font-size:0.82rem;color:var(--muted);line-height:1.85;">The lock never touches your broker. It controls EdgeKeeper's execution layer — so the conversation never stops, only the damage does.</p>
+          <p style="font-size:0.82rem;color:var(--muted);line-height:1.85;">The lock never touches your broker. It controls EdgeKeeper's execution layer. The conversation never stops. Only the damage does.</p>
         </div>
         <div style="display:flex;flex-direction:column;gap:1px;background:var(--border);">
           <div style="display:grid;grid-template-columns:80px 1fr;gap:0;background:var(--border);">
@@ -1602,7 +1667,7 @@
       <div style="padding:48px 44px;background:var(--black);">
         <div style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:20px;">The Vault</div>
         <h3 style="font-family:var(--serif);font-size:1.8rem;font-weight:300;color:var(--white);margin-bottom:20px;line-height:1.2;">The trades<br>you never took.</h3>
-        <p style="font-size:0.85rem;color:var(--muted);line-height:1.85;">Every time Mike stops a destructive decision, he quietly stores it. Months later, during a review, he opens the Vault and says: "These are the trades you never took."</p>
+        <p style="font-size:0.85rem;color:var(--muted);line-height:1.85;">Every time your mentor stops a destructive decision, they quietly store it. Months later, during a review, they open the Vault and say: "These are the trades you never took."</p>
         <p style="margin-top:16px;font-family:var(--serif);font-size:1rem;font-style:italic;color:var(--text);padding-left:16px;border-left:1px solid var(--gold-dim);">"This is invisible progress. Nobody else will ever see it. But this is where the trader you're becoming was built."</p>
       </div>
       <div style="padding:48px 44px;background:var(--obsidian);">
@@ -1628,72 +1693,72 @@
       <h2 class="pricing-headline reveal reveal-delay-1">
         How deeply do you want<br>this mentor <em>involved?</em>
       </h2>
-      <p class="pricing-sub reveal reveal-delay-2">You're not choosing features. You're choosing the depth of the relationship.</p>
+      <p class="pricing-sub reveal reveal-delay-2">Each tier represents how deeply your mentor is involved in your trading life.</p>
     </div>
     <div class="pricing-grid">
       <div class="price-card reveal">
-        <div class="price-tier">Explorer</div>
+        <div class="price-tier">Trial</div>
         <div class="price-amount">Free</div>
-        <div class="price-period">Meet EdgeKeeper. Begin your journey.</div>
+        <div class="price-period">Your first session. See what this feels like.</div>
         <ul class="price-features">
-          <li class="included">Introduction to Mike or Ashley</li>
-          <li class="included">Limited daily conversations</li>
-          <li class="included">Basic mentor memory</li>
-          <li class="included">Basic journaling</li>
+          <li class="included">7 mentor exchanges — one real session</li>
+          <li class="included">Choose Mike or Ashley</li>
+          <li class="included">3 journal entries</li>
           <li>Full memory & continuity</li>
-          <li>Rule engine</li>
-          <li>Voice access</li>
+          <li>Rule engine & analytics</li>
+          <li class="included">Voice sessions — 1 / month</li>
           <li>Guardian Layer</li>
         </ul>
-        <a href="onboarding.html" class="price-cta">Begin Free</a>
+        <a href="onboarding.html?plan=free" class="price-cta">Start your first session</a>
       </div>
       <div class="price-card featured reveal reveal-delay-1">
         <div class="price-tier">Resident</div>
-        <div class="price-amount">$49<span>/mo</span></div>
-        <div class="price-period">Work with Mike or Ashley every day.</div>
+        <div class="price-amount">$59<span>/mo</span></div>
+        <div class="price-period">Your daily practice layer.</div>
         <ul class="price-features">
-          <li class="included">Unlimited mentor conversations</li>
-          <li class="included">Full memory & continuity</li>
+          <li class="included">Both mentors — Mike and Ashley</li>
+          <li class="included">500 mentor exchanges / month</li>
+          <li class="included">Full memory — grows across every session</li>
           <li class="included">Unlimited journaling</li>
-          <li class="included">Rule engine & enforcement</li>
-          <li class="included">Discipline score & Passport</li>
-          <li class="included">Identity timeline</li>
-          <li class="included">Weekly mentor reviews</li>
-          <li class="included">Voice access</li>
+          <li class="included">Trading rules engine</li>
+          <li class="included">Behavior analytics</li>
+          <li class="included">Decision Passport</li>
+          <li class="included">Voice sessions — 3 / month</li>
+          <li>Guardian Layer</li>
         </ul>
-        <a href="onboarding.html" class="price-cta">Become a Resident</a>
+        <a href="onboarding.html?plan=starter" class="price-cta">Become a Resident</a>
       </div>
       <div class="price-card reveal reveal-delay-2">
         <div class="price-tier">Fellow</div>
-        <div class="price-amount">$99<span>/mo</span></div>
-        <div class="price-period">Deep accountability. Advanced coaching.</div>
+        <div class="price-amount">$119<span>/mo</span></div>
+        <div class="price-period">The full system.</div>
         <ul class="price-features">
-          <li class="included">Everything in Resident</li>
-          <li class="included">Priority mentor responses</li>
-          <li class="included">Extended voice sessions</li>
-          <li class="included">Guardian Layer — account connection</li>
-          <li class="included">Deep behavioral reports</li>
-          <li class="included">Pattern forecasting</li>
-          <li class="included">Proactive mentor outreach</li>
-          <li class="included">Quarterly deep reviews</li>
+          <li class="included">2,000 mentor exchanges / month</li>
+          <li class="included">Both mentors — Mike and Ashley</li>
+          <li class="included">Voice sessions — 8 / month (30 min each)</li>
+          <li class="included">Guardian Layer — live account monitoring</li>
+          <li class="included">The Vault — intervention archive</li>
+          <li class="included">Break Room — mandatory pause system</li>
+          <li class="included">Monthly behavioral report</li>
+          <li class="included">Priority response speed</li>
         </ul>
-        <a href="onboarding.html" class="price-cta">Become a Fellow</a>
+        <a href="onboarding.html?plan=pro" class="price-cta">Become a Fellow</a>
       </div>
       <div class="price-card reveal reveal-delay-3">
         <div class="price-tier">Private Office</div>
-        <div class="price-amount">$199<span>/mo</span></div>
-        <div class="price-period">Your highest level of mentorship.</div>
+        <div class="price-amount">$349<span>/mo</span></div>
+        <div class="price-period">For traders who trade size.</div>
         <ul class="price-features">
           <li class="included">Everything in Fellow</li>
-          <li class="included">Unlimited voice</li>
-          <li class="included">Full Guardian Layer — all lock levels</li>
-          <li class="included">The Vault</li>
-          <li class="included">Annual identity reviews</li>
-          <li class="included">Future-self simulations</li>
+          <li class="included">Up to 5 team seats</li>
+          <li class="included">Admin dashboard — team behavioral oversight</li>
+          <li class="included">Custom Guardian thresholds</li>
+          <li class="included">Quarterly deep behavioral reviews</li>
+          <li class="included">API access</li>
           <li class="included">White-glove onboarding</li>
-          <li class="included">First access to new features</li>
+          <li class="included">SLA + dedicated support</li>
         </ul>
-        <a href="onboarding.html" class="price-cta">Apply for Private Office</a>
+        <a href="onboarding.html?plan=institutional" class="price-cta">Apply for Private Office</a>
       </div>
     </div>
   </div>
@@ -1707,7 +1772,7 @@
       Who do you become<br>when <em>pressure arrives?</em>
     </h2>
     <p class="inv-body reveal reveal-delay-2">
-      The answer to that question is the only thing that matters in this profession. EdgeKeeper exists to ensure it improves — conversation by conversation, session by session, trade by trade.
+      The answer to that question is the only thing that matters in this profession. EdgeKeeper exists to ensure it improves. One conversation at a time. One decision at a time.
     </p>
     <div class="inv-ctas reveal reveal-delay-3">
       <a href="onboarding.html?mentor=mike" class="btn-mentor btn-mike">
@@ -1727,9 +1792,9 @@
   <div class="footer-logo">Edge<span>K</span>eeper</div>
   <p class="footer-copy">© 2025 EdgeKeeper. A Private Mentorship Institution.</p>
   <ul class="footer-links">
-    <li><a href="#">Philosophy</a></li>
-    <li><a href="#">Privacy</a></li>
-    <li><a href="#">Terms</a></li>
+    <li><a href="#about">Philosophy</a></li>
+    <li><a href="/privacy.html">Privacy</a></li>
+    <li><a href="/terms.html">Terms</a></li>
   </ul>
 </footer>
 
@@ -1752,172 +1817,206 @@ function animateCursor() {
 }
 animateCursor();
 
-// ── THREE.JS HERO ────────────────────────────────────────────────────
-(function initHero() {
-  const canvas = document.getElementById('three-canvas');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
-  renderer.setClearColor(0x000000, 0);
+// ── NARRATIVE PARTICLE SYSTEM ─────────────────────────────────────────
+(function () {
+  const section = document.getElementById('narrative');
+  const canvas  = document.getElementById('narrative-canvas');
+  if (!section || !canvas) return;
+  const ctx = canvas.getContext('2d');
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
-  camera.position.set(0, 0, 5);
+  // Scene text — each inner array = lines rendered on that scene
+  const SCENES = [
+    ['The market is not', 'the problem.'],
+    ['You are.'],
+    ['Not permanently —', 'under pressure.'],
+    ["That's exactly", 'where we work.'],
+    ['One conversation', 'at a time.'],
+  ];
 
-  const particleCount = 4000;
-  const positions = new Float32Array(particleCount * 3);
-  const colors = new Float32Array(particleCount * 3);
-  const sizes = new Float32Array(particleCount);
+  const N_TEXT = 680;   // particles that form text
+  const N_AMB  = 160;   // always-drifting ambient particles
+  const GOLD   = [196, 172, 113];
+  const PALE   = [218, 211, 196];
 
-  for (let i = 0; i < particleCount; i++) {
-    const i3 = i * 3;
-    const r = Math.random();
-    if (r < 0.15) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI;
-      const rad = 0.35 + Math.random() * 0.1;
-      positions[i3]     = Math.sin(phi) * Math.cos(theta) * rad;
-      positions[i3 + 1] = 1.8 + Math.cos(phi) * rad;
-      positions[i3 + 2] = Math.sin(phi) * Math.sin(theta) * rad;
-    } else if (r < 0.55) {
-      positions[i3]     = (Math.random() - 0.5) * 0.9;
-      positions[i3 + 1] = (Math.random() - 0.5) * 1.4;
-      positions[i3 + 2] = (Math.random() - 0.5) * 0.4;
-    } else if (r < 0.75) {
-      const side = Math.random() > 0.5 ? 1 : -1;
-      positions[i3]     = side * (0.45 + Math.random() * 0.6);
-      positions[i3 + 1] = -0.3 + (Math.random() - 0.5) * 1.0;
-      positions[i3 + 2] = (Math.random() - 0.5) * 0.2;
-    } else {
-      const side = Math.random() > 0.5 ? 0.22 : -0.22;
-      positions[i3]     = side + (Math.random() - 0.5) * 0.25;
-      positions[i3 + 1] = -0.7 - Math.random() * 1.4;
-      positions[i3 + 2] = (Math.random() - 0.5) * 0.25;
+  let textMaps     = [];   // per-scene: [[x,y], ...]
+  let particles    = [];
+  let lastScene    = -1;
+  let currentBlend = 0;   // 0 = fully scattered, 1 = fully formed
+  let raf;
+
+  // ── Build pixel maps ──────────────────────────────────────────────
+  function buildMaps(W, H) {
+    textMaps = SCENES.map(lines => {
+      const off = document.createElement('canvas');
+      off.width  = W; off.height = H;
+      const c    = off.getContext('2d');
+      const fs   = Math.min(W * 0.058, H * 0.092, 66);
+      c.font     = `400 ${fs}px "Cormorant Garamond", Georgia, serif`;
+      c.fillStyle = '#fff';
+      c.textAlign = 'center';
+      c.textBaseline = 'alphabetic';
+
+      const lh     = fs * 1.38;
+      const startY = H / 2 - ((lines.length - 1) * lh) / 2;
+      lines.forEach((ln, i) => c.fillText(ln, W / 2, startY + i * lh));
+
+      const img = c.getImageData(0, 0, W, H).data;
+      const pts = [];
+      const step = 4;
+      for (let x = 0; x < W; x += step) {
+        for (let y = 0; y < H; y += step) {
+          if (img[(y * W + x) * 4 + 3] > 80) pts.push([x, y]);
+        }
+      }
+      // Fisher-Yates shuffle then cap
+      for (let i = pts.length - 1; i > 0; i--) {
+        const j = (Math.random() * (i + 1)) | 0;
+        [pts[i], pts[j]] = [pts[j], pts[i]];
+      }
+      return pts.slice(0, N_TEXT);
+    });
+  }
+
+  // ── Init particles ────────────────────────────────────────────────
+  function initParticles(W, H) {
+    particles = [];
+    for (let i = 0; i < N_TEXT; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      particles.push({
+        x, y,
+        tx: x, ty: y,   // target
+        ox: x, oy: y,   // scatter home
+        r: 0.9 + Math.random() * 1.1,
+        spd: 0.055 + Math.random() * 0.035,
+        alpha: 0,
+        ta: 0,           // target alpha
+        col: Math.random() > 0.38 ? GOLD : PALE,
+        isText: true,
+      });
+    }
+    for (let i = 0; i < N_AMB; i++) {
+      particles.push({
+        x: Math.random() * W, y: Math.random() * H,
+        tx: 0, ty: 0, ox: 0, oy: 0,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        r: 0.4 + Math.random() * 0.6,
+        spd: 0,
+        alpha: 0.05 + Math.random() * 0.09,
+        ta: 0,
+        col: Math.random() > 0.5 ? GOLD : PALE,
+        isText: false,
+      });
+    }
+  }
+
+  // ── Assign text particle targets ──────────────────────────────────
+  function assignScene(idx, targetAlpha) {
+    if (idx === lastScene && targetAlpha > 0) return;
+    lastScene = idx;
+    const pts = textMaps[idx] || [];
+    let ti = 0;
+    for (const p of particles) {
+      if (!p.isText) continue;
+      if (ti < pts.length) {
+        p.tx = pts[ti][0];
+        p.ty = pts[ti][1];
+      } else {
+        p.tx = p.ox; p.ty = p.oy;
+      }
+      p.ta = ti < pts.length ? targetAlpha : 0;
+      ti++;
+    }
+  }
+
+  function scatter() {
+    if (lastScene === -1) return;
+    lastScene = -1;
+    for (const p of particles) {
+      if (!p.isText) continue;
+      p.tx = p.ox; p.ty = p.oy; p.ta = 0;
+    }
+  }
+
+  // ── Scroll handler ────────────────────────────────────────────────
+  function onScroll() {
+    const top   = section.getBoundingClientRect().top;
+    const total = section.offsetHeight - window.innerHeight;
+    const prog  = Math.max(0, Math.min(1, -top / total));
+
+    const n      = SCENES.length;
+    const raw    = prog * n;
+    const idx    = Math.min(Math.floor(raw), n - 1);
+    const pct    = raw - idx;   // 0→1 within scene
+
+    // Blend: in 0→0.14, hold 0.14→0.82, out 0.82→0.97
+    let blend = 0;
+    if      (pct < 0.14) blend = pct / 0.14;
+    else if (pct < 0.82) blend = 1;
+    else if (pct < 0.97) blend = 1 - (pct - 0.82) / 0.15;
+
+    currentBlend = blend;
+    if (blend < 0.02) scatter();
+    else              assignScene(idx, blend);
+  }
+
+  // ── Render loop ───────────────────────────────────────────────────
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+
+    // Dynamic trail: slow fade while scattering (lines persist), fast fade while forming (lines erase as text arrives)
+    const fadeFactor = (0.07 + currentBlend * 0.21).toFixed(3);
+    ctx.fillStyle = `rgba(5,5,5,${fadeFactor})`;
+    ctx.fillRect(0, 0, W, H);
+
+    for (const p of particles) {
+      if (p.isText) {
+        p.x += (p.tx - p.x) * p.spd;
+        p.y += (p.ty - p.y) * p.spd;
+        p.alpha += (p.ta - p.alpha) * 0.055;
+      } else {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = W; else if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; else if (p.y > H) p.y = 0;
+      }
+
+      if (p.alpha < 0.008) continue;
+      const [r, g, b] = p.col;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, 6.2832);
+      ctx.fillStyle = `rgba(${r},${g},${b},${p.alpha.toFixed(3)})`;
+      ctx.fill();
     }
 
-    const height = positions[i3 + 1];
-    const t = (height + 2.5) / 5;
-    colors[i3]     = 0.4 + t * 0.5;
-    colors[i3 + 1] = 0.35 + t * 0.4;
-    colors[i3 + 2] = 0.15 + t * 0.5;
-    sizes[i] = Math.random() * 2.5 + 0.5;
+    raf = requestAnimationFrame(draw);
   }
 
-  const floatCount = 600;
-  const floatPos = new Float32Array(floatCount * 3);
-  const floatCol = new Float32Array(floatCount * 3);
-  for (let i = 0; i < floatCount; i++) {
-    const i3 = i * 3;
-    floatPos[i3]     = (Math.random() - 0.5) * 14;
-    floatPos[i3 + 1] = (Math.random() - 0.5) * 8;
-    floatPos[i3 + 2] = (Math.random() - 0.5) * 6 - 2;
-    floatCol[i3]     = 0.3 + Math.random() * 0.2;
-    floatCol[i3 + 1] = 0.25 + Math.random() * 0.15;
-    floatCol[i3 + 2] = 0.05;
+  // ── Resize ────────────────────────────────────────────────────────
+  function resize() {
+    const W = canvas.width  = window.innerWidth;
+    const H = canvas.height = window.innerHeight;
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, W, H);
+    buildMaps(W, H);
+    initParticles(W, H);
+    lastScene = -1;
+    onScroll();
   }
 
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-  const floatGeo = new THREE.BufferGeometry();
-  floatGeo.setAttribute('position', new THREE.BufferAttribute(floatPos, 3));
-  floatGeo.setAttribute('color', new THREE.BufferAttribute(floatCol, 3));
-
-  const mat = new THREE.PointsMaterial({
-    size: 0.025, vertexColors: true, transparent: true, opacity: 0.85, sizeAttenuation: true,
-  });
-  const floatMat = new THREE.PointsMaterial({
-    size: 0.015, vertexColors: true, transparent: true, opacity: 0.3, sizeAttenuation: true,
-  });
-
-  const particles = new THREE.Points(geo, mat);
-  const floatParticles = new THREE.Points(floatGeo, floatMat);
-  scene.add(particles);
-  scene.add(floatParticles);
-
-  let mouse = { x: 0, y: 0 };
-  document.addEventListener('mousemove', e => {
-    mouse.x = (e.clientX / window.innerWidth - 0.5) * 2;
-    mouse.y = -(e.clientY / window.innerHeight - 0.5) * 2;
-  });
-
-  function animate(t) {
-    requestAnimationFrame(animate);
-    particles.rotation.y = Math.sin(t * 0.0003) * 0.15 + mouse.x * 0.08;
-    particles.rotation.x = Math.cos(t * 0.0002) * 0.06 + mouse.y * 0.04;
-    floatParticles.rotation.y += 0.0002;
-    floatParticles.position.y = Math.sin(t * 0.0005) * 0.1;
-    renderer.render(scene, camera);
-  }
-  animate(0);
-
-  window.addEventListener('resize', () => {
-    const w = canvas.offsetWidth, h = canvas.offsetHeight;
-    renderer.setSize(w, h);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
+  // ── Boot — wait for font so pixel sampling is accurate ────────────
+  document.fonts.ready.then(() => {
+    resize();
+    if (!raf) draw();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(raf);
+      raf = null;
+      resize();
+      draw();
+    });
   });
 })();
-
-// ── THREE.JS NARRATIVE ───────────────────────────────────────────────
-(function initNarrative() {
-  const canvas = document.getElementById('narrative-canvas');
-  if (!canvas) return;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
-  renderer.setClearColor(0x000000, 0);
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
-  camera.position.z = 5;
-
-  const count = 3000;
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    const i3 = i * 3;
-    positions[i3]     = (Math.random() - 0.5) * 12;
-    positions[i3 + 1] = (Math.random() - 0.5) * 8;
-    positions[i3 + 2] = (Math.random() - 0.5) * 6;
-    const g = Math.random() * 0.15;
-    colors[i3] = 0.2 + g; colors[i3+1] = 0.18 + g; colors[i3+2] = 0.08 + g;
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.018, vertexColors: true, transparent: true, opacity: 0.5 }));
-  scene.add(pts);
-
-  function animate(t) {
-    requestAnimationFrame(animate);
-    pts.rotation.y += 0.0003;
-    pts.rotation.x += 0.0001;
-    renderer.render(scene, camera);
-  }
-  animate(0);
-
-  window.addEventListener('resize', () => {
-    const w = canvas.offsetWidth, h = canvas.offsetHeight;
-    renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
-  });
-})();
-
-// ── NARRATIVE SCENES ─────────────────────────────────────────────────
-const scenes = document.querySelectorAll('.narrative-scene');
-function updateNarrativeScene() {
-  const section = document.getElementById('narrative');
-  if (!section) return;
-  const rect = section.getBoundingClientRect();
-  const scrolled = -rect.top;
-  const total = section.offsetHeight - window.innerHeight;
-  const progress = Math.max(0, Math.min(1, scrolled / total));
-  const sceneIndex = Math.floor(progress * scenes.length);
-  scenes.forEach((s, i) => s.classList.toggle('active', i === Math.min(sceneIndex, scenes.length - 1)));
-}
-window.addEventListener('scroll', updateNarrativeScene);
 
 // ── HERO ENTRANCE ────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {

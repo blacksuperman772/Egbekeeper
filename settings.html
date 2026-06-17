@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — EdgeKeeper</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:    #050505;
+      --obsidian: #0a0a0a;
+      --stone:    #111111;
+      --surface:  #161616;
+      --border:   #1e1e1e;
+      --dim:      #2a2a2a;
+      --muted:    #555555;
+      --faint:    #888888;
+      --text:     #d4d0c8;
+      --bright:   #e8e4dc;
+      --white:    #f5f2ec;
+      --gold:     #b8a06a;
+      --gold-dim: #7a6a45;
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'Inter', sans-serif;
+      --mono:     'DM Mono', monospace;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      padding: 28px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--bright);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-back {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-back:hover { color: var(--faint); }
+
+    /* ── LAYOUT ── */
+    main {
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 64px 24px 100px;
+    }
+
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .page-headline {
+      font-family: var(--serif);
+      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 56px;
+    }
+
+    /* ── LOADING ── */
+    .loading-state {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      padding: 40px 0;
+    }
+
+    /* ── SECTION ── */
+    .settings-section { margin-bottom: 56px; }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── MEMBERSHIP ── */
+    .plan-row {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .plan-name-display {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      font-weight: 300;
+      color: var(--white);
+    }
+    .plan-price-display {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+    }
+    .plan-badge-display {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      border: 1px solid rgba(184,160,106,0.25);
+      padding: 3px 10px;
+      flex-shrink: 0;
+    }
+    .plan-cta {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 9px 18px;
+      transition: color .2s, border-color .2s;
+    }
+    .plan-cta:hover { color: var(--text); border-color: var(--muted); }
+
+    /* ── FORM FIELDS ── */
+    .field { margin-bottom: 24px; }
+    .field label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .field input,
+    .field select {
+      width: 100%;
+      background: var(--stone);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 13px 16px;
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: var(--bright);
+      outline: none;
+      transition: border-color .2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .field input::placeholder { color: var(--dim); }
+    .field input:focus,
+    .field select:focus { border-color: var(--gold-dim); }
+    .field input:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 1000px var(--stone) inset;
+      -webkit-text-fill-color: var(--bright);
+    }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      cursor: pointer;
+    }
+    .field select option { background: var(--stone); color: var(--bright); }
+
+    /* ── SAVE BUTTON ── */
+    .save-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--white);
+      background: transparent;
+      border: 1px solid rgba(184,160,106,0.45);
+      border-radius: 6px;
+      padding: 13px 28px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, opacity .2s;
+      margin-top: 8px;
+    }
+    .save-btn:hover:not(:disabled) {
+      border-color: rgba(184,160,106,0.85);
+      background: rgba(184,160,106,0.06);
+    }
+    .save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .save-btn.saving { border-color: var(--gold-dim); color: var(--gold-dim); }
+    .save-btn.saved  { border-color: rgba(100,180,100,0.5); color: rgba(100,180,100,0.8); }
+
+    /* ── TOGGLE ROWS ── */
+    .toggle-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-of-type { border-bottom: none; }
+    .toggle-info { flex: 1; }
+    .toggle-title {
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .toggle-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .toggle {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--dim);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      background: var(--muted);
+      border-radius: 1px;
+      transition: transform .2s, background .2s;
+    }
+    .toggle input:checked + .toggle-track {
+      background: rgba(184,160,106,0.12);
+      border-color: var(--gold-dim);
+    }
+    .toggle input:checked + .toggle-track::after {
+      transform: translateX(16px);
+      background: var(--gold);
+    }
+
+    /* ── ACTION ROWS (Security) ── */
+    .action-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .action-row:last-child { border-bottom: none; }
+    .action-info { flex: 1; }
+    .action-title {
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .action-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .action-btn {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: color .2s, border-color .2s;
+    }
+    .action-btn:hover { color: var(--text); border-color: var(--muted); }
+    .action-btn.danger {
+      color: rgba(180,60,60,0.7);
+      border-color: rgba(180,60,60,0.2);
+    }
+    .action-btn.danger:hover {
+      color: rgba(180,60,60,1);
+      border-color: rgba(180,60,60,0.5);
+    }
+
+    /* ── STATUS MESSAGES ── */
+    .status-msg {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      margin-top: 12px;
+      min-height: 18px;
+    }
+    .status-ok  { color: rgba(100,180,100,0.8); }
+    .status-err { color: rgba(180,60,60,0.8); }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      main { padding: 40px 16px 80px; }
+      .plan-row { flex-wrap: wrap; }
+      .field input, .field select { font-size: 1rem; min-height: 44px; }
+      .save-btn { min-height: 48px; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/workspace.html" class="nav-logo"><span>E</span>dgeKeeper</a>
+  <a href="/workspace.html" class="nav-back">← Workspace</a>
+</nav>
+
+<main>
+  <span class="page-eyebrow">Account</span>
+  <h1 class="page-headline">Settings.</h1>
+
+  <div id="loading" class="loading-state">Loading your settings…</div>
+
+  <div id="settings-body" style="display:none">
+
+    <!-- MEMBERSHIP -->
+    <div class="settings-section">
+      <div class="section-label">Membership</div>
+      <div class="plan-row">
+        <span class="plan-name-display" id="plan-name">—</span>
+        <span class="plan-price-display" id="plan-price">—</span>
+        <span class="plan-badge-display" id="plan-badge">Active</span>
+      </div>
+      <a href="/pricing.html" class="plan-cta">View Plans &amp; Upgrade</a>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="settings-section">
+      <div class="section-label">Profile</div>
+      <div class="field">
+        <label for="display-name">Display Name</label>
+        <input type="text" id="display-name" maxlength="60" placeholder="How your mentor addresses you" />
+      </div>
+      <div class="field">
+        <label for="mentor-select">Active Mentor</label>
+        <select id="mentor-select">
+          <option value="mike">Mike — Direct, analytical, no-nonsense</option>
+          <option value="ashley">Ashley — Empathetic, holistic, patient</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="timezone-select">Timezone</label>
+        <select id="timezone-select">
+          <option value="UTC">UTC</option>
+          <option value="America/New_York">Eastern Time (ET)</option>
+          <option value="America/Chicago">Central Time (CT)</option>
+          <option value="America/Denver">Mountain Time (MT)</option>
+          <option value="America/Los_Angeles">Pacific Time (PT)</option>
+          <option value="Europe/London">London (GMT/BST)</option>
+          <option value="Europe/Paris">Central European Time (CET)</option>
+          <option value="Europe/Moscow">Moscow Time (MSK)</option>
+          <option value="Asia/Dubai">Gulf Standard Time (GST)</option>
+          <option value="Asia/Kolkata">India Standard Time (IST)</option>
+          <option value="Asia/Singapore">Singapore Time (SGT)</option>
+          <option value="Asia/Tokyo">Japan Standard Time (JST)</option>
+          <option value="Australia/Sydney">Australian Eastern Time (AEST)</option>
+          <option value="Africa/Johannesburg">South Africa (SAST)</option>
+          <option value="Africa/Lagos">West Africa Time (WAT)</option>
+        </select>
+      </div>
+      <button class="save-btn" id="save-profile-btn" onclick="saveProfile()">Save Profile</button>
+      <div id="profile-status" class="status-msg"></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="settings-section">
+      <div class="section-label">Notifications</div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Email Notifications</div>
+          <div class="toggle-sub">Session summaries, billing receipts, and mentor messages via email</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="email-notifs" />
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Proactive Mentor Messages</div>
+          <div class="toggle-sub">Allow your mentor to check in when you've been away or when they notice a pattern</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="proactive-msgs" />
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      <button class="save-btn" id="save-notifs-btn" onclick="saveNotifications()" style="margin-top:20px">Save Notifications</button>
+      <div id="notifs-status" class="status-msg"></div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="settings-section">
+      <div class="section-label">Security</div>
+      <div class="action-row">
+        <div class="action-info">
+          <div class="action-title">Change Password</div>
+          <div class="action-sub">Send a reset link to your registered email address</div>
+        </div>
+        <button class="action-btn" onclick="sendPasswordReset()">Send Reset Link</button>
+      </div>
+      <div class="action-row">
+        <div class="action-info">
+          <div class="action-title">Sign Out</div>
+          <div class="action-sub">End your current session on this device</div>
+        </div>
+        <button class="action-btn danger" onclick="signOut()">Sign Out</button>
+      </div>
+      <div id="security-status" class="status-msg"></div>
+    </div>
+
+    <!-- DANGER ZONE -->
+    <div class="settings-section" style="border-color: rgba(180,60,60,0.15);">
+      <div class="section-label" style="color: rgba(180,60,60,0.7);">Danger Zone</div>
+      <div class="action-row">
+        <div class="action-info">
+          <div class="action-title">Delete Account</div>
+          <div class="action-sub">Permanently delete your account, all journal entries, rules, vault records, and session history. This cannot be undone.</div>
+        </div>
+        <button class="action-btn danger" onclick="confirmDeleteAccount()">Delete Account</button>
+      </div>
+      <div id="delete-status" class="status-msg"></div>
+    </div>
+
+  </div><!-- #settings-body -->
+</main>
+
+<script>
+  const SUPABASE_URL  = '%%SUPABASE_URL%%';
+  const SUPABASE_ANON = '%%SUPABASE_ANON_KEY%%';
+
+  const PLAN_LABELS = {
+    free:          { name: 'Explorer',       price: 'Free' },
+    starter:       { name: 'Resident',       price: '$59 / month' },
+    pro:           { name: 'Fellow',         price: '$119 / month' },
+    institutional: { name: 'Private Office', price: '$349 / month' },
+  };
+
+  let currentEmail = null;
+
+  async function loadSettings() {
+    try {
+      const res = await fetch('/api/settings', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '/auth.html'; return; }
+      if (!res.ok) throw new Error('Failed');
+      const { settings } = await res.json();
+
+      const planInfo = PLAN_LABELS[settings.subscription_status] || PLAN_LABELS.free;
+      document.getElementById('plan-name').textContent  = planInfo.name;
+      document.getElementById('plan-price').textContent = planInfo.price;
+      document.getElementById('plan-badge').textContent =
+        settings.subscription_status === 'free' ? 'Free' : 'Active';
+
+      document.getElementById('display-name').value     = settings.display_name || '';
+      document.getElementById('mentor-select').value    = settings.mentor || 'mike';
+      document.getElementById('timezone-select').value  = settings.timezone || 'UTC';
+      document.getElementById('email-notifs').checked   = settings.email_notifications !== false;
+      document.getElementById('proactive-msgs').checked = settings.proactive_messages !== false;
+
+      if (SUPABASE_URL && SUPABASE_URL !== '%%SUPABASE_URL%%') {
+        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+        const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) currentEmail = user.email;
+      }
+
+      document.getElementById('loading').style.display       = 'none';
+      document.getElementById('settings-body').style.display = '';
+    } catch (e) {
+      document.getElementById('loading').textContent = 'Unable to load settings. Please refresh.';
+    }
+  }
+
+  function setStatus(id, msg, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'status-msg ' + (type === 'ok' ? 'status-ok' : 'status-err');
+    if (type === 'ok') setTimeout(() => { el.textContent = ''; el.className = 'status-msg'; }, 3000);
+  }
+
+  async function saveProfile() {
+    const btn = document.getElementById('save-profile-btn');
+    btn.disabled = true; btn.classList.add('saving'); btn.textContent = 'Saving…';
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          display_name: document.getElementById('display-name').value.trim(),
+          mentor:       document.getElementById('mentor-select').value,
+          timezone:     document.getElementById('timezone-select').value,
+        }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      btn.classList.remove('saving'); btn.classList.add('saved'); btn.textContent = 'Saved';
+      setStatus('profile-status', 'Profile updated.', 'ok');
+      setTimeout(() => { btn.disabled = false; btn.classList.remove('saved'); btn.textContent = 'Save Profile'; }, 2000);
+    } catch (e) {
+      btn.disabled = false; btn.classList.remove('saving'); btn.textContent = 'Save Profile';
+      setStatus('profile-status', 'Could not save. Please try again.', 'err');
+    }
+  }
+
+  async function saveNotifications() {
+    const btn = document.getElementById('save-notifs-btn');
+    btn.disabled = true; btn.classList.add('saving'); btn.textContent = 'Saving…';
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email_notifications: document.getElementById('email-notifs').checked,
+          proactive_messages:  document.getElementById('proactive-msgs').checked,
+        }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      btn.classList.remove('saving'); btn.classList.add('saved'); btn.textContent = 'Saved';
+      setStatus('notifs-status', 'Preferences updated.', 'ok');
+      setTimeout(() => { btn.disabled = false; btn.classList.remove('saved'); btn.textContent = 'Save Notifications'; }, 2000);
+    } catch (e) {
+      btn.disabled = false; btn.classList.remove('saving'); btn.textContent = 'Save Notifications';
+      setStatus('notifs-status', 'Could not save. Please try again.', 'err');
+    }
+  }
+
+  async function sendPasswordReset() {
+    if (!currentEmail) {
+      setStatus('security-status', 'Could not determine your email. Please reload.', 'err');
+      return;
+    }
+    if (!SUPABASE_URL || SUPABASE_URL === '%%SUPABASE_URL%%') {
+      setStatus('security-status', 'Auth not configured.', 'err');
+      return;
+    }
+    try {
+      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+      const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+      const { error } = await sb.auth.resetPasswordForEmail(currentEmail, {
+        redirectTo: window.location.origin + '/reset-password.html',
+      });
+      if (error) throw error;
+      setStatus('security-status', 'Reset link sent to ' + currentEmail, 'ok');
+    } catch (e) {
+      setStatus('security-status', 'Could not send reset email. Please try again.', 'err');
+    }
+  }
+
+  async function signOut() {
+    await fetch('/api/auth/session', { method: 'DELETE', credentials: 'include' }).catch(() => {});
+    window.location.href = '/auth.html';
+  }
+
+  function confirmDeleteAccount() {
+    const confirmed = window.confirm(
+      'This will permanently delete your account, all journal entries, trading rules, vault records, and session history.\n\nThis cannot be undone. Click OK to proceed to confirmation.'
+    );
+    if (!confirmed) return;
+    const typed = window.prompt('Type DELETE to confirm permanent account deletion:');
+    if (typed !== 'DELETE') {
+      setStatus('delete-status', 'Deletion cancelled — you must type DELETE exactly.', 'err');
+      return;
+    }
+    deleteAccount();
+  }
+
+  async function deleteAccount() {
+    const btn = document.querySelector('[onclick="confirmDeleteAccount()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Deleting…'; }
+    setStatus('delete-status', 'Deleting your account…', '');
+    try {
+      const res = await fetch('/api/account', { method: 'DELETE', credentials: 'include' });
+      if (res.ok) {
+        setStatus('delete-status', 'Account deleted. Redirecting…', 'ok');
+        setTimeout(() => { window.location.href = '/auth.html'; }, 1500);
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setStatus('delete-status', d.error || 'Deletion failed. Please contact support.', 'err');
+        if (btn) { btn.disabled = false; btn.textContent = 'Delete Account'; }
+      }
+    } catch (e) {
+      setStatus('delete-status', 'Network error. Please try again.', 'err');
+      if (btn) { btn.disabled = false; btn.textContent = 'Delete Account'; }
+    }
+  }
+
+  loadSettings();
+</script>
+</body>
+</html>

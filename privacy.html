@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — EdgeKeeper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400&family=Space+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07050E; --border: rgba(255,255,255,0.07);
+      --text: rgba(255,255,255,0.82); --muted: rgba(255,255,255,0.4);
+      --dim: rgba(255,255,255,0.18); --gold: #b8a06a;
+      --mono: 'Space Mono', monospace; --sans: 'Space Grotesk', sans-serif;
+    }
+    html, body { background: var(--bg); color: var(--text); font-family: var(--sans); font-weight: 300; }
+    .topbar { height: 52px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; gap: 20px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+    .topbar-logo { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); text-decoration: none; }
+    .topbar-logo span { color: var(--gold); }
+    .topbar-back { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); text-decoration: none; margin-left: auto; transition: color 0.2s; }
+    .topbar-back:hover { color: var(--muted); }
+    .page { max-width: 660px; margin: 0 auto; padding: 52px 24px 80px; }
+    .page-label { font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+    h1 { font-size: 1.6rem; font-weight: 300; color: var(--text); margin-bottom: 8px; }
+    .updated { font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.12em; color: var(--dim); margin-bottom: 52px; }
+    h2 { font-size: 0.78rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin: 40px 0 14px; }
+    p { font-size: 0.9rem; color: var(--muted); line-height: 1.85; margin-bottom: 16px; }
+    ul { padding-left: 20px; margin-bottom: 16px; }
+    li { font-size: 0.9rem; color: var(--muted); line-height: 1.85; margin-bottom: 6px; }
+    a { color: var(--muted); } a:hover { color: var(--text); }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    code { font-family: var(--mono); font-size: 0.8em; color: var(--dim); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="/edgekeeper.html" class="topbar-logo">Edge<span>Keeper</span></a>
+    <a href="/edgekeeper.html" class="topbar-back">← Home</a>
+  </div>
+  <div class="page">
+    <div class="page-label">Legal</div>
+    <h1>Privacy Policy</h1>
+    <div class="updated">Last updated: June 2026</div>
+
+    <p>EdgeKeeper ("we", "us", "our") is committed to protecting your privacy. This policy explains what data we collect, how we use it, and what controls you have over it.</p>
+
+    <h2>1. What We Collect</h2>
+    <p>We collect only what is necessary to deliver the service:</p>
+    <ul>
+      <li><strong>Account data</strong> — email address and hashed password (stored by Supabase Auth)</li>
+      <li><strong>Session data</strong> — mentor conversations, journal entries, trading rules, and notebook content you create</li>
+      <li><strong>Behavioral data</strong> — discipline scores, rule violations, and Vault entries generated from your sessions</li>
+      <li><strong>Account state data</strong> — Guardian Layer metrics you submit (balance, P&amp;L, drawdown), if used</li>
+      <li><strong>Usage data</strong> — message counts per month, voice session timestamps</li>
+      <li><strong>Payment data</strong> — processed entirely by Paystack. We store only your subscription status, never card numbers or credentials</li>
+    </ul>
+
+    <h2>2. How We Use It</h2>
+    <ul>
+      <li>To provide your mentorship sessions and maintain continuity of memory across sessions</li>
+      <li>To enforce plan limits and billing</li>
+      <li>To trigger proactive mentor outreach (if you have enabled this in Settings)</li>
+      <li>To send transactional emails: billing receipts, password resets</li>
+      <li>To generate behavioral analytics visible only to you in your workspace</li>
+    </ul>
+    <p>We do not sell your data. We do not use your session content to train AI models.</p>
+
+    <h2>3. AI Processing</h2>
+    <p>Your messages are sent to OpenAI's API to generate mentor responses. Only conversation content required for a response is transmitted — not your name, email, or payment information. OpenAI's data processing terms govern their handling of this data.</p>
+    <p>Voice sessions are processed by ElevenLabs. Audio is streamed in real time and is not stored by EdgeKeeper.</p>
+
+    <h2>4. Data Storage</h2>
+    <p>All data is stored in Supabase (PostgreSQL) on AWS infrastructure, encrypted at rest. Row-level security policies ensure your data is accessible only to you and to server-side operations acting on your behalf.</p>
+
+    <h2>5. Cookies</h2>
+    <p>We use a single HttpOnly session cookie (<code>ek_session</code>) to maintain your authenticated session. It is not accessible to JavaScript and cannot be read by third-party scripts. We do not use advertising cookies or tracking pixels.</p>
+
+    <h2>6. Data Retention</h2>
+    <p>Your data is retained for as long as your account is active. If you close your account, all personal data is deleted within 30 days. You may request deletion at any time by emailing <a href="mailto:privacy@edgekeeper.io">privacy@edgekeeper.io</a>.</p>
+
+    <h2>7. Your Rights</h2>
+    <p>Depending on your jurisdiction, you may have the right to access, correct, or delete your data; to withdraw consent; or to lodge a complaint with a supervisory authority. Contact <a href="mailto:privacy@edgekeeper.io">privacy@edgekeeper.io</a> to exercise these rights.</p>
+
+    <h2>8. Changes to This Policy</h2>
+    <p>We may update this policy as the product evolves. Material changes will be communicated by email or via a workspace notice. Continued use after notification constitutes acceptance.</p>
+
+    <h2>9. Contact</h2>
+    <p><a href="mailto:privacy@edgekeeper.io">privacy@edgekeeper.io</a></p>
+
+    <hr class="divider">
+    <p style="font-size:0.78rem;color:var(--dim);">
+      <a href="/terms.html">Terms of Service</a> &nbsp;·&nbsp; <a href="/edgekeeper.html">Home</a>
+    </p>
+  </div>
+</body>
+</html>

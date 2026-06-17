@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EdgeKeeper — Sign In</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
+  <!-- Supabase JS — credentials injected by server at request time -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:    #050505;
+      --obsidian: #0a0a0a;
+      --stone:    #111111;
+      --surface:  #161616;
+      --border:   #1e1e1e;
+      --dim:      #2a2a2a;
+      --muted:    #555555;
+      --faint:    #888888;
+      --text:     #d4d0c8;
+      --bright:   #e8e4dc;
+      --white:    #f5f2ec;
+      --gold:     #b8a06a;
+      --gold-dim: #7a6a45;
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'Inter', sans-serif;
+      --mono:     'DM Mono', monospace;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--obsidian);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    /* ── CURSOR ─────────────────────────────────────────────────────── */
+    #cursor {
+      position: fixed;
+      width: 8px; height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width .2s, height .2s;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(184,160,106,0.35);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: left .1s ease, top .1s ease;
+    }
+
+    /* ── NAV ────────────────────────────────────────────────────────── */
+    nav {
+      padding: 28px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--bright);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-back {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-back:hover { color: var(--faint); }
+
+    /* ── AMBIENT BACKGROUND ──────────────────────────────────────────── */
+    .ambient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ambient-photo {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0.09;
+      filter: blur(1px);
+    }
+    .ambient::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(ellipse at center, rgba(184,160,106,0.045) 0%, transparent 65%);
+    }
+    .ambient::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 400px; height: 400px;
+      background: radial-gradient(ellipse at bottom right, rgba(74,92,74,0.035) 0%, transparent 70%);
+    }
+
+    /* ── MAIN LAYOUT ─────────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── AUTH CARD ───────────────────────────────────────────────────── */
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .auth-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .auth-headline {
+      font-family: var(--serif);
+      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+
+    .auth-subline {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+
+    /* ── FORM ────────────────────────────────────────────────────────── */
+    .form-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .field label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .field input {
+      background: var(--stone);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 13px 16px;
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: var(--bright);
+      outline: none;
+      transition: border-color .2s;
+      width: 100%;
+      -webkit-appearance: none;
+    }
+    .field input::placeholder { color: var(--dim); }
+    .field input:focus { border-color: var(--gold-dim); }
+    .field input:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 1000px var(--stone) inset;
+      -webkit-text-fill-color: var(--bright);
+    }
+    /* ── BUTTONS ─────────────────────────────────────────────────────── */
+    .btn-primary {
+      margin-top: 8px;
+      width: 100%;
+      padding: 14px 24px;
+      background: transparent;
+      border: 1px solid rgba(184,160,106,0.5);
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--white);
+      cursor: none;
+      transition: border-color .2s, background .2s, opacity .2s;
+    }
+    .btn-primary:hover:not(:disabled) {
+      border-color: rgba(184,160,106,0.8);
+      background: rgba(184,160,106,0.06);
+    }
+    .btn-primary:disabled { opacity: 0.4; cursor: none; }
+
+    /* ── OR DIVIDER ──────────────────────────────────────────────────── */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 24px 0 8px;
+    }
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .or-divider span {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    /* ── MAGIC LINK BUTTON ───────────────────────────────────────────── */
+    .btn-magic {
+      width: 100%;
+      padding: 12px 24px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: none;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-magic:hover:not(:disabled) {
+      border-color: var(--dim);
+      color: var(--faint);
+    }
+    .btn-magic:disabled { opacity: 0.4; }
+
+    /* ── PRIVACY NOTICE ──────────────────────────────────────────────── */
+    .privacy-note {
+      margin-top: 32px;
+      font-size: 0.72rem;
+      color: var(--dim);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* ── ERROR STATE ─────────────────────────────────────────────────── */
+    .error-msg {
+      display: none;
+      padding: 12px 16px;
+      background: rgba(180,60,60,0.08);
+      border: 1px solid rgba(180,60,60,0.2);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #c97070;
+      line-height: 1.5;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── SUCCESS / CONFIRMATION STATE ────────────────────────────────── */
+    .confirm-state {
+      display: none;
+      text-align: center;
+      padding: 16px 0;
+    }
+    .confirm-state.visible { display: block; }
+    .confirm-icon {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 16px;
+    }
+    .confirm-headline {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      font-weight: 300;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+    .confirm-body {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── FORGOT PASSWORD ────────────────────────────────────────────── */
+    .forgot-link {
+      display: none;
+      text-align: right;
+      margin-top: -8px;
+    }
+    .forgot-link.visible { display: block; }
+    .forgot-link button {
+      background: none;
+      border: none;
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--dim);
+      cursor: none;
+      transition: color .2s;
+      padding: 0;
+    }
+    .forgot-link button:hover { color: var(--muted); }
+    .reset-state { display: none; }
+    .reset-state.visible { display: block; }
+    .reset-back {
+      background: none;
+      border: none;
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--dim);
+      cursor: none;
+      padding: 0;
+      margin-top: 20px;
+      display: block;
+      transition: color .2s;
+    }
+    .reset-back:hover { color: var(--muted); }
+
+    /* ── FOOTER ──────────────────────────────────────────────────────── */
+    footer {
+      padding: 24px 48px;
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+    .footer-inner {
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--dim);
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    .footer-links a {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      color: var(--dim);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .footer-links a:hover { color: var(--muted); }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      footer { padding: 16px 20px; }
+      .footer-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
+
+      /* Slightly more breathing room for the card on very small screens */
+      main { padding: 24px 16px 60px; }
+
+      /* Inputs and selects — enforce 44px minimum height for touch */
+      .field input,
+      .field select {
+        padding: 13px 14px;
+        font-size: 1rem; /* prevents iOS auto-zoom on focus */
+        min-height: 44px;
+      }
+
+      .btn-primary,
+      .btn-magic {
+        min-height: 48px;
+        font-size: 0.78rem;
+      }
+
+      /* Cursor elements are invisible on touch — hide them to save paint */
+      #cursor, #cursor-ring { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="ambient">
+  <img src="/assets/auth-bg.png" alt="" aria-hidden="true" class="ambient-photo" />
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="/edgekeeper.html" class="nav-logo"><span>E</span>dgeKeeper</a>
+  <a href="/edgekeeper.html" class="nav-back">← Return</a>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <div class="auth-card">
+
+    <span class="auth-eyebrow">Private Access</span>
+    <h1 class="auth-headline">Welcome back.</h1>
+    <p class="auth-subline">Your mentor is where you left them.</p>
+
+    <!-- ERROR MESSAGE -->
+    <div class="error-msg" id="error-msg" role="alert"></div>
+
+    <!-- AUTH FORM -->
+    <div id="form-state">
+      <div class="form-inner">
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+        <div class="field" id="password-field">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="current-password"
+            placeholder="••••••••••••"
+            required
+          />
+        </div>
+
+        <!-- Forgot password -->
+        <div class="forgot-link" id="forgot-link">
+          <button onclick="showResetForm()">Forgot password?</button>
+        </div>
+
+        <button class="btn-primary" id="submit-btn" onclick="handleSubmit()">
+          Continue
+        </button>
+      </div>
+
+      <div class="or-divider"><span>or</span></div>
+
+      <button class="btn-magic" id="magic-btn" onclick="handleMagicLink()">
+        Sign in with magic link
+      </button>
+    </div>
+
+    <!-- RESET PASSWORD STATE -->
+    <div class="reset-state" id="reset-state">
+      <div class="confirm-icon">Reset Access</div>
+      <h2 class="confirm-headline">Reset your password.</h2>
+      <p class="confirm-body" style="margin-bottom:24px">
+        Enter your email and we'll send a secure reset link.
+      </p>
+      <div class="form-inner">
+        <div class="field">
+          <label for="reset-email">Email</label>
+          <input type="email" id="reset-email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <button class="btn-primary" id="reset-submit-btn" onclick="handleResetRequest()">
+          Send Reset Link
+        </button>
+      </div>
+      <button class="reset-back" onclick="hideResetForm()">← Back to sign in</button>
+    </div>
+
+    <!-- CONFIRMATION STATE (magic link / post-submit / reset sent) -->
+    <div class="confirm-state" id="confirm-state">
+      <div class="confirm-icon">Transmission Sent</div>
+      <h2 class="confirm-headline">Check your email.</h2>
+      <p class="confirm-body" id="confirm-body">
+        We've sent a secure link to <strong id="confirm-email"></strong>.<br>
+        Click it to enter your private workspace.
+      </p>
+    </div>
+
+    <!-- NEW HERE LINK -->
+    <p style="text-align:center; margin-top:28px; font-size:0.78rem; color:var(--muted);">
+      New to EdgeKeeper?
+      <a href="/onboarding.html" style="color:var(--gold-dim); text-decoration:none; transition:color .2s;"
+         onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">
+        Begin your intake →
+      </a>
+    </p>
+
+    <!-- PRIVACY NOTICE -->
+    <p class="privacy-note" id="privacy-note">
+      Your psychology. Your data. Your session.<br>
+      Nothing is shared, sold, or surfaced.
+    </p>
+
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-copy">© 2025 EdgeKeeper. Private Mentorship Institution.</span>
+    <nav class="footer-links">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  // ── Supabase init (credentials injected by server) ───────────────────────────
+  const { createClient } = supabase;
+  const sb = createClient(
+    window.__EK_SUPABASE_URL__,
+    window.__EK_SUPABASE_ANON__
+  );
+
+  // ── Cursor ───────────────────────────────────────────────────────────────────
+  const curEl  = document.getElementById('cursor');
+  const ringEl = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function animCursor() {
+    curEl.style.left  = mx + 'px';
+    curEl.style.top   = my + 'px';
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ringEl.style.left = rx + 'px';
+    ringEl.style.top  = ry + 'px';
+    requestAnimationFrame(animCursor);
+  })();
+
+  // ── URL params — capture intent before auth ──────────────────────────────────
+  const _params = new URLSearchParams(window.location.search);
+  const _next   = _params.get('next');   // e.g. 'onboarding'
+  const _mentor = _params.get('mentor'); // e.g. 'mike' | 'ashley'
+  const _plan   = _params.get('plan');   // e.g. 'free' | 'starter' | 'pro' | 'institutional'
+
+  // Persist mentor/plan in sessionStorage so onboarding and workspace can read it
+  if (_mentor) sessionStorage.setItem('ek_mentor', _mentor);
+  if (_plan)   sessionStorage.setItem('ek_plan',   _plan);
+
+  // ── State ────────────────────────────────────────────────────────────────────
+  let isLoading = false;
+
+  // ── Forgot password flow ──────────────────────────────────────────────────────
+  function showResetForm() {
+    document.getElementById('form-state').style.display   = 'none';
+    document.getElementById('privacy-note').style.display = 'none';
+    document.getElementById('reset-state').classList.add('visible');
+    document.getElementById('reset-email').focus();
+  }
+
+  function hideResetForm() {
+    document.getElementById('reset-state').classList.remove('visible');
+    document.getElementById('form-state').style.display   = '';
+    document.getElementById('privacy-note').style.display = '';
+  }
+
+  async function handleResetRequest() {
+    const email = document.getElementById('reset-email').value.trim();
+    if (!email) { return; }
+
+    const btn = document.getElementById('reset-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const resetRedirect = window.location.origin + '/reset-password.html';
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: resetRedirect });
+
+    if (error) {
+      btn.disabled = false;
+      btn.textContent = 'Send Reset Link';
+      showError(error.message || 'Could not send reset email. Try again.');
+      return;
+    }
+
+    // Show generic confirm regardless of whether email exists (security)
+    document.getElementById('reset-state').classList.remove('visible');
+    document.getElementById('confirm-body').innerHTML =
+      `We've sent a reset link to <strong>${email}</strong> if an account exists.<br>Check your inbox.`;
+    document.getElementById('confirm-state').classList.add('visible');
+  }
+
+  // ── Error handling ────────────────────────────────────────────────────────────
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+  function clearError() {
+    const el = document.getElementById('error-msg');
+    el.textContent = '';
+    el.classList.remove('visible');
+  }
+
+  // ── Loading state ─────────────────────────────────────────────────────────────
+  function setLoading(loading) {
+    isLoading = loading;
+    document.getElementById('submit-btn').disabled = loading;
+    document.getElementById('magic-btn').disabled  = loading;
+    document.getElementById('submit-btn').textContent = loading ? 'Please wait…' : 'Continue';
+  }
+
+  // ── Show confirmation ─────────────────────────────────────────────────────────
+  function showConfirm(email) {
+    document.getElementById('form-state').style.display    = 'none';
+    document.getElementById('privacy-note').style.display  = 'none';
+    document.getElementById('confirm-email').textContent   = email;
+    document.getElementById('confirm-state').classList.add('visible');
+  }
+
+  // ── Post-auth redirect ────────────────────────────────────────────────────────
+  async function redirectAfterAuth(accessToken) {
+    // VULN-01: HttpOnly cookie set server-side — never write document.cookie
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_token: accessToken }),
+    });
+
+    // If the landing page explicitly asked for onboarding, honour it
+    if (_next === 'onboarding') {
+      window.location.href = '/onboarding.html';
+      return;
+    }
+
+    // Resolve plan — URL param takes precedence over sessionStorage
+    const pendingPlan    = _plan || sessionStorage.getItem('ek_plan');
+    const pendingBilling = sessionStorage.getItem('ek_billing') || 'monthly';
+    const isPaidPlan     = pendingPlan && pendingPlan !== 'free';
+
+    try {
+      const { data: profile } = await sb
+        .from('user_profiles')
+        .select('onboarding_complete, subscription_status, bypass_subscription')
+        .single();
+
+      const onboarded = profile?.onboarding_complete;
+
+      // User has a paid plan intent AND has finished onboarding → go straight to billing
+      if (isPaidPlan && onboarded) {
+        // Only trigger billing if they're not already on that plan or higher
+        const currentPlan = profile?.subscription_status || 'free';
+        const bypass      = profile?.bypass_subscription;
+        const planRank    = { free: 0, starter: 1, pro: 2, institutional: 3 };
+        const needsUpgrade = !bypass && (planRank[currentPlan] || 0) < (planRank[pendingPlan] || 1);
+
+        if (needsUpgrade) {
+          try {
+            const billingRes = await fetch('/api/billing/initiate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ plan: pendingPlan, billing: pendingBilling }),
+            });
+            const billingData = await billingRes.json();
+            if (billingData.url) {
+              sessionStorage.removeItem('ek_plan');
+              sessionStorage.removeItem('ek_billing');
+              window.location.href = billingData.url;
+              return;
+            }
+          } catch (_) { /* fall through to workspace */ }
+        }
+        window.location.href = '/workspace.html';
+        return;
+      }
+
+      window.location.href = onboarded ? '/workspace.html' : '/onboarding.html';
+    } catch (_) {
+      window.location.href = '/onboarding.html';
+    }
+  }
+
+  // ── Submit handler ────────────────────────────────────────────────────────────
+  async function handleSubmit() {
+    if (isLoading) return;
+    clearError();
+
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!email) { showError('Please enter your email address.'); return; }
+    if (!password || password.length < 8) {
+      showError('Password must be at least 8 characters.'); return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      const session = data.session;
+
+      if (session) {
+        await redirectAfterAuth(session.access_token);
+      } else {
+        showError('Unable to establish session. Please try again.');
+        setLoading(false);
+      }
+    } catch (err) {
+      const msg = err?.message || 'Something went wrong. Please try again.';
+      // Surface user-friendly messages for common Supabase error codes
+      if (msg.includes('Invalid login credentials')) {
+        showError('Incorrect email or password.');
+      } else if (msg.includes('Email not confirmed')) {
+        showError('Please verify your email first. Check your inbox.');
+      } else if (msg.includes('already registered') || msg.includes('already exists')) {
+        showError('An account with this email already exists. Sign in instead.');
+      } else if (msg.includes('Password should be at least')) {
+        showError('Password must be at least 8 characters.');
+      } else {
+        showError(msg);
+      }
+      setLoading(false);
+    }
+  }
+
+  // ── Magic link handler ────────────────────────────────────────────────────────
+  async function handleMagicLink() {
+    if (isLoading) return;
+    clearError();
+
+    const email = document.getElementById('email').value.trim();
+    if (!email) { showError('Please enter your email address first.'); return; }
+
+    setLoading(true);
+    try {
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false },
+      });
+      if (error) throw error;
+      showConfirm(email);
+    } catch (err) {
+      showError(err?.message || 'Could not send magic link. Please try again.');
+    }
+    setLoading(false);
+  }
+
+  // ── Handle magic-link / OAuth callback only ──────────────────────────────────
+  // Only auto-redirect when Supabase appends #access_token=... to the URL.
+  // Intentional visits to auth.html (e.g. signing in as a different account)
+  // should never trigger a silent redirect.
+  (async () => {
+    const hash = window.location.hash;
+    if (!hash.includes('access_token') && !hash.includes('type=magiclink')) return;
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) await redirectAfterAuth(session.access_token);
+  })();
+
+  // ── Enter key shortcuts ───────────────────────────────────────────────────────
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSubmit();
+  });
+  document.getElementById('email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const pwField = document.getElementById('password');
+      if (pwField.value.length > 0) handleSubmit();
+      else pwField.focus();
+    }
+  });
+  document.getElementById('reset-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleResetRequest();
+  });
+
+  // ── Init — show forgot link on default sign-in tab ────────────────────────────
+  document.getElementById('forgot-link').classList.add('visible');
+</script>
+</body>
+</html>
