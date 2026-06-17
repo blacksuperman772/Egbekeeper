@@ -421,7 +421,6 @@
       text-decoration: none;
       cursor: none;
       transition: all .3s;
-      border-radius: 6px;
       color: var(--faint);
       border: 1px solid var(--border);
       background: transparent;
@@ -686,7 +685,6 @@
       text-decoration: none;
       cursor: none;
       transition: all .4s;
-      border-radius: 6px;
     }
     .btn-mike {
       background: rgba(184,160,106,0.08);
@@ -803,8 +801,8 @@
     <img src="/assets/workspace-ambient.png" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0.06;pointer-events:none;z-index:0;" />
     <div class="section-inner" style="position:relative;z-index:1;">
       <p class="hero-label">Pricing</p>
-      <h1 class="hero-headline">Built for every stage of the journey.</h1>
-      <p class="hero-sub">From your first trade to your best performance. Choose the depth of mentorship that matches where you are now.</p>
+      <h1 class="hero-headline">Built for where you are now.</h1>
+      <p class="hero-sub">Choose the depth of mentorship that fits your current stage. There's a place here whether you've made ten trades or ten thousand.</p>
       <div class="billing-toggle" id="billingToggle">
         <span class="toggle-label active" id="labelMonthly">Monthly</span>
         <div class="toggle-track" id="toggleTrack">
@@ -904,9 +902,8 @@
             <li class="included"><span class="check">✓</span> Priority mentor response</li>
             <li class="included"><span class="check">✓</span> Performance OS (full)</li>
           </ul>
-          <!-- Professional plan maps to existing institutional plan -->
-          <!-- TODO: Create separate Paystack plan IDs for each tier in Paystack dashboard -->
-          <button class="card-cta" data-plan="institutional" onclick="initiateCheckout('institutional')">Go Professional</button>
+          <!-- TODO: Create separate Paystack plan IDs for Professional tier in Paystack dashboard -->
+          <button class="card-cta" data-plan="professional" onclick="initiateCheckout('professional')">Go Professional</button>
         </div>
 
         <!-- INSTITUTION -->
@@ -971,7 +968,7 @@
               <td class="val-text">5 / month</td>
               <td class="val-text">30 / month</td>
               <td class="featured-col val-text">100 / month</td>
-              <td class="val-text">Included</td>
+              <td class="val-text">Unlimited</td>
               <td class="val-text">Unlimited</td>
             </tr>
             <tr>
@@ -1082,8 +1079,8 @@
               <td>Research Division insights</td>
               <td><span class="dash-muted">—</span></td>
               <td><span class="dash-muted">—</span></td>
-              <td class="featured-col"><span class="dash-muted">—</span></td>
-              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
               <td><span class="check-gold">✓</span></td>
             </tr>
             <tr>
@@ -1147,7 +1144,7 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            You're not learning. You're working. Courses give you knowledge. EdgeKeeper gives you accountability. Each session builds on the last. Your mentor noticed what you did yesterday, what you avoided two weeks ago, and what pattern keeps showing up. The gap between knowing and doing is not closed by more information — it's closed by consistent, structured conversation with someone who won't let you off easy.
+            Courses give you knowledge. EdgeKeeper gives you accountability. Each session builds on the last. Your mentor noticed what you did yesterday, what you avoided two weeks ago, and what pattern keeps showing up. The gap between knowing and doing is not closed by more information. It closes through consistent, structured conversation with someone who won't let you off easy.
           </div>
         </div>
 
@@ -1173,11 +1170,11 @@
 
         <div class="faq-item">
           <button class="faq-question" aria-expanded="false">
-            Is there a free trial?
+            What's the difference between Free and the 30-day guarantee?
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            Not a free trial. Your first session with your mentor is a real session. We don't demo you. What we offer instead is a 30-day full refund guarantee — no conditions, no forms. If the work doesn't feel real in the first month, we give you everything back. That's a stronger commitment than a trial.
+            The Free tier gives you three modules and five AI questions, enough to see how the mentors think before you pay anything. The 30-day guarantee is for paid members: if the work doesn't feel real in the first month, we refund everything. No forms. People who reach day 30 tend to stay.
           </div>
         </div>
 
@@ -1211,8 +1208,8 @@
   <p class="footer-copy">© 2026 EdgeKeeper. A Private Mentorship Institution.</p>
   <ul class="footer-links">
     <li><a href="edgekeeper.html#institution">Philosophy</a></li>
-    <li><a href="#">Privacy</a></li>
-    <li><a href="#">Terms</a></li>
+    <li><a href="/privacy.html">Privacy</a></li>
+    <li><a href="/terms.html">Terms</a></li>
   </ul>
 </footer>
 
@@ -1242,12 +1239,13 @@ const billingToggle = document.getElementById('billingToggle');
 
 // Price display data
 // TODO: Create separate Paystack plan IDs for each tier in Paystack dashboard
-// Plan code mapping: Student→starter, Practitioner→pro, Professional→institutional, Institution→institutional
+// Plan code mapping: Student→starter, Practitioner→pro, Professional→professional (new), Institution→institutional
 const plans = {
   starter: {
     monthly: 29,  annual: 290,
     saveMonthly: 29 * 12,
     saveAnnual:  290,
+    paystackCode: 'PLN_starter', // TODO: update with real Paystack plan code
     cadenceId: 'cadence-starter',
     saveId:    'save-starter',
   },
@@ -1255,6 +1253,7 @@ const plans = {
     monthly: 69, annual: 690,
     saveMonthly: 69 * 12,
     saveAnnual:  690,
+    paystackCode: 'PLN_pro', // TODO: update with real Paystack plan code
     cadenceId: 'cadence-pro',
     saveId:    'save-pro',
   },
@@ -1262,6 +1261,7 @@ const plans = {
     monthly: 129, annual: 1290,
     saveMonthly: 129 * 12,
     saveAnnual:  1290,
+    paystackCode: 'PLN_professional', // TODO: create new plan in Paystack dashboard at $129
     cadenceId: 'cadence-professional',
     saveId:    'save-professional',
   },
@@ -1269,6 +1269,7 @@ const plans = {
     monthly: 249, annual: 2490,
     saveMonthly: 249 * 12,
     saveAnnual:  2490,
+    paystackCode: 'PLN_institutional', // TODO: update with real Paystack plan code
     cadenceId: 'cadence-institutional',
     saveId:    'save-institutional',
   },
@@ -1304,8 +1305,10 @@ function toggleBilling() {
   toggleTrack.classList.toggle('annual', isAnnual);
   labelMonthly.classList.toggle('active', !isAnnual);
   labelAnnual.classList.toggle('active', isAnnual);
+  // Hide "Save 17%" chip once annual is selected — individual savings are shown per card
+  const saveChip = document.querySelector('.save-chip');
+  if (saveChip) saveChip.style.opacity = isAnnual ? '0' : '1';
   updatePrices();
-  // Update CTA links
   document.querySelectorAll('.card-cta[data-plan]').forEach(el => {
     const plan = el.dataset.plan;
     el.href = `auth.html?plan=${plan}&billing=${isAnnual ? 'annual' : 'monthly'}`;
