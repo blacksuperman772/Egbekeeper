@@ -1781,7 +1781,7 @@
     <div class="topbar-left">
       <a href="edgekeeper.html" class="topbar-logo">Edge<span>K</span>eeper</a>
       <div class="topbar-divider"></div>
-      <span class="topbar-section">Workspace &nbsp;·&nbsp; <span id="topbar-mentor-label">Mike</span></span>
+      <span class="topbar-section"><span id="topbar-mentor-label">Mike</span>'s Office &nbsp;·&nbsp; <span id="topbar-day-label" style="color:var(--gold-dim);">Private Session</span></span>
     </div>
     <div class="topbar-right">
       <span class="topbar-cmd"><span class="cmd-key">J</span> Journal</span>
@@ -1802,7 +1802,7 @@
       <div class="sidebar-avatar" id="sb-avatar">M</div>
       <div class="sidebar-mentor-info">
         <div class="sidebar-mentor-name" id="sb-name">Mike</div>
-        <div class="sidebar-mentor-role">Senior Mentor</div>
+        <div class="sidebar-mentor-role" id="sb-mentor-role">Senior Mentor · EdgeKeeper</div>
       </div>
     </div>
 
@@ -3384,6 +3384,14 @@ async function hydrateProfileFromServer() {
     if (profile.living_identity && !EK.str('living_identity')) EK.setStr('living_identity',  profile.living_identity);
     if (profile.guardian_level && !EK.str('guardian'))         EK.setStr('guardian',         profile.guardian_level);
     if (profile.plan) window.__ek_subscription__ = profile.plan;
+    // Compute and display relationship day counter
+    if (profile.member_since) {
+      const dayN = Math.max(1, Math.floor((Date.now() - new Date(profile.member_since).getTime()) / 86400000) + 1);
+      const dayEl = document.getElementById('topbar-day-label');
+      if (dayEl) dayEl.textContent = `Day ${dayN}`;
+      const roleEl = document.getElementById('sb-mentor-role');
+      if (roleEl) roleEl.textContent = `Senior Mentor · Day ${dayN}`;
+    }
   } catch (_) { /* non-fatal — local state still works */ }
 }
 
@@ -3920,6 +3928,23 @@ function buildSystemPrompt() {
                        : visits > 60 ? 'Long-term. Speak sparsely. One word can be enough. You have history here.'
                        : 'Established. Steady. You know the patterns. Trust your read.';
 
+  const relationshipAge = visits < 3  ? 'You have just met this person. You are still reading them.'
+                        : visits < 10 ? `You have had ${visits} sessions together. You are building a picture but you are not finished yet.`
+                        : visits < 30 ? `Session ${visits}. You have enough history to track a real pattern. Reference it when it is useful.`
+                        : `Session ${visits}. You have a full picture of who this person is under pressure. Use it. You do not need to explain yourself.`;
+
+  // Between-session thinking — what the mentor has been sitting with
+  const nb = mentorNotebook || {};
+  const lastOpenQ  = nb.openQuestions?.slice(-1)[0];
+  const lastConcern = nb.concerns?.slice(-1)[0];
+  const lastBreakthrough = nb.breakthroughs?.slice(-1)[0];
+  const betweenSessions = [
+    lastOpenQ      && visits > 3 && `You have been sitting with this since last time: "${lastOpenQ}" — surface it if the conversation goes there naturally.`,
+    nb.currentTheory && visits > 5 && `Working theory you have been revising: "${nb.currentTheory}" — do not state it as fact. Let it inform how you listen.`,
+    lastConcern    && visits > 2 && `Something you flagged: "${lastConcern}" — watch for evidence that it has shifted.`,
+    lastBreakthrough && visits > 4 && `A real moment you remember: "${typeof lastBreakthrough === 'object' ? lastBreakthrough.text : lastBreakthrough}" — it is load-bearing context for who they are now.`,
+  ].filter(Boolean).join('\n');
+
   const memCtx = [
     privateNotes && `Your private notes on this person (never expose; let them shape how you read the conversation):\n${privateNotes}`,
     northStar    && `Their stated north star: "${northStar}"`,
@@ -3965,7 +3990,10 @@ EVERY TRADE HAS TWO RESULTS:
 The financial one is what happened to their capital. The identity one is what it revealed about their character. Lost while following the plan: good trade, psychologically. Won while breaking rules: a dangerous precedent. You track both. You care more about the second one.
 
 Session context: ${maturity}
+Relationship: ${relationshipAge}
 It is ${timeContext}.
+
+${betweenSessions ? `Between sessions, you have been sitting with:\n${betweenSessions}` : ''}
 
 Colleague: ${colleague} is the other mentor here. Reference them naturally when it fits: "Ashley might push you harder on the emotional side of that" or "Mike would want to know if the plan existed before you got in."
 
@@ -4013,7 +4041,10 @@ EVERY TRADE HAS TWO RESULTS:
 The financial result is what happened to capital. The identity result is what the decision reveals about who they are under pressure. A loss taken cleanly according to the plan is evidence of integrity. A win taken by breaking rules is a pattern to be concerned about. You track both. You name both when it matters.
 
 Session context: ${maturity}
+Relationship: ${relationshipAge}
 It is ${timeContext}.
+
+${betweenSessions ? `Between sessions, you have been sitting with:\n${betweenSessions}` : ''}
 
 Colleague: ${colleague} is the other mentor here. Reference them when it adds something: "Mike tends to go straight to the rule that was broken. I want to know what was happening before that."
 

@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mike — Senior Mentor — EdgeKeeper</title>
+  <meta name="description" content="Mike is a Senior Mentor at EdgeKeeper. Direct, structural, and uncompromising — he builds discipline where there is none and holds you to it." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:    #050505;
+      --obsidian: #0a0a0a;
+      --stone:    #111111;
+      --surface:  #161616;
+      --border:   #1e1e1e;
+      --dim:      #2a2a2a;
+      --muted:    #555555;
+      --faint:    #888888;
+      --text:     #d4d0c8;
+      --bright:   #e8e4dc;
+      --white:    #f5f2ec;
+      --gold:     #b8a06a;
+      --gold-dim: #7a6a45;
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'Inter', sans-serif;
+      --mono:     'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.7;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    /* ── CURSOR ────────────────────────────────────────────────── */
+    #cursor {
+      position: fixed; width: 8px; height: 8px;
+      background: var(--gold); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: width .2s, height .2s;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed; width: 36px; height: 36px;
+      border: 1px solid rgba(184,160,106,0.4); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: left .1s ease, top .1s ease;
+    }
+
+    /* ── NAV ────────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px;
+      z-index: 100;
+      border-bottom: 1px solid transparent;
+      transition: background .4s, border-color .4s;
+    }
+    nav.scrolled {
+      background: rgba(5,5,5,0.95);
+      border-bottom-color: var(--border);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      padding-left: 0.22em;
+      text-transform: uppercase;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links {
+      display: flex; align-items: center; gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.72rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--faint);
+      text-decoration: none; transition: color .3s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--gold); }
+    .nav-cta {
+      font-family: var(--sans); font-size: 0.7rem; font-weight: 400;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--text); background: transparent;
+      border: 1px solid rgba(184,160,106,0.35);
+      padding: 9px 20px; text-decoration: none;
+      transition: all .4s;
+    }
+    .nav-cta:hover {
+      background: var(--gold); color: var(--black);
+      border-color: var(--gold);
+    }
+
+    /* ── REVEAL ─────────────────────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(24px); }
+    .reveal.in { opacity: 1; transform: translateY(0); transition: opacity .9s ease, transform .9s ease; }
+    .reveal-delay-1.in { transition-delay: .12s; }
+    .reveal-delay-2.in { transition-delay: .24s; }
+    .reveal-delay-3.in { transition-delay: .36s; }
+
+    /* ── SECTION SHARED ──────────────────────────────────────────── */
+    section { position: relative; }
+    .section-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 60px;
+    }
+    .section-label {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold-dim); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .section-label::before {
+      content: ''; width: 32px; height: 1px;
+      background: var(--gold-dim); flex-shrink: 0;
+    }
+
+    /* ── HERO / OFFICE ENTRANCE ──────────────────────────────────── */
+    #office-entrance {
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: 140px 60px 100px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .office-tag {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold-dim); margin-bottom: 60px;
+      opacity: 0; transform: translateY(12px);
+      animation: fadeUp .8s ease .2s forwards;
+    }
+    .office-quote {
+      font-family: var(--serif); font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+      font-weight: 300; line-height: 1.25; color: var(--white);
+      margin-bottom: 40px;
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 1s ease .4s forwards;
+    }
+    .office-quote em { font-style: italic; color: var(--gold); }
+    .office-attr {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.25em; color: var(--gold-dim);
+      padding-left: 0.25em;
+      opacity: 0; transform: translateY(12px);
+      animation: fadeUp .8s ease .7s forwards;
+    }
+    .office-scroll-hint {
+      position: absolute; bottom: 44px; left: 60px;
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--dim);
+      opacity: 0; animation: fadeUp .8s ease 1.2s forwards;
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── DIVIDER ─────────────────────────────────────────────────── */
+    .section-divider {
+      width: 100%; height: 1px;
+      background: var(--border);
+      margin: 0;
+    }
+
+    /* ── WHO HE WORKS WITH ───────────────────────────────────────── */
+    #who { padding: 120px 0; }
+    .who-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .who-header h2 {
+      font-family: var(--serif); font-size: clamp(2rem, 3vw, 2.8rem);
+      font-weight: 300; line-height: 1.2; color: var(--white);
+      margin-top: 8px;
+    }
+    .who-list {
+      display: flex; flex-direction: column; gap: 0;
+      list-style: none;
+    }
+    .who-item {
+      padding: 24px 0;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .who-item:last-child { border-bottom: 1px solid var(--border); }
+    .who-title {
+      font-family: var(--serif); font-size: 1.25rem;
+      font-weight: 300; color: var(--white); line-height: 1.3;
+    }
+    .who-desc {
+      font-size: 0.82rem; color: var(--muted); line-height: 1.75;
+    }
+
+    /* ── BELIEFS ─────────────────────────────────────────────────── */
+    #beliefs { padding: 120px 0; background: var(--obsidian); }
+    .beliefs-grid {
+      display: grid; grid-template-columns: 280px 1fr; gap: 80px;
+    }
+    .beliefs-list {
+      display: flex; flex-direction: column; gap: 48px;
+      list-style: none;
+    }
+    .belief-item {
+      padding-left: 24px;
+      border-left: 1px solid var(--gold-dim);
+    }
+    .belief-text {
+      font-family: var(--serif); font-size: 1.3rem;
+      font-weight: 300; line-height: 1.4; color: var(--text);
+    }
+    .belief-note {
+      font-size: 0.78rem; color: var(--muted); margin-top: 8px;
+      line-height: 1.7;
+    }
+
+    /* ── CASE NOTES ─────────────────────────────────────────────── */
+    #case-notes { padding: 120px 0; }
+    .notes-intro {
+      max-width: 540px; margin-bottom: 80px;
+    }
+    .notes-intro p {
+      font-size: 0.85rem; color: var(--muted); line-height: 1.85;
+    }
+    .notes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: var(--border);
+    }
+    .case-note {
+      background: var(--black);
+      padding: 40px 44px;
+    }
+    .case-note-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold-dim); margin-bottom: 20px;
+    }
+    .case-note-text {
+      font-family: var(--serif); font-style: italic;
+      font-size: 1.15rem; font-weight: 300;
+      line-height: 1.7; color: var(--text);
+    }
+    .case-note:nth-child(2) { background: var(--obsidian); }
+    .case-note:nth-child(3) { background: var(--obsidian); }
+    .case-note:nth-child(4) { background: var(--black); }
+
+    /* ── RECENT NOTES ────────────────────────────────────────────── */
+    #recent-notes { padding: 120px 0; background: var(--obsidian); }
+    .notes-header { margin-bottom: 80px; }
+    .notes-header h2 {
+      font-family: var(--serif); font-size: clamp(2rem, 3vw, 2.8rem);
+      font-weight: 300; color: var(--white); line-height: 1.2;
+      margin-top: 8px;
+    }
+    .notes-header p {
+      font-size: 0.82rem; color: var(--muted);
+      max-width: 440px; margin-top: 20px; line-height: 1.85;
+    }
+    .journal-entries {
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .journal-entry {
+      border-top: 1px solid var(--border);
+      padding: 52px 0;
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 60px;
+    }
+    .journal-entry:last-child { border-bottom: 1px solid var(--border); }
+    .entry-meta {
+      padding-top: 4px;
+    }
+    .entry-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold-dim); display: block;
+      margin-bottom: 8px;
+    }
+    .entry-context {
+      font-size: 0.75rem; color: var(--muted);
+      line-height: 1.6;
+    }
+    .entry-body {
+      font-family: var(--serif); font-size: 1.1rem;
+      font-weight: 300; color: var(--text);
+      line-height: 1.95;
+    }
+    .entry-body em { font-style: italic; color: var(--bright); }
+
+    /* ── CTA ─────────────────────────────────────────────────────── */
+    #mike-cta {
+      padding: 160px 0;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    .cta-eyebrow {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.3em; padding-left: 0.3em;
+      text-transform: uppercase; color: var(--gold-dim);
+      margin-bottom: 40px;
+    }
+    .cta-headline {
+      font-family: var(--serif); font-size: clamp(2.5rem, 4vw, 3.5rem);
+      font-weight: 300; color: var(--white); line-height: 1.2;
+      margin-bottom: 56px;
+    }
+    .cta-headline em { font-style: italic; color: var(--gold); }
+    .btn-begin {
+      display: inline-flex; align-items: center; gap: 14px;
+      font-family: var(--sans); font-size: 0.75rem;
+      font-weight: 400; letter-spacing: 0.16em;
+      text-transform: uppercase; text-decoration: none;
+      color: var(--text);
+      border: 1px solid rgba(184,160,106,0.4);
+      padding: 18px 40px;
+      transition: all .4s;
+      cursor: none;
+    }
+    .btn-begin:hover {
+      background: var(--gold); color: var(--black);
+      border-color: var(--gold);
+    }
+    .btn-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--gold);
+    }
+
+    /* ── FOOTER ─────────────────────────────────────────────────── */
+    footer {
+      padding: 44px 60px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: var(--serif); font-size: 0.95rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .footer-logo span { color: var(--gold-dim); }
+    .footer-copy {
+      font-size: 0.72rem; color: var(--dim);
+    }
+    .footer-links {
+      display: flex; gap: 28px; list-style: none;
+    }
+    .footer-links a {
+      font-size: 0.7rem; letter-spacing: 0.12em;
+      color: var(--dim); text-decoration: none;
+      transition: color .3s;
+    }
+    .footer-links a:hover { color: var(--muted); }
+
+    /* ── MOBILE ─────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      #office-entrance { padding: 120px 24px 80px; }
+      .office-scroll-hint { left: 24px; }
+      .section-inner { padding: 0 24px; }
+      #who { padding: 80px 0; }
+      .who-grid { grid-template-columns: 1fr; gap: 48px; }
+      #beliefs { padding: 80px 0; }
+      .beliefs-grid { grid-template-columns: 1fr; gap: 48px; }
+      #case-notes { padding: 80px 0; }
+      .notes-grid { grid-template-columns: 1fr; }
+      #recent-notes { padding: 80px 0; }
+      .journal-entry { grid-template-columns: 1fr; gap: 20px; }
+      #mike-cta { padding: 100px 0; }
+      footer { flex-direction: column; gap: 16px; text-align: center; padding: 36px 24px; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="/edgekeeper.html" class="nav-logo">Edge<span>K</span>eeper</a>
+  <ul class="nav-links">
+    <li><a href="/edgekeeper.html#institution">Philosophy</a></li>
+    <li><a href="/edgekeeper.html#mentors">Mentors</a></li>
+    <li><a href="/ashley">Ashley</a></li>
+    <li><a href="/method">The Method</a></li>
+  </ul>
+  <a href="/onboarding.html?mentor=mike" class="nav-cta">Begin with Mike</a>
+</nav>
+
+<!-- OFFICE ENTRANCE -->
+<section id="office-entrance">
+  <div class="office-tag">Mike's Office &nbsp;·&nbsp; Senior Mentor &nbsp;·&nbsp; EdgeKeeper</div>
+  <blockquote class="office-quote">
+    "Most traders think they have<br>
+    a strategy problem.<br><br>
+    Most of the time they have<br>
+    <em>a behavior problem.</em>"
+  </blockquote>
+  <div class="office-attr">— Mike</div>
+  <div class="office-scroll-hint">Read more ↓</div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- WHO MIKE WORKS BEST WITH -->
+<section id="who">
+  <div class="section-inner">
+    <div class="who-grid">
+      <div class="who-header">
+        <div class="section-label reveal">His Work</div>
+        <h2 class="reveal reveal-delay-1">Who Mike works best with</h2>
+      </div>
+      <ul class="who-list">
+        <li class="who-item reveal">
+          <div class="who-title">The revenge trader</div>
+          <div class="who-desc">The trader who gets hit and goes straight back in. Not because the setup is there — because the emotion is. Mike knows how to break that loop.</div>
+        </li>
+        <li class="who-item reveal reveal-delay-1">
+          <div class="who-title">The over-risker</div>
+          <div class="who-desc">You know your maximum risk. You also know you frequently exceed it. Mike won't lecture you. He'll ask you what you were thinking in the moment — and then wait.</div>
+        </li>
+        <li class="who-item reveal reveal-delay-2">
+          <div class="who-title">The knowledge–execution gap</div>
+          <div class="who-desc">You know exactly what you should do. And you don't do it. Mike's entire practice is built around this specific problem. It is never a strategy issue.</div>
+        </li>
+        <li class="who-item reveal reveal-delay-3">
+          <div class="who-title">The rule-breaker</div>
+          <div class="who-desc">You built the rules. You agreed to them. And then the market moved. Mike tracks these moments with clinical precision — not to judge, but to understand what happened.</div>
+        </li>
+        <li class="who-item reveal">
+          <div class="who-title">The trader who needs structure</div>
+          <div class="who-desc">Not everyone needs warmth. Some traders need someone who will hold the line. Mike will hold it. Without hesitation and without apology.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- THINGS MIKE BELIEVES -->
+<section id="beliefs">
+  <div class="section-inner">
+    <div class="beliefs-grid">
+      <div>
+        <div class="section-label reveal">His Beliefs</div>
+        <h2 class="reveal reveal-delay-1" style="font-family:var(--serif);font-size:clamp(2rem,3vw,2.8rem);font-weight:300;color:var(--white);line-height:1.2;margin-top:8px;">
+          What Mike believes<br>about traders.
+        </h2>
+        <p class="reveal reveal-delay-2" style="font-size:0.82rem;color:var(--muted);line-height:1.85;margin-top:24px;max-width:240px;">
+          These are not opinions. They are conclusions drawn from thousands of conversations.
+        </p>
+      </div>
+      <ul class="beliefs-list">
+        <li class="belief-item reveal">
+          <div class="belief-text">Discipline creates freedom.</div>
+          <div class="belief-note">Traders who want freedom usually need structure first. You cannot trade freely until you trade consistently.</div>
+        </li>
+        <li class="belief-item reveal reveal-delay-1">
+          <div class="belief-text">Motivation is unreliable.</div>
+          <div class="belief-note">Motivation disappears on losing days, on tired days, on boring days. Systems remain. Mike doesn't ask whether you feel like following your rules. That's not relevant.</div>
+        </li>
+        <li class="belief-item reveal reveal-delay-2">
+          <div class="belief-text">Confidence is earned, not given.</div>
+          <div class="belief-note">He won't tell you you're doing well until you are. He also won't withhold it when you deserve it. That's what makes the observation mean something.</div>
+        </li>
+        <li class="belief-item reveal reveal-delay-3">
+          <div class="belief-text">Repeated behavior reveals truth.</div>
+          <div class="belief-note">A trader can say anything in a conversation. Mike watches what they actually do across sessions. Patterns don't lie.</div>
+        </li>
+        <li class="belief-item reveal">
+          <div class="belief-text">Accountability is infrastructure, not punishment.</div>
+          <div class="belief-note">He doesn't hold you accountable because he's disappointed. He holds you accountable because that's what makes the relationship worth having.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- HOW MIKE THINKS / CASE NOTES -->
+<section id="case-notes">
+  <div class="section-inner">
+    <div class="section-label reveal">Observations</div>
+    <h2 class="reveal reveal-delay-1" style="font-family:var(--serif);font-size:clamp(2rem,3vw,2.8rem);font-weight:300;color:var(--white);line-height:1.2;margin-top:8px;margin-bottom:20px;">
+      How Mike thinks.
+    </h2>
+    <div class="notes-intro reveal reveal-delay-2">
+      <p>
+        These are the kinds of observations Mike makes across every session. Not commentary — conclusions. The thinking of a mentor who listens for what isn't being said.
+      </p>
+    </div>
+  </div>
+  <div class="section-inner" style="margin-top:60px;">
+    <div class="notes-grid reveal">
+      <div class="case-note">
+        <div class="case-note-label">Observation · Pattern</div>
+        <div class="case-note-text">"People rarely tell me the real problem first."</div>
+      </div>
+      <div class="case-note">
+        <div class="case-note-label">Observation · Pressure</div>
+        <div class="case-note-text">"Pressure reveals more than performance ever will."</div>
+      </div>
+      <div class="case-note">
+        <div class="case-note-label">Observation · Trade</div>
+        <div class="case-note-text">"The trade is usually not the issue."</div>
+      </div>
+      <div class="case-note">
+        <div class="case-note-label">Observation · Behavior</div>
+        <div class="case-note-text">"Patterns matter more than promises."</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- RECENT NOTES FROM MIKE -->
+<section id="recent-notes">
+  <div class="section-inner">
+    <div class="notes-header">
+      <div class="section-label reveal">Private Notes</div>
+      <h2 class="reveal reveal-delay-1">Recent notes<br>from Mike.</h2>
+      <p class="reveal reveal-delay-2">
+        These are the kinds of entries Mike makes about the traders he works with. Names are never used. The observations are always real.
+      </p>
+    </div>
+
+    <div class="journal-entries">
+      <div class="journal-entry reveal">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Early Stage</span>
+          <span class="entry-context">Week 2 · Behavioral intake</span>
+        </div>
+        <div class="entry-body">
+          He explained the trade for eleven minutes. The trade itself took three seconds.
+          <br><br>
+          That ratio tells me more than the trade did.
+        </div>
+      </div>
+
+      <div class="journal-entry reveal reveal-delay-1">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Rule Break</span>
+          <span class="entry-context">Month 2 · Pattern observed</span>
+        </div>
+        <div class="entry-body">
+          He broke the same rule he broke in his first week here.
+          <br><br>
+          <em>He thinks I didn't notice.</em> I'm waiting to see if he tells me first, or whether I need to ask. That answer is part of the assessment.
+        </div>
+      </div>
+
+      <div class="journal-entry reveal reveal-delay-2">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Breakthrough</span>
+          <span class="entry-context">Month 3 · Shift in behavior</span>
+        </div>
+        <div class="entry-body">
+          He called before he traded today. Not to ask for permission — to think out loud. That's new.
+          <br><br>
+          I said almost nothing. He didn't need me to. That was intentional on my part.
+        </div>
+      </div>
+
+      <div class="journal-entry reveal reveal-delay-3">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Resilience</span>
+          <span class="entry-context">Month 4 · Consecutive loss period</span>
+        </div>
+        <div class="entry-body">
+          Three consecutive loss days and he came in calm. Not detached. Not numb. <em>Calm.</em>
+          <br><br>
+          There's a difference and he's starting to know the difference. That's the work.
+        </div>
+      </div>
+
+      <div class="journal-entry reveal">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Resistance</span>
+          <span class="entry-context">Month 1 · Early friction</span>
+        </div>
+        <div class="entry-body">
+          He asked me to agree with him. He used the word "validate" three times.
+          <br><br>
+          I didn't. He got quiet. Then he said: "So what do you think actually happened?"
+          <br><br>
+          <em>That was the session that mattered.</em>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="mike-cta">
+  <div class="section-inner">
+    <div class="cta-eyebrow reveal">Private Mentorship</div>
+    <h2 class="cta-headline reveal reveal-delay-1">
+      Ready to work<br>with <em>Mike?</em>
+    </h2>
+    <a href="/onboarding.html?mentor=mike" class="btn-begin reveal reveal-delay-2">
+      <span class="btn-dot"></span>
+      Begin with Mike
+    </a>
+    <p class="reveal reveal-delay-3" style="margin-top:48px;font-size:0.75rem;color:var(--muted);">
+      Or <a href="/ashley" style="color:var(--gold-dim);text-decoration:none;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">meet Ashley →</a>
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Edge<span>K</span>eeper</div>
+  <p class="footer-copy">© 2025 EdgeKeeper. A Private Mentorship Institution.</p>
+  <ul class="footer-links">
+    <li><a href="/edgekeeper.html">Home</a></li>
+    <li><a href="/method">The Method</a></li>
+    <li><a href="/privacy.html">Privacy</a></li>
+  </ul>
+</footer>
+
+<script>
+// Cursor
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function tick() {
+  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(tick);
+})();
+
+// Nav scroll
+const nav = document.getElementById('main-nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// Reveal on scroll
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

@@ -276,6 +276,11 @@ app.get('/terms.html',    (req, res) => res.sendFile(path.join(__dirname, 'terms
 app.get('/404.html',      (req, res) => res.status(404).sendFile(path.join(__dirname, '404.html')));
 app.get('/robots.txt',    (req, res) => res.type('text/plain').sendFile(path.join(__dirname, 'robots.txt')));
 app.get('/sitemap.xml',   (req, res) => res.type('application/xml').sendFile(path.join(__dirname, 'sitemap.xml')));
+// ── Mentor + Method pages (public) ───────────────────────────────────────────
+app.get('/mike',    (req, res) => res.sendFile(path.join(__dirname, 'mike.html')));
+app.get('/ashley',  (req, res) => res.sendFile(path.join(__dirname, 'ashley.html')));
+app.get('/method',  (req, res) => res.sendFile(path.join(__dirname, 'method.html')));
+
 app.get('/pricing.html',    (req, res) => {
   const f = path.join(__dirname, 'pricing.html');
   if (fs.existsSync(f)) {
@@ -567,6 +572,8 @@ app.get('/api/profile', requireAuthApi, apiLimiter, async (req, res) => {
 
   res.json({
     profile: {
+      id:               req.user.id,
+      member_since:     req.user.created_at   || null,
       mentor:           data.mentor           || null,
       private_notes:    data.private_notes    || null,
       north_star:       data.north_star       || null,

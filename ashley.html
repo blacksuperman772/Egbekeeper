@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ashley — Senior Mentor — EdgeKeeper</title>
+  <meta name="description" content="Ashley is a Senior Mentor at EdgeKeeper. Warm, precise, and observant — she reads what isn't said and creates the space where patterns become visible." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:    #050505;
+      --obsidian: #0a0a0a;
+      --stone:    #111111;
+      --surface:  #161616;
+      --border:   #1e1e1e;
+      --dim:      #2a2a2a;
+      --muted:    #555555;
+      --faint:    #888888;
+      --text:     #d4d0c8;
+      --bright:   #e8e4dc;
+      --white:    #f5f2ec;
+      --gold:     #b8a06a;
+      --gold-dim: #7a6a45;
+      --green:    #4a5c4a;
+      --green-bright: #6b8c6b;
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'Inter', sans-serif;
+      --mono:     'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.7;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    #cursor {
+      position: fixed; width: 8px; height: 8px;
+      background: var(--green-bright); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: width .2s, height .2s;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed; width: 36px; height: 36px;
+      border: 1px solid rgba(107,140,107,0.4); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: left .1s ease, top .1s ease;
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px;
+      z-index: 100;
+      border-bottom: 1px solid transparent;
+      transition: background .4s, border-color .4s;
+    }
+    nav.scrolled {
+      background: rgba(5,5,5,0.95);
+      border-bottom-color: var(--border);
+    }
+    .nav-logo {
+      font-family: var(--serif); font-size: 1.05rem; font-weight: 400;
+      letter-spacing: 0.22em; padding-left: 0.22em;
+      text-transform: uppercase; color: var(--white); text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links {
+      display: flex; align-items: center; gap: 36px; list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.72rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--faint);
+      text-decoration: none; transition: color .3s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      font-family: var(--sans); font-size: 0.7rem; font-weight: 400;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--text); background: transparent;
+      border: 1px solid rgba(107,140,107,0.35);
+      padding: 9px 20px; text-decoration: none;
+      transition: all .4s;
+    }
+    .nav-cta:hover {
+      background: var(--green-bright); color: var(--black);
+      border-color: var(--green-bright);
+    }
+
+    .reveal { opacity: 0; transform: translateY(24px); }
+    .reveal.in { opacity: 1; transform: translateY(0); transition: opacity .9s ease, transform .9s ease; }
+    .reveal-delay-1.in { transition-delay: .12s; }
+    .reveal-delay-2.in { transition-delay: .24s; }
+    .reveal-delay-3.in { transition-delay: .36s; }
+
+    section { position: relative; }
+    .section-inner { max-width: 1000px; margin: 0 auto; padding: 0 60px; }
+    .section-label {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--green); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .section-label::before {
+      content: ''; width: 32px; height: 1px;
+      background: var(--green); flex-shrink: 0;
+    }
+    .section-divider { width: 100%; height: 1px; background: var(--border); }
+
+    /* ── OFFICE ENTRANCE ──────────────────────────────────────────── */
+    #office-entrance {
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: 140px 60px 100px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .office-tag {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--green); margin-bottom: 60px;
+      opacity: 0; transform: translateY(12px);
+      animation: fadeUp .8s ease .2s forwards;
+    }
+    .office-quote {
+      font-family: var(--serif); font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+      font-weight: 300; line-height: 1.25; color: var(--white);
+      margin-bottom: 40px;
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 1s ease .4s forwards;
+    }
+    .office-quote em { font-style: italic; color: var(--green-bright); }
+    .office-attr {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.25em; padding-left: 0.25em;
+      color: var(--green);
+      opacity: 0; transform: translateY(12px);
+      animation: fadeUp .8s ease .7s forwards;
+    }
+    .office-scroll-hint {
+      position: absolute; bottom: 44px; left: 60px;
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--dim);
+      opacity: 0; animation: fadeUp .8s ease 1.2s forwards;
+    }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* ── WHO SHE WORKS WITH ──────────────────────────────────────── */
+    #who { padding: 120px 0; }
+    .who-grid { display: grid; grid-template-columns: 280px 1fr; gap: 80px; align-items: start; }
+    .who-header h2 {
+      font-family: var(--serif); font-size: clamp(2rem, 3vw, 2.8rem);
+      font-weight: 300; line-height: 1.2; color: var(--white); margin-top: 8px;
+    }
+    .who-list { display: flex; flex-direction: column; gap: 0; list-style: none; }
+    .who-item { padding: 24px 0; border-top: 1px solid var(--border); }
+    .who-item:last-child { border-bottom: 1px solid var(--border); }
+    .who-title { font-family: var(--serif); font-size: 1.25rem; font-weight: 300; color: var(--white); line-height: 1.3; }
+    .who-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.75; margin-top: 8px; }
+
+    /* ── BELIEFS ─────────────────────────────────────────────────── */
+    #beliefs { padding: 120px 0; background: var(--obsidian); }
+    .beliefs-grid { display: grid; grid-template-columns: 280px 1fr; gap: 80px; }
+    .beliefs-list { display: flex; flex-direction: column; gap: 48px; list-style: none; }
+    .belief-item { padding-left: 24px; border-left: 1px solid var(--green); }
+    .belief-text { font-family: var(--serif); font-size: 1.3rem; font-weight: 300; line-height: 1.4; color: var(--text); }
+    .belief-note { font-size: 0.78rem; color: var(--muted); margin-top: 8px; line-height: 1.7; }
+
+    /* ── HOW SHE THINKS ──────────────────────────────────────────── */
+    #case-notes { padding: 120px 0; }
+    .notes-intro { max-width: 540px; margin-bottom: 80px; }
+    .notes-intro p { font-size: 0.85rem; color: var(--muted); line-height: 1.85; }
+    .notes-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; background: var(--border);
+    }
+    .case-note { background: var(--black); padding: 40px 44px; }
+    .case-note-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--green); margin-bottom: 20px;
+    }
+    .case-note-text {
+      font-family: var(--serif); font-style: italic;
+      font-size: 1.15rem; font-weight: 300; line-height: 1.7; color: var(--text);
+    }
+    .case-note:nth-child(2) { background: var(--obsidian); }
+    .case-note:nth-child(3) { background: var(--obsidian); }
+    .case-note:nth-child(4) { background: var(--black); }
+
+    /* ── RECENT NOTES ────────────────────────────────────────────── */
+    #recent-notes { padding: 120px 0; background: var(--obsidian); }
+    .notes-header { margin-bottom: 80px; }
+    .notes-header h2 {
+      font-family: var(--serif); font-size: clamp(2rem, 3vw, 2.8rem);
+      font-weight: 300; color: var(--white); line-height: 1.2; margin-top: 8px;
+    }
+    .notes-header p { font-size: 0.82rem; color: var(--muted); max-width: 440px; margin-top: 20px; line-height: 1.85; }
+    .journal-entries { display: flex; flex-direction: column; gap: 0; }
+    .journal-entry {
+      border-top: 1px solid var(--border);
+      padding: 52px 0;
+      display: grid; grid-template-columns: 160px 1fr; gap: 60px;
+    }
+    .journal-entry:last-child { border-bottom: 1px solid var(--border); }
+    .entry-meta { padding-top: 4px; }
+    .entry-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--green); display: block; margin-bottom: 8px;
+    }
+    .entry-context { font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
+    .entry-body {
+      font-family: var(--serif); font-size: 1.1rem;
+      font-weight: 300; color: var(--text); line-height: 1.95;
+    }
+    .entry-body em { font-style: italic; color: var(--bright); }
+
+    /* ── CTA ─────────────────────────────────────────────────────── */
+    #ashley-cta { padding: 160px 0; text-align: center; border-top: 1px solid var(--border); }
+    .cta-eyebrow {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.3em; padding-left: 0.3em;
+      text-transform: uppercase; color: var(--green);
+      margin-bottom: 40px;
+    }
+    .cta-headline {
+      font-family: var(--serif); font-size: clamp(2.5rem, 4vw, 3.5rem);
+      font-weight: 300; color: var(--white); line-height: 1.2; margin-bottom: 56px;
+    }
+    .cta-headline em { font-style: italic; color: var(--green-bright); }
+    .btn-begin {
+      display: inline-flex; align-items: center; gap: 14px;
+      font-family: var(--sans); font-size: 0.75rem;
+      font-weight: 400; letter-spacing: 0.16em;
+      text-transform: uppercase; text-decoration: none;
+      color: var(--text); background: transparent;
+      border: 1px solid rgba(107,140,107,0.4);
+      padding: 18px 40px; transition: all .4s; cursor: none;
+    }
+    .btn-begin:hover { background: var(--green-bright); color: var(--black); border-color: var(--green-bright); }
+    .btn-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green-bright); }
+
+    footer {
+      padding: 44px 60px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo { font-family: var(--serif); font-size: 0.95rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .footer-logo span { color: var(--gold-dim); }
+    .footer-copy { font-size: 0.72rem; color: var(--dim); }
+    .footer-links { display: flex; gap: 28px; list-style: none; }
+    .footer-links a { font-size: 0.7rem; letter-spacing: 0.12em; color: var(--dim); text-decoration: none; transition: color .3s; }
+    .footer-links a:hover { color: var(--muted); }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      #office-entrance { padding: 120px 24px 80px; }
+      .office-scroll-hint { left: 24px; }
+      .section-inner { padding: 0 24px; }
+      #who, #beliefs, #case-notes, #recent-notes { padding: 80px 0; }
+      .who-grid, .beliefs-grid { grid-template-columns: 1fr; gap: 48px; }
+      .notes-grid { grid-template-columns: 1fr; }
+      .journal-entry { grid-template-columns: 1fr; gap: 20px; }
+      #ashley-cta { padding: 100px 0; }
+      footer { flex-direction: column; gap: 16px; text-align: center; padding: 36px 24px; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="/edgekeeper.html" class="nav-logo">Edge<span>K</span>eeper</a>
+  <ul class="nav-links">
+    <li><a href="/edgekeeper.html#institution">Philosophy</a></li>
+    <li><a href="/edgekeeper.html#mentors">Mentors</a></li>
+    <li><a href="/mike">Mike</a></li>
+    <li><a href="/method">The Method</a></li>
+  </ul>
+  <a href="/onboarding.html?mentor=ashley" class="nav-cta">Begin with Ashley</a>
+</nav>
+
+<!-- OFFICE ENTRANCE -->
+<section id="office-entrance">
+  <div class="office-tag">Ashley's Office &nbsp;·&nbsp; Senior Mentor &nbsp;·&nbsp; EdgeKeeper</div>
+  <blockquote class="office-quote">
+    "The mistake usually isn't the trade.<br><br>
+    The mistake happened<br>
+    <em>long before the trade.</em>"
+  </blockquote>
+  <div class="office-attr">— Ashley</div>
+  <div class="office-scroll-hint">Read more ↓</div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- WHO ASHLEY WORKS BEST WITH -->
+<section id="who">
+  <div class="section-inner">
+    <div class="who-grid">
+      <div class="who-header">
+        <div class="section-label reveal">Her Work</div>
+        <h2 class="reveal reveal-delay-1">Who Ashley works best with</h2>
+      </div>
+      <ul class="who-list">
+        <li class="who-item reveal">
+          <div class="who-title">The burned-out trader</div>
+          <div class="who-desc">Traders who are exhausted not from the losses but from the mental weight of carrying every trade home. Ashley doesn't ask you to push harder. She asks you to understand what you're actually carrying.</div>
+        </li>
+        <li class="who-item reveal reveal-delay-1">
+          <div class="who-title">The emotional trader</div>
+          <div class="who-desc">You feel everything. The loss doesn't stay at the desk. Ashley doesn't try to make you feel less — she helps you understand what the emotion is telling you, and what to do with that information.</div>
+        </li>
+        <li class="who-item reveal reveal-delay-2">
+          <div class="who-title">The trader rebuilding confidence</div>
+          <div class="who-desc">After a significant drawdown, the problem is rarely strategy. It's the story you're now telling yourself about your ability. Ashley works in that space, carefully and without rushing.</div>
+        </li>
+        <li class="who-item reveal reveal-delay-3">
+          <div class="who-title">The trader recovering from a loss</div>
+          <div class="who-desc">Not just the financial loss — the identity loss. The moment you wonder if you ever knew what you were doing. Ashley has sat with that question a lot. She knows what it actually means.</div>
+        </li>
+        <li class="who-item reveal">
+          <div class="who-title">The inconsistent trader</div>
+          <div class="who-desc">You have good weeks and terrible weeks, and you don't know why. Ashley finds the emotional weather system underneath — because consistency is never really about the market.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- THINGS ASHLEY BELIEVES -->
+<section id="beliefs">
+  <div class="section-inner">
+    <div class="beliefs-grid">
+      <div>
+        <div class="section-label reveal">Her Beliefs</div>
+        <h2 class="reveal reveal-delay-1" style="font-family:var(--serif);font-size:clamp(2rem,3vw,2.8rem);font-weight:300;color:var(--white);line-height:1.2;margin-top:8px;">
+          What Ashley believes<br>about traders.
+        </h2>
+        <p class="reveal reveal-delay-2" style="font-size:0.82rem;color:var(--muted);line-height:1.85;margin-top:24px;max-width:240px;">
+          Observations made through thousands of hours of work, not a framework imposed before she listened.
+        </p>
+      </div>
+      <ul class="beliefs-list">
+        <li class="belief-item reveal">
+          <div class="belief-text">Awareness changes behavior.</div>
+          <div class="belief-note">Not always immediately. But you cannot change a pattern you cannot see. Ashley's first job is always to make the invisible visible.</div>
+        </li>
+        <li class="belief-item reveal reveal-delay-1">
+          <div class="belief-text">Shame slows growth.</div>
+          <div class="belief-note">Judgment creates defense. Defense creates blindness. She creates a space where you can say the honest thing without bracing for impact.</div>
+        </li>
+        <li class="belief-item reveal reveal-delay-2">
+          <div class="belief-text">Emotional recovery is part of trading.</div>
+          <div class="belief-note">Not a detour from it. A trader who recovers well from loss will outperform a trader who never loses. Ashley builds that recovery capacity deliberately.</div>
+        </li>
+        <li class="belief-item reveal reveal-delay-3">
+          <div class="belief-text">Patterns matter more than outcomes.</div>
+          <div class="belief-note">A good trade made for the wrong reasons is more dangerous than a bad trade made for the right ones. She watches the process, not the result.</div>
+        </li>
+        <li class="belief-item reveal">
+          <div class="belief-text">Self-awareness is a competitive advantage.</div>
+          <div class="belief-note">Most traders never develop it. The ones who do become a different category of trader. Ashley's work is to accelerate that development.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- HOW ASHLEY THINKS -->
+<section id="case-notes">
+  <div class="section-inner">
+    <div class="section-label reveal">Observations</div>
+    <h2 class="reveal reveal-delay-1" style="font-family:var(--serif);font-size:clamp(2rem,3vw,2.8rem);font-weight:300;color:var(--white);line-height:1.2;margin-top:8px;margin-bottom:20px;">
+      How Ashley thinks.
+    </h2>
+    <div class="notes-intro reveal reveal-delay-2">
+      <p>Ashley listens the way a good doctor does — for what is beneath what you're describing. These are the kinds of conclusions she draws from observation, not from theory.</p>
+    </div>
+  </div>
+  <div class="section-inner" style="margin-top:60px;">
+    <div class="notes-grid reveal">
+      <div class="case-note">
+        <div class="case-note-label">Observation · Judgment</div>
+        <div class="case-note-text">"Most people judge themselves too quickly."</div>
+      </div>
+      <div class="case-note">
+        <div class="case-note-label">Observation · Reaction</div>
+        <div class="case-note-text">"The emotional reaction often matters more than the loss."</div>
+      </div>
+      <div class="case-note">
+        <div class="case-note-label">Observation · Identity</div>
+        <div class="case-note-text">"Confidence and self-worth are frequently confused."</div>
+      </div>
+      <div class="case-note">
+        <div class="case-note-label">Observation · Pattern</div>
+        <div class="case-note-text">"The symptom is usually not where the problem lives."</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- RECENT NOTES FROM ASHLEY -->
+<section id="recent-notes">
+  <div class="section-inner">
+    <div class="notes-header">
+      <div class="section-label reveal">Private Notes</div>
+      <h2 class="reveal reveal-delay-1">Recent notes<br>from Ashley.</h2>
+      <p class="reveal reveal-delay-2">
+        Observations from real sessions. No names. The pattern is always what matters, not the person.
+      </p>
+    </div>
+    <div class="journal-entries">
+      <div class="journal-entry reveal">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Listening</span>
+          <span class="entry-context">Week 1 · First conversation</span>
+        </div>
+        <div class="entry-body">
+          She talked for twenty minutes before she mentioned the trade.
+          <br><br>
+          <em>I let her.</em> The trade was not the point. The twenty minutes was the point.
+        </div>
+      </div>
+      <div class="journal-entry reveal reveal-delay-1">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Truth</span>
+          <span class="entry-context">Month 1 · Pattern emerging</span>
+        </div>
+        <div class="entry-body">
+          He said he was fine. I didn't push back. I just asked what he was doing before our session started.
+          <br><br>
+          He got quiet. Then he said: "Okay. I'm not fine." <em>That was the session.</em>
+        </div>
+      </div>
+      <div class="journal-entry reveal reveal-delay-2">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Shift</span>
+          <span class="entry-context">Month 3 · Something changed</span>
+        </div>
+        <div class="entry-body">
+          Six weeks in and today she laughed about something she used to cry about.
+          <br><br>
+          I wrote it down. Those are the moments I come to this work for.
+        </div>
+      </div>
+      <div class="journal-entry reveal reveal-delay-3">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Trust</span>
+          <span class="entry-context">Month 4 · Independent development</span>
+        </div>
+        <div class="entry-body">
+          He's been keeping a separate journal he doesn't show me. I think that's healthy.
+          <br><br>
+          <em>I think he's starting to trust himself.</em>
+        </div>
+      </div>
+      <div class="journal-entry reveal">
+        <div class="entry-meta">
+          <span class="entry-label">Session Note · Anger</span>
+          <span class="entry-context">Month 2 · Deeper layer</span>
+        </div>
+        <div class="entry-body">
+          He spent thirty minutes explaining the trade that didn't work.
+          <br><br>
+          The trade wasn't the problem. The pressure he'd been carrying outside the market was the problem. The trade just became the place it arrived.
+          <br><br>
+          <em>We stopped talking about the trade.</em>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="ashley-cta">
+  <div class="section-inner">
+    <div class="cta-eyebrow reveal">Private Mentorship</div>
+    <h2 class="cta-headline reveal reveal-delay-1">
+      Ready to work<br>with <em>Ashley?</em>
+    </h2>
+    <a href="/onboarding.html?mentor=ashley" class="btn-begin reveal reveal-delay-2">
+      <span class="btn-dot"></span>
+      Begin with Ashley
+    </a>
+    <p class="reveal reveal-delay-3" style="margin-top:48px;font-size:0.75rem;color:var(--muted);">
+      Or <a href="/mike" style="color:var(--gold-dim);text-decoration:none;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">meet Mike →</a>
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Edge<span>K</span>eeper</div>
+  <p class="footer-copy">© 2025 EdgeKeeper. A Private Mentorship Institution.</p>
+  <ul class="footer-links">
+    <li><a href="/edgekeeper.html">Home</a></li>
+    <li><a href="/method">The Method</a></li>
+    <li><a href="/privacy.html">Privacy</a></li>
+  </ul>
+</footer>
+
+<script>
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function tick() {
+  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(tick);
+})();
+const nav = document.getElementById('main-nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+});
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The EdgeKeeper Method — A Doctrine for Behavioral Discipline</title>
+  <meta name="description" content="The EdgeKeeper Method is a five-stage framework for building behavioral discipline in traders. Not a strategy. A doctrine." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:    #050505;
+      --obsidian: #0a0a0a;
+      --stone:    #111111;
+      --surface:  #161616;
+      --border:   #1e1e1e;
+      --dim:      #2a2a2a;
+      --muted:    #555555;
+      --faint:    #888888;
+      --text:     #d4d0c8;
+      --bright:   #e8e4dc;
+      --white:    #f5f2ec;
+      --gold:     #b8a06a;
+      --gold-dim: #7a6a45;
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'Inter', sans-serif;
+      --mono:     'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      background: var(--black); color: var(--text);
+      font-family: var(--sans); font-weight: 300;
+      line-height: 1.7; cursor: none; overflow-x: hidden;
+    }
+
+    #cursor {
+      position: fixed; width: 8px; height: 8px; background: var(--gold);
+      border-radius: 50%; pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%); mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed; width: 36px; height: 36px;
+      border: 1px solid rgba(184,160,106,0.4); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%,-50%); transition: left .1s ease, top .1s ease;
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; z-index: 100;
+      border-bottom: 1px solid transparent;
+      transition: background .4s, border-color .4s;
+    }
+    nav.scrolled { background: rgba(5,5,5,0.95); border-bottom-color: var(--border); }
+    .nav-logo {
+      font-family: var(--serif); font-size: 1.05rem; font-weight: 400;
+      letter-spacing: 0.22em; padding-left: 0.22em;
+      text-transform: uppercase; color: var(--white); text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
+    .nav-links a {
+      font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--faint); text-decoration: none; transition: color .3s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--text); background: transparent;
+      border: 1px solid rgba(184,160,106,0.35);
+      padding: 9px 20px; text-decoration: none; transition: all .4s;
+    }
+    .nav-cta:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
+
+    .reveal { opacity: 0; transform: translateY(24px); }
+    .reveal.in { opacity: 1; transform: translateY(0); transition: opacity .9s ease, transform .9s ease; }
+    .reveal-delay-1.in { transition-delay: .12s; }
+    .reveal-delay-2.in { transition-delay: .24s; }
+    .reveal-delay-3.in { transition-delay: .36s; }
+
+    section { position: relative; }
+    .section-inner { max-width: 1000px; margin: 0 auto; padding: 0 60px; }
+    .section-label {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold-dim); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .section-label::before { content: ''; width: 32px; height: 1px; background: var(--gold-dim); flex-shrink: 0; }
+    .section-divider { width: 100%; height: 1px; background: var(--border); }
+
+    /* ── HEADER ───────────────────────────────────────────────────── */
+    #method-header {
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 140px 60px 100px;
+      max-width: 1000px; margin: 0 auto;
+    }
+    .header-tag {
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold-dim); margin-bottom: 48px;
+      opacity: 0; animation: fadeUp .8s ease .2s forwards;
+    }
+    .header-title {
+      font-family: var(--serif); font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 300; line-height: 1.05; color: var(--white);
+      margin-bottom: 40px;
+      opacity: 0; animation: fadeUp 1s ease .4s forwards;
+    }
+    .header-title em { font-style: italic; color: var(--gold); }
+    .header-body {
+      font-size: 0.9rem; color: var(--muted); line-height: 1.9;
+      max-width: 560px;
+      opacity: 0; animation: fadeUp .9s ease .7s forwards;
+    }
+    .header-scroll {
+      position: absolute; bottom: 44px;
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim);
+      opacity: 0; animation: fadeUp .8s ease 1.1s forwards;
+    }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* ── PREAMBLE ─────────────────────────────────────────────────── */
+    #preamble { padding: 120px 0; background: var(--obsidian); }
+    .preamble-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+    .preamble-quote {
+      font-family: var(--serif); font-size: 1.5rem; font-weight: 300;
+      font-style: italic; line-height: 1.6; color: var(--text);
+      padding-left: 24px; border-left: 1px solid var(--gold-dim);
+    }
+    .preamble-body { font-size: 0.85rem; color: var(--muted); line-height: 1.9; }
+    .preamble-body p + p { margin-top: 20px; }
+
+    /* ── THE FIVE STEPS ───────────────────────────────────────────── */
+    #steps { padding: 0; }
+    .step-block {
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 200px 1fr 1fr;
+      gap: 0;
+    }
+    .step-block:last-child { border-bottom: 1px solid var(--border); }
+    .step-num-col {
+      padding: 80px 60px 80px 0;
+      border-right: 1px solid var(--border);
+    }
+    .step-number {
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold-dim); display: block; margin-bottom: 16px;
+    }
+    .step-name {
+      font-family: var(--serif); font-size: 2.2rem;
+      font-weight: 300; color: var(--white); line-height: 1.1;
+    }
+    .step-body-col {
+      padding: 80px 60px;
+      border-right: 1px solid var(--border);
+    }
+    .step-desc {
+      font-size: 0.85rem; color: var(--muted); line-height: 1.9;
+    }
+    .step-desc p + p { margin-top: 16px; }
+    .step-note-col {
+      padding: 80px 60px;
+      background: var(--obsidian);
+    }
+    .step-note-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold-dim); display: block; margin-bottom: 16px;
+    }
+    .step-note-text {
+      font-family: var(--serif); font-style: italic;
+      font-size: 1.05rem; font-weight: 300;
+      line-height: 1.7; color: var(--text);
+    }
+
+    /* ── RESEARCH NOTE ────────────────────────────────────────────── */
+    #research { padding: 120px 0; background: var(--obsidian); }
+    .research-header { margin-bottom: 80px; }
+    .research-tag {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold-dim); display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .research-tag::before { content: ''; width: 20px; height: 1px; background: var(--gold-dim); flex-shrink: 0; }
+    .research-title {
+      font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 300; color: var(--white); line-height: 1.2; margin-top: 8px;
+    }
+    .research-intro { font-size: 0.82rem; color: var(--muted); line-height: 1.85; max-width: 500px; margin-top: 20px; }
+    .research-notes {
+      display: flex; flex-direction: column; gap: 2px;
+      background: var(--border);
+    }
+    .research-note {
+      background: var(--black);
+      padding: 40px 44px;
+      display: grid; grid-template-columns: 180px 1fr; gap: 48px;
+    }
+    .research-note:nth-child(even) { background: var(--obsidian); }
+    .rn-meta { padding-top: 2px; }
+    .rn-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold-dim); display: block; margin-bottom: 8px;
+    }
+    .rn-source { font-size: 0.72rem; color: var(--dim); line-height: 1.5; }
+    .rn-text { font-size: 0.88rem; color: var(--muted); line-height: 1.85; }
+    .rn-text em { font-style: italic; color: var(--text); }
+
+    /* ── INSTITUTIONAL DETAILS ────────────────────────────────────── */
+    #institution-detail { padding: 120px 0; }
+    .inst-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--border); }
+    .inst-cell { background: var(--black); padding: 44px; }
+    .inst-cell:nth-child(even) { background: var(--obsidian); }
+    .inst-cell-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold-dim); display: block; margin-bottom: 20px;
+    }
+    .inst-cell-title {
+      font-family: var(--serif); font-size: 1.3rem;
+      font-weight: 300; color: var(--white); margin-bottom: 12px; line-height: 1.2;
+    }
+    .inst-cell-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.8; }
+
+    /* ── CTA ─────────────────────────────────────────────────────── */
+    #method-cta {
+      padding: 160px 0; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    .cta-title {
+      font-family: var(--serif); font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 300; color: var(--white); line-height: 1.2; margin-bottom: 16px;
+    }
+    .cta-title em { font-style: italic; color: var(--gold); }
+    .cta-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 56px; }
+    .cta-row { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .btn-cta {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: var(--sans); font-size: 0.75rem;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      text-decoration: none; color: var(--text);
+      border: 1px solid rgba(184,160,106,0.4);
+      padding: 16px 36px; transition: all .4s; cursor: none;
+    }
+    .btn-cta:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
+    .btn-cta-ghost {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: var(--sans); font-size: 0.75rem;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      text-decoration: none; color: var(--muted);
+      padding: 16px 36px; transition: color .3s; cursor: none;
+    }
+    .btn-cta-ghost:hover { color: var(--text); }
+    .btn-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
+
+    footer {
+      padding: 44px 60px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo { font-family: var(--serif); font-size: 0.95rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .footer-logo span { color: var(--gold-dim); }
+    .footer-copy { font-size: 0.72rem; color: var(--dim); }
+    .footer-links { display: flex; gap: 28px; list-style: none; }
+    .footer-links a { font-size: 0.7rem; letter-spacing: 0.12em; color: var(--dim); text-decoration: none; transition: color .3s; }
+    .footer-links a:hover { color: var(--muted); }
+
+    @media (max-width: 900px) {
+      .step-block { grid-template-columns: 1fr; }
+      .step-num-col { padding: 60px 24px 24px; border-right: none; border-bottom: 1px solid var(--border); }
+      .step-body-col { padding: 32px 24px; border-right: none; border-bottom: 1px solid var(--border); }
+      .step-note-col { padding: 32px 24px; }
+      .research-note { grid-template-columns: 1fr; gap: 16px; }
+      .inst-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      #method-header { padding: 120px 24px 80px; }
+      .section-inner { padding: 0 24px; }
+      #preamble { padding: 80px 0; }
+      .preamble-grid { grid-template-columns: 1fr; gap: 40px; }
+      #research { padding: 80px 0; }
+      #institution-detail { padding: 80px 0; }
+      #method-cta { padding: 100px 0; }
+      footer { flex-direction: column; gap: 16px; text-align: center; padding: 36px 24px; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="/edgekeeper.html" class="nav-logo">Edge<span>K</span>eeper</a>
+  <ul class="nav-links">
+    <li><a href="/edgekeeper.html#institution">Philosophy</a></li>
+    <li><a href="/mike">Mike</a></li>
+    <li><a href="/ashley">Ashley</a></li>
+    <li><a href="/edgekeeper.html#pricing">Membership</a></li>
+  </ul>
+  <a href="/onboarding.html" class="nav-cta">Begin</a>
+</nav>
+
+<!-- HEADER -->
+<section>
+  <div id="method-header">
+    <div class="header-tag">EdgeKeeper · Internal Doctrine · Est. 2024</div>
+    <h1 class="header-title">
+      The<br>EdgeKeeper<br><em>Method.</em>
+    </h1>
+    <p class="header-body">
+      This is not a trading strategy. It is not a set of rules. It is a framework for understanding why traders fail and what can be done about it. Five stages. Each one builds on the last. Each one is harder than it sounds.
+    </p>
+    <div class="header-scroll">Read the doctrine ↓</div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- PREAMBLE -->
+<section id="preamble">
+  <div class="section-inner">
+    <div class="section-label reveal">Before the Method</div>
+    <div class="preamble-grid" style="margin-top:40px;">
+      <blockquote class="preamble-quote reveal">
+        "The framework exists because most trading psychology tools treat the symptom. EdgeKeeper works on the cause."
+      </blockquote>
+      <div class="preamble-body reveal reveal-delay-1">
+        <p>Most traders approach behavioral problems the way you'd approach a broken car — look for the part that broke and replace it. Revenge traded? Control impulses. Overleveraged? Reduce position size. Rule-broke? Add a rule.</p>
+        <p>This works occasionally. It does not work reliably, because it treats the surface. The EdgeKeeper Method begins below the surface: with the question of <em>why</em> the behavior happened in the first place.</p>
+        <p>The answer is almost always found in the space between who you believe you are and who you actually become under pressure. That gap is where the work happens.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- THE FIVE STEPS -->
+<section id="steps">
+  <div class="section-inner" style="padding-top:100px;padding-bottom:0;">
+    <div class="section-label reveal">The Method</div>
+    <h2 class="reveal reveal-delay-1" style="font-family:var(--serif);font-size:clamp(2rem,3.5vw,3rem);font-weight:300;color:var(--white);line-height:1.15;margin-top:8px;margin-bottom:80px;">
+      Five stages.<br><em>One direction.</em>
+    </h2>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="step-block reveal">
+    <div class="step-num-col">
+      <span class="step-number">Stage 01</span>
+      <div class="step-name">Awareness</div>
+    </div>
+    <div class="step-body-col">
+      <div class="step-desc">
+        <p>The first thing a mentor does is not advise. It is observe. Not because they need time to think — because most traders come to a session with an incomplete picture of what is actually happening.</p>
+        <p>Awareness is not self-criticism. It is accuracy. The ability to see, without judgment, what is actually occurring in your trading behavior. What you do when losing. What you do when winning. What you avoid saying. What you say too often.</p>
+        <p>This stage is slower than it seems. Real awareness — the kind that changes behavior — usually takes three to five weeks to stabilize.</p>
+      </div>
+    </div>
+    <div class="step-note-col">
+      <span class="step-note-label">Mentor Observation</span>
+      <div class="step-note-text">"Most traders arrive thinking they already know what the problem is. The problem they describe is rarely the problem that matters."</div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step-block reveal">
+    <div class="step-num-col">
+      <span class="step-number">Stage 02</span>
+      <div class="step-name">Accountability</div>
+    </div>
+    <div class="step-body-col">
+      <div class="step-desc">
+        <p>Accountability at EdgeKeeper is not confession. It is not apology. It is the practice of holding accurate records of your own behavior without the distortion of shame or pride.</p>
+        <p>A trader who accepts accountability without self-destruction is rare. Most either dismiss what happened ("the market was unfair") or collapse into it ("I'm not cut out for this"). Neither response is useful.</p>
+        <p>The EdgeKeeper standard is: state what happened, understand why it happened, decide what changes. Three steps. Without drama in either direction.</p>
+      </div>
+    </div>
+    <div class="step-note-col">
+      <span class="step-note-label">Mentor Observation</span>
+      <div class="step-note-text">"The traders who improve fastest are not the ones who feel worst after a mistake. They are the ones who look at the mistake the longest."</div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step-block reveal">
+    <div class="step-num-col">
+      <span class="step-number">Stage 03</span>
+      <div class="step-name">Protection</div>
+    </div>
+    <div class="step-body-col">
+      <div class="step-desc">
+        <p>The most important decisions in trading are not made during calm periods. They are made at the edges: after a significant loss, after a significant win, on days when the trader is tired or emotionally depleted.</p>
+        <p>Protection means building structures — agreements, rules, systems, mentors — that function during these moments, when the trader's judgment is most likely to fail.</p>
+        <p>The Guardian Layer is the technical expression of this principle. But protection begins with the mentorship itself: having another set of eyes on a period when your own vision narrows.</p>
+      </div>
+    </div>
+    <div class="step-note-col">
+      <span class="step-note-label">Mentor Observation</span>
+      <div class="step-note-text">"The rules a trader sets when calm are the only ones worth trusting. Protection means building a system that your future, pressured self cannot easily override."</div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="step-block reveal">
+    <div class="step-num-col">
+      <span class="step-number">Stage 04</span>
+      <div class="step-name">Reflection</div>
+    </div>
+    <div class="step-body-col">
+      <div class="step-desc">
+        <p>Most traders review outcomes. EdgeKeeper reviews behavior. There is a significant difference.</p>
+        <p>Reflection at EdgeKeeper asks: what did you do, why did you do it, and what does the pattern across many sessions tell you? It does not ask whether you profited. Profitable behavior repeated accidentally is dangerous. Consistent behavior that produced a loss is often progress.</p>
+        <p>The Decision Passport is the institutional record of this reflection. It grows over time and becomes the most honest document a trader has about who they actually are in the market.</p>
+      </div>
+    </div>
+    <div class="step-note-col">
+      <span class="step-note-label">Mentor Observation</span>
+      <div class="step-note-text">"A good week from a trader still trading badly is a problem dressed as success. The review doesn't end with the profit."</div>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="step-block reveal">
+    <div class="step-num-col">
+      <span class="step-number">Stage 05</span>
+      <div class="step-name">Growth</div>
+    </div>
+    <div class="step-body-col">
+      <div class="step-desc">
+        <p>Growth in the EdgeKeeper model is not inspiration. It is not momentum. It is compounding repetition — the gradual stabilization of better behavior until better behavior becomes identity.</p>
+        <p>The goal is not to feel like a disciplined trader on your best days. The goal is to behave like a disciplined trader on your worst days. That is what growth looks like here.</p>
+        <p>This stage arrives differently for every trader. Some reach it in months. Some take longer. The indicator is not a metric but a shift in how you relate to your own patterns — from judgment to observation, from reaction to response.</p>
+      </div>
+    </div>
+    <div class="step-note-col">
+      <span class="step-note-label">Mentor Observation</span>
+      <div class="step-note-text">"The highest compliment I can receive is: I don't need you as much anymore. That's when I know the method worked."</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- RESEARCH DIVISION -->
+<section id="research">
+  <div class="section-inner">
+    <div class="research-header reveal">
+      <div class="research-tag">EdgeKeeper Research Division</div>
+      <h2 class="research-title">What the data<br>tells us.</h2>
+      <p class="research-intro">
+        Patterns observed across thousands of mentorship sessions. Not scientific studies. Behavioral observations with enough frequency to warrant attention.
+      </p>
+    </div>
+    <div class="research-notes">
+      <div class="research-note reveal">
+        <div class="rn-meta">
+          <span class="rn-label">Research Note · 001</span>
+          <span class="rn-source">Observed across recovery periods</span>
+        </div>
+        <div class="rn-text">
+          Traders who return to sessions within 48 hours of a significant loss and discuss it openly tend to show stronger long-term consistency than those who avoid the conversation. <em>The willingness to face the loss is itself a behavioral signal.</em>
+        </div>
+      </div>
+      <div class="research-note reveal reveal-delay-1">
+        <div class="rn-meta">
+          <span class="rn-label">Research Note · 002</span>
+          <span class="rn-source">Observed across rule-break patterns</span>
+        </div>
+        <div class="rn-text">
+          The most common precursor to a rule break is not a bad market — it is a good one. <em>Overconfidence following a winning period is the highest-risk state we observe.</em> This is rarely what traders expect.
+        </div>
+      </div>
+      <div class="research-note reveal reveal-delay-2">
+        <div class="rn-meta">
+          <span class="rn-label">Research Note · 003</span>
+          <span class="rn-source">Observed across onboarding cohorts</span>
+        </div>
+        <div class="rn-text">
+          Traders who articulate a clear behavioral pattern within the first three sessions progress measurably faster than those who cannot. Self-awareness is not just useful — <em>it is the rate-limiting variable.</em>
+        </div>
+      </div>
+      <div class="research-note reveal reveal-delay-3">
+        <div class="rn-meta">
+          <span class="rn-label">Research Note · 004</span>
+          <span class="rn-source">Observed across long-term members</span>
+        </div>
+        <div class="rn-text">
+          Members who reach 90 days of consistent engagement rarely leave. Not because of contract obligation — because the mentorship relationship itself has become load-bearing in their trading practice. <em>The relationship becomes the infrastructure.</em>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- INSTITUTIONAL DETAILS -->
+<section id="institution-detail">
+  <div class="section-inner">
+    <div class="section-label reveal">The Institution</div>
+    <h2 class="reveal reveal-delay-1" style="font-family:var(--serif);font-size:clamp(2rem,3vw,2.8rem);font-weight:300;color:var(--white);line-height:1.2;margin-top:8px;margin-bottom:60px;">
+      What happens<br><em>inside EdgeKeeper.</em>
+    </h2>
+    <div class="inst-grid reveal reveal-delay-2">
+      <div class="inst-cell">
+        <span class="inst-cell-label">Behavioral Assessments</span>
+        <div class="inst-cell-title">Private Intake</div>
+        <div class="inst-cell-desc">Every member begins with a private intake session. No forms. One question from the mentor. The profile builds from your answers.</div>
+      </div>
+      <div class="inst-cell">
+        <span class="inst-cell-label">Mentor Offices</span>
+        <div class="inst-cell-title">Mike's Office · Ashley's Office</div>
+        <div class="inst-cell-desc">Each mentor maintains their own workspace. Their notes. Their observations. Their memory of your relationship, growing across every session.</div>
+      </div>
+      <div class="inst-cell">
+        <span class="inst-cell-label">Case Studies</span>
+        <div class="inst-cell-title">Pattern Analysis</div>
+        <div class="inst-cell-desc">Mentors keep notes across sessions. Patterns are flagged, referenced, and revisited. No observation is isolated.</div>
+      </div>
+      <div class="inst-cell">
+        <span class="inst-cell-label">Performance Reviews</span>
+        <div class="inst-cell-title">7 · 30 · 90 · 180 Days</div>
+        <div class="inst-cell-desc">At structured intervals, your mentor produces a behavioral review. Not a profit report — a character record. Strengths, patterns, concerns, growth.</div>
+      </div>
+      <div class="inst-cell">
+        <span class="inst-cell-label">Guardian Layer</span>
+        <div class="inst-cell-title">Account Protection</div>
+        <div class="inst-cell-desc">Connected to your trading account, the Guardian Layer monitors behavior in real time. Intervention before damage, not after.</div>
+      </div>
+      <div class="inst-cell">
+        <span class="inst-cell-label">Private Intake Rooms</span>
+        <div class="inst-cell-title">Secure Conversations</div>
+        <div class="inst-cell-desc">Every conversation is private. Your mentor remembers. No one else is in the room. That is the foundation on which the relationship is built.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="method-cta">
+  <div class="section-inner">
+    <h2 class="cta-title reveal">
+      The method only works<br><em>in practice.</em>
+    </h2>
+    <p class="cta-sub reveal reveal-delay-1">You now understand the framework. The next step is meeting the mentor.</p>
+    <div class="cta-row reveal reveal-delay-2">
+      <a href="/onboarding.html?mentor=mike" class="btn-cta">
+        <span class="btn-dot"></span>
+        Begin with Mike
+      </a>
+      <a href="/onboarding.html?mentor=ashley" class="btn-cta" style="border-color:rgba(107,140,107,0.4);">
+        <span class="btn-dot" style="background:var(--green-bright);"></span>
+        Begin with Ashley
+      </a>
+    </div>
+    <p class="reveal reveal-delay-3" style="margin-top:48px;font-size:0.75rem;color:var(--muted);">
+      Or read about <a href="/mike" style="color:var(--gold-dim);text-decoration:none;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">Mike →</a>
+      &nbsp;·&nbsp;
+      <a href="/ashley" style="color:var(--gold-dim);text-decoration:none;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">Ashley →</a>
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Edge<span>K</span>eeper</div>
+  <p class="footer-copy">© 2025 EdgeKeeper. A Private Mentorship Institution.</p>
+  <ul class="footer-links">
+    <li><a href="/edgekeeper.html">Home</a></li>
+    <li><a href="/mike">Mike</a></li>
+    <li><a href="/ashley">Ashley</a></li>
+    <li><a href="/privacy.html">Privacy</a></li>
+  </ul>
+</footer>
+
+<script>
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function tick() {
+  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(tick);
+})();
+const nav = document.getElementById('main-nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+});
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
