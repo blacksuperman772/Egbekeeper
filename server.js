@@ -345,8 +345,9 @@ app.post('/api/onboarding/register', apiLimiter, async (req, res) => {
 
   res.json({ success: true, user_id: userData.user.id, plan: safePlan });
 });
-app.get('/workspace.html',  requireAuthPage, serveInjectedHtml(path.join(__dirname, 'workspace.html')));
-app.get('/settings.html',   requireAuthPage, serveInjectedHtml(path.join(__dirname, 'settings.html')));
+app.get('/workspace.html',   requireAuthPage, serveInjectedHtml(path.join(__dirname, 'workspace.html')));
+app.get('/settings.html',    requireAuthPage, serveInjectedHtml(path.join(__dirname, 'settings.html')));
+app.get('/assessment.html',  requireAuthPage, serveInjectedHtml(path.join(__dirname, 'assessment.html')));
 
 // ── Admin dashboard (admin only) ──────────────────────────────────────────────
 app.get('/admin.html', requireAuthPage, (req, res, next) => {
@@ -563,7 +564,7 @@ app.post('/api/notebook/:mentor', requireAuthApi, apiLimiter, async (req, res) =
 app.get('/api/profile', requireAuthApi, apiLimiter, async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('user_profiles')
-    .select('mentor, private_notes, north_star, living_identity, guardian_level, subscription_status')
+    .select('mentor, private_notes, north_star, living_identity, guardian_level, subscription_status, trader_stage, current_identity, target_identity, readiness_score, assessment_complete')
     .eq('id', req.user.id)
     .maybeSingle();
 
@@ -572,14 +573,19 @@ app.get('/api/profile', requireAuthApi, apiLimiter, async (req, res) => {
 
   res.json({
     profile: {
-      id:               req.user.id,
-      member_since:     req.user.created_at   || null,
-      mentor:           data.mentor           || null,
-      private_notes:    data.private_notes    || null,
-      north_star:       data.north_star       || null,
-      living_identity:  data.living_identity  || null,
-      guardian_level:   data.guardian_level   || 'warn',
-      plan:             data.subscription_status || 'free',
+      id:                  req.user.id,
+      member_since:        req.user.created_at        || null,
+      mentor:              data.mentor                || null,
+      private_notes:       data.private_notes         || null,
+      north_star:          data.north_star            || null,
+      living_identity:     data.living_identity       || null,
+      guardian_level:      data.guardian_level        || 'warn',
+      plan:                data.subscription_status   || 'free',
+      trader_stage:        data.trader_stage          || 'explorer',
+      current_identity:    data.current_identity      || null,
+      target_identity:     data.target_identity       || null,
+      readiness_score:     data.readiness_score       ?? 0,
+      assessment_complete: data.assessment_complete   || false,
     },
   });
 });
@@ -1461,6 +1467,206 @@ app.delete('/api/rules/:id', requireAuthApi, apiLimiter, async (req, res) => {
     .eq('user_id', req.user.id);
   if (error) return res.status(500).json({ error: 'Database error' });
   res.json({ ok: true });
+});
+
+// ── Trader Identity & Readiness ───────────────────────────────────────────────
+
+// PATCH /api/identity — update trader stage, current/target identity
+app.patch('/api/identity', requireAuthApi, apiLimiter, async (req, res) => {
+  const { trader_stage, current_identity, target_identity } = req.body || {};
+
+  const validStages = ['explorer','student','developing','consistent','performance','mentor_candidate'];
+  const update = {};
+
+  if (trader_stage !== undefined) {
+    if (!validStages.includes(trader_stage)) {
+      return res.status(400).json({ error: 'Invalid trader_stage' });
+    }
+    update.trader_stage = trader_stage;
+  }
+  if (current_identity !== undefined) {
+    if (typeof current_identity !== 'string' || current_identity.length > 100) {
+      return res.status(400).json({ error: 'current_identity must be a string under 100 chars' });
+    }
+    update.current_identity = current_identity.trim();
+  }
+  if (target_identity !== undefined) {
+    if (typeof target_identity !== 'string' || target_identity.length > 100) {
+      return res.status(400).json({ error: 'target_identity must be a string under 100 chars' });
+    }
+    update.target_identity = target_identity.trim();
+  }
+
+  if (Object.keys(update).length === 0) {
+    return res.status(400).json({ error: 'Nothing to update' });
+  }
+
+  const { error } = await supabaseAdmin
+    .from('user_profiles')
+    .update(update)
+    .eq('id', req.user.id);
+
+  if (error) return res.status(500).json({ error: 'Database error' });
+  res.json({ ok: true, updated: update });
+});
+
+// PATCH /api/readiness — update readiness score (server-computed, not user-settable directly)
+// Called internally after assessment or after significant events; can also be called by admin
+app.patch('/api/readiness', requireAuthApi, adminLimiter, async (req, res) => {
+  const adminEmail = process.env.ADMIN_EMAIL || 'alexandermwhitmore@gmail.com';
+  if (req.user.email !== adminEmail) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  const { user_id, score } = req.body || {};
+  if (!user_id || typeof score !== 'number' || score < 0 || score > 100) {
+    return res.status(400).json({ error: 'user_id and score (0-100) required' });
+  }
+
+  const { error } = await supabaseAdmin
+    .from('user_profiles')
+    .update({ readiness_score: Math.round(score) })
+    .eq('id', user_id);
+
+  if (error) return res.status(500).json({ error: 'Database error' });
+  res.json({ ok: true });
+});
+
+// ── Milestones ────────────────────────────────────────────────────────────────
+
+// GET /api/milestones — return all achieved milestones for this user
+app.get('/api/milestones', requireAuthApi, apiLimiter, async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('milestones')
+    .select('id, type, label, description, mentor_note, achieved_at')
+    .eq('user_id', req.user.id)
+    .order('achieved_at', { ascending: true });
+
+  if (error) return res.status(500).json({ error: 'Database error' });
+  res.json({ milestones: data || [] });
+});
+
+// POST /api/milestone — record a new milestone achievement
+app.post('/api/milestone', requireAuthApi, apiLimiter, async (req, res) => {
+  const { type, label, description, mentor_note } = req.body || {};
+
+  if (!type || typeof type !== 'string' || type.length > 60) {
+    return res.status(400).json({ error: 'type is required (string, max 60 chars)' });
+  }
+  if (!label || typeof label !== 'string' || label.length > 120) {
+    return res.status(400).json({ error: 'label is required (string, max 120 chars)' });
+  }
+
+  // Prevent duplicate milestone types (each type can only be achieved once per user)
+  const { data: existing } = await supabaseAdmin
+    .from('milestones')
+    .select('id')
+    .eq('user_id', req.user.id)
+    .eq('type', type.trim())
+    .maybeSingle();
+
+  if (existing) {
+    return res.status(409).json({ error: 'Milestone already achieved', milestone_id: existing.id });
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('milestones')
+    .insert({
+      user_id:     req.user.id,
+      type:        type.trim(),
+      label:       label.trim().slice(0, 120),
+      description: description ? String(description).slice(0, 500) : null,
+      mentor_note: mentor_note ? String(mentor_note).slice(0, 500) : null,
+    })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: 'Database error' });
+  res.status(201).json({ milestone: data });
+});
+
+// ── Assessment ────────────────────────────────────────────────────────────────
+
+// GET /api/assessment — check whether assessment is complete
+app.get('/api/assessment', requireAuthApi, apiLimiter, async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('user_profiles')
+    .select('assessment_complete')
+    .eq('id', req.user.id)
+    .maybeSingle();
+
+  if (error) return res.status(500).json({ error: 'Database error' });
+  res.json({ complete: data?.assessment_complete || false });
+});
+
+// POST /api/assessment — save assessment results and mark assessment complete
+// Assessment answers are stored in the mentor notebook as an 'assessment' fact
+app.post('/api/assessment', requireAuthApi, apiLimiter, async (req, res) => {
+  const { answers, initial_identity, initial_stage, mentor } = req.body || {};
+
+  if (!answers || typeof answers !== 'object') {
+    return res.status(400).json({ error: 'answers object required' });
+  }
+
+  const safeMentor = ['mike', 'ashley'].includes(mentor) ? mentor : 'mike';
+  const safeStage  = ['explorer','student','developing','consistent','performance','mentor_candidate'].includes(initial_stage)
+    ? initial_stage : 'explorer';
+
+  // Validate answer sizes
+  const answersStr = JSON.stringify(answers);
+  if (answersStr.length > 20000) {
+    return res.status(400).json({ error: 'Assessment answers too large' });
+  }
+
+  // Update user_profiles: mark assessment complete, set initial stage and identity
+  const profileUpdate = { assessment_complete: true, trader_stage: safeStage };
+  if (initial_identity && typeof initial_identity === 'string' && initial_identity.length <= 100) {
+    profileUpdate.current_identity = initial_identity.trim();
+  }
+
+  await supabaseAdmin
+    .from('user_profiles')
+    .update(profileUpdate)
+    .eq('id', req.user.id);
+
+  // Upsert into the notebook: add assessment answers as structured facts
+  const { data: existingNb } = await supabaseAdmin
+    .from('notebooks')
+    .select('facts')
+    .eq('user_id', req.user.id)
+    .eq('mentor', safeMentor)
+    .maybeSingle();
+
+  const existingFacts = existingNb?.facts || [];
+  const assessmentFact = {
+    type: 'assessment',
+    completed_at: new Date().toISOString(),
+    ...answers,
+  };
+  const updatedFacts = [assessmentFact, ...existingFacts.filter(f => f.type !== 'assessment')];
+
+  await supabaseAdmin
+    .from('notebooks')
+    .upsert(
+      { user_id: req.user.id, mentor: safeMentor, facts: updatedFacts },
+      { onConflict: 'user_id,mentor' }
+    );
+
+  // Award the 'first_assessment' milestone
+  await supabaseAdmin
+    .from('milestones')
+    .upsert(
+      {
+        user_id: req.user.id,
+        type: 'first_assessment',
+        label: 'First Assessment Complete',
+        description: 'Completed the initial trader profile assessment.',
+        mentor_note: 'They showed up and answered honestly. That matters.',
+      },
+      { onConflict: 'user_id,type' }
+    );
+
+  res.json({ ok: true, stage: safeStage });
 });
 
 // ── Email helpers ─────────────────────────────────────────────────────────────

@@ -1803,6 +1803,9 @@
       <div class="sidebar-mentor-info">
         <div class="sidebar-mentor-name" id="sb-name">Mike</div>
         <div class="sidebar-mentor-role" id="sb-mentor-role">Senior Mentor · EdgeKeeper</div>
+        <div class="sb-trader-stage" id="sb-trader-stage" style="display:none;font-family:var(--mono);font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-dim);margin-top:6px;opacity:0.8;"></div>
+        <div class="sb-readiness" id="sb-readiness" style="display:none;font-family:var(--mono);font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-top:3px;"></div>
+        <div class="sb-identity" id="sb-identity" style="display:none;font-family:var(--mono);font-size:0.55rem;letter-spacing:0.05em;color:rgba(255,255,255,0.18);margin-top:8px;line-height:1.5;max-width:160px;"></div>
       </div>
     </div>
 
@@ -2172,6 +2175,8 @@ async function sendChat() {
   detectVersion(text);
   trackLanguage(text);
   waitingReply = true;
+  // Clear new milestones after first message so mentor only acknowledges once per session
+  EK.setStr('ek_new_milestones', '[]');
 
   if (panel === 'breakroom') {
     await getAIResponse('The user wants to enter the break room. Respond briefly, then the break room will activate.', true);
@@ -3392,7 +3397,81 @@ async function hydrateProfileFromServer() {
       const roleEl = document.getElementById('sb-mentor-role');
       if (roleEl) roleEl.textContent = `Senior Mentor · Day ${dayN}`;
     }
+
+    // Trader stage display
+    if (profile.trader_stage) {
+      const stageEl = document.getElementById('sb-trader-stage');
+      if (stageEl) {
+        const stageLabels = {
+          explorer: 'Explorer',
+          student: 'Student',
+          developing: 'Developing Trader',
+          consistent: 'Consistent Trader',
+          performance: 'Performance Trader',
+          mentor_candidate: 'Mentor Candidate'
+        };
+        stageEl.textContent = stageLabels[profile.trader_stage] || profile.trader_stage;
+        stageEl.style.display = 'block';
+        EK.setStr('ek_trader_stage', profile.trader_stage);
+      }
+    }
+
+    // Readiness state display (words not numbers)
+    const readinessScore = profile.readiness_score ?? 0;
+    EK.set('ek_readiness_score', readinessScore);
+    const readinessEl = document.getElementById('sb-readiness');
+    if (readinessEl && readinessScore > 0) {
+      const readinessLabel =
+        readinessScore <= 20 ? 'Developing Foundation' :
+        readinessScore <= 40 ? 'Building Awareness' :
+        readinessScore <= 60 ? 'Gaining Consistency' :
+        readinessScore <= 80 ? 'Approaching Ready' : 'Field Ready';
+      readinessEl.textContent = readinessLabel;
+      readinessEl.style.display = 'block';
+      EK.setStr('ek_readiness_label', readinessLabel);
+    }
+
+    // Identity transformation display
+    if (profile.current_identity) {
+      EK.setStr('ek_current_identity', profile.current_identity);
+      if (profile.target_identity) EK.setStr('ek_target_identity', profile.target_identity);
+      const identEl = document.getElementById('sb-identity');
+      if (identEl) {
+        const arrow = profile.target_identity
+          ? `${profile.current_identity} → ${profile.target_identity}`
+          : profile.current_identity;
+        identEl.textContent = arrow;
+        identEl.style.display = 'block';
+      }
+    }
+
+    // Fire milestone check (non-blocking)
+    checkNewMilestones();
   } catch (_) { /* non-fatal — local state still works */ }
+}
+
+async function checkNewMilestones() {
+  try {
+    const r = await fetch('/api/milestones');
+    if (!r.ok) return;
+    const { milestones } = await r.json();
+    if (!Array.isArray(milestones) || milestones.length === 0) return;
+
+    // Compare to cached list
+    const cached = JSON.parse(EK.str('ek_milestones_cache') || '[]');
+    const cachedIds = new Set(cached.map(m => m.id));
+    const newMilestones = milestones.filter(m => !cachedIds.has(m.id));
+
+    if (newMilestones.length > 0) {
+      // Cache the full updated list
+      EK.setStr('ek_milestones_cache', JSON.stringify(milestones));
+      // Store new milestones for next prompt context
+      EK.setStr('ek_new_milestones', JSON.stringify(newMilestones));
+    } else if (cached.length === 0) {
+      // First time — just cache, no "new" milestones
+      EK.setStr('ek_milestones_cache', JSON.stringify(milestones));
+    }
+  } catch (_) {}
 }
 
 function applyPlanGating() {
@@ -3945,6 +4024,23 @@ function buildSystemPrompt() {
     lastBreakthrough && visits > 4 && `A real moment you remember: "${typeof lastBreakthrough === 'object' ? lastBreakthrough.text : lastBreakthrough}" — it is load-bearing context for who they are now.`,
   ].filter(Boolean).join('\n');
 
+  const traderStage = EK.str('ek_trader_stage') || 'explorer';
+  const currentIdentity = EK.str('ek_current_identity') || null;
+  const targetIdentity  = EK.str('ek_target_identity')  || null;
+  const readinessLabel  = EK.str('ek_readiness_label')  || null;
+
+  const identityContext = [
+    `Trader stage: ${traderStage}`,
+    currentIdentity && `Current self-concept: "${currentIdentity}"`,
+    targetIdentity  && `Where they are becoming: "${targetIdentity}"`,
+    readinessLabel  && `Development state: ${readinessLabel}`,
+  ].filter(Boolean).join('\n');
+
+  const newMilestones = JSON.parse(EK.str('ek_new_milestones') || '[]');
+  const milestoneContext = newMilestones.length > 0
+    ? `\nRecent milestone: "${newMilestones[0].label}" — acknowledge it only if the conversation naturally goes there. Do not force it.`
+    : '';
+
   const memCtx = [
     privateNotes && `Your private notes on this person (never expose; let them shape how you read the conversation):\n${privateNotes}`,
     northStar    && `Their stated north star: "${northStar}"`,
@@ -3994,6 +4090,9 @@ Relationship: ${relationshipAge}
 It is ${timeContext}.
 
 ${betweenSessions ? `Between sessions, you have been sitting with:\n${betweenSessions}` : ''}
+${identityContext ? `\nTrader profile:\n${identityContext}` : ''}
+Use the trader profile above to inform your perception — not to label them or describe your observations out loud.
+${milestoneContext}
 
 Colleague: ${colleague} is the other mentor here. Reference them naturally when it fits: "Ashley might push you harder on the emotional side of that" or "Mike would want to know if the plan existed before you got in."
 
@@ -4045,6 +4144,9 @@ Relationship: ${relationshipAge}
 It is ${timeContext}.
 
 ${betweenSessions ? `Between sessions, you have been sitting with:\n${betweenSessions}` : ''}
+${identityContext ? `\nTrader profile:\n${identityContext}` : ''}
+Use the trader profile above to inform your perception — not to label them or describe your observations out loud.
+${milestoneContext}
 
 Colleague: ${colleague} is the other mentor here. Reference them when it adds something: "Mike tends to go straight to the rule that was broken. I want to know what was happening before that."
 

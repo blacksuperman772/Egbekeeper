@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EdgeKeeper — Protect Your Psychology Before Your Capital</title>
-  <meta name="description" content="EdgeKeeper — Private AI mentorship for serious traders. Protect your psychology before your capital. Work with Mike or Ashley, your personal trading performance mentor." />
+  <meta name="description" content="EdgeKeeper — A Trader Development Institution. From first trade to consistent discipline, with Mike and Ashley present through the entire journey." />
   <meta name="keywords" content="trading psychology, trading mentor, AI trading coach, performance psychology, prop firm, trading discipline" />
   <meta property="og:title" content="EdgeKeeper — Private Mentorship for Traders" />
-  <meta property="og:description" content="Protect your psychology before your capital. Private AI mentorship from Mike and Ashley — built for traders who take discipline seriously." />
+  <meta property="og:description" content="A Trader Development Institution. Not a platform. Not a course. Mike and Ashley build the trader, not just the trade." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/assets/hero-landing.png" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -1067,6 +1067,108 @@
     }
     .footer-links a:hover { color: var(--muted); }
 
+    /* ── THE INSTITUTION (8 divisions) ────────────────────────────── */
+    #eight-divisions {
+      padding: 160px 0;
+      background: var(--black);
+      border-top: 1px solid var(--border);
+    }
+    .divisions-header {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+    .divisions-headline {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 300;
+      color: var(--white);
+      margin-bottom: 20px;
+    }
+    .divisions-body {
+      font-size: 0.88rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.85;
+    }
+    .divisions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .division-item {
+      padding: 36px 40px;
+      background: var(--black);
+      border-top: 1px solid var(--border);
+      transition: background .3s;
+    }
+    .division-item:hover { background: var(--stone); }
+    .division-num {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--gold-dim);
+      margin-bottom: 10px;
+    }
+    .division-name {
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .division-desc {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    @media (max-width: 700px) {
+      .divisions-grid { grid-template-columns: 1fr; }
+      .division-item { padding: 28px 20px; }
+    }
+
+    /* ── CONSTITUTION ──────────────────────────────────────────────── */
+    #constitution {
+      padding: 160px 0;
+      background: var(--obsidian);
+      border-top: 1px solid var(--border);
+    }
+    .constitution-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .constitution-beliefs {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .belief-line {
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      font-style: italic;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.55;
+    }
+    .constitution-closing {
+      margin-top: 40px;
+      font-family: var(--serif);
+      font-size: 0.92rem;
+      font-style: italic;
+      color: var(--gold-dim);
+      line-height: 1.75;
+    }
+    @media (max-width: 900px) {
+      .constitution-grid { grid-template-columns: 1fr; gap: 40px; }
+    }
+
     /* ── REVEAL ANIMATIONS ─────────────────────────────────────── */
     .reveal {
       opacity: 0;
@@ -1259,13 +1361,12 @@
   <img src="/assets/hero-landing.png" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0.18;z-index:0;pointer-events:none;" />
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(5,5,5,0.4) 0%,rgba(5,5,5,0.85) 100%);z-index:1;pointer-events:none;"></div>
   <div class="hero-content" style="z-index:3;">
-    <p class="hero-eyebrow">A Private Mentorship Institution</p>
+    <p class="hero-eyebrow">A Trader Development Institution</p>
     <h1 class="hero-headline">
       Protect your <em>psychology</em><br>before your capital.
     </h1>
     <p class="hero-sub">
-      Traders fail when pressure changes who they become.<br>
-      Knowledge was never the problem.
+      Not a platform. Not a course. A Trader Development Institution — where Mike and Ashley build the trader, not just the trade.
     </p>
     <div class="hero-ctas">
       <a href="onboarding.html?mentor=mike" class="btn-mentor btn-mike">
@@ -1378,6 +1479,33 @@
         <div class="reveal" style="margin-top:8px;">
           <a href="/method" style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;transition:color .3s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">Read the method →</a>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONSTITUTION -->
+<section id="constitution">
+  <div class="section-inner">
+    <div class="constitution-grid">
+      <div>
+        <div class="section-label reveal">The Constitution</div>
+        <h2 class="reveal reveal-delay-1" style="font-family:var(--serif);font-size:clamp(2rem,3vw,2.8rem);font-weight:300;color:var(--white);line-height:1.2;margin-top:8px;">
+          What EdgeKeeper<br><em style="font-style:italic;color:var(--gold);">believes.</em>
+        </h2>
+      </div>
+      <div>
+        <div class="constitution-beliefs">
+          <div class="belief-line reveal">Consistency beats intensity.</div>
+          <div class="belief-line reveal reveal-delay-1">Process beats outcome.</div>
+          <div class="belief-line reveal reveal-delay-2">Risk management is the beginning, not the end.</div>
+          <div class="belief-line reveal reveal-delay-3">Self-awareness precedes improvement.</div>
+          <div class="belief-line reveal">Discipline can be trained — but not by knowing more.</div>
+          <div class="belief-line reveal reveal-delay-1">Most traders fail because of behavior, not knowledge.</div>
+          <div class="belief-line reveal reveal-delay-2">The goal is not better predictions. The goal is a better decision-maker.</div>
+          <div class="belief-line reveal reveal-delay-3">An institution that remembers you is more valuable than one that answers you.</div>
+        </div>
+        <p class="constitution-closing reveal reveal-delay-2">These are not aspirations. They are the operating principles of every session, every intervention, every review.</p>
       </div>
     </div>
   </div>
@@ -1944,10 +2072,63 @@
   </div>
 </section>
 
+<!-- EIGHT DIVISIONS -->
+<section id="eight-divisions">
+  <div class="section-inner">
+    <div class="divisions-header">
+      <div class="section-label reveal" style="justify-content:center;">The Institution</div>
+      <h2 class="divisions-headline reveal reveal-delay-1">Eight divisions. One purpose.</h2>
+      <p class="divisions-body reveal reveal-delay-2">EdgeKeeper is not built to give you information. It is built to change how you behave under pressure.</p>
+    </div>
+    <div class="divisions-grid">
+      <div class="division-item reveal">
+        <div class="division-num">I.</div>
+        <div class="division-name">Mentor Foundation</div>
+        <div class="division-desc">The relationship. The memory. The beginning.</div>
+      </div>
+      <div class="division-item reveal reveal-delay-1">
+        <div class="division-num">II.</div>
+        <div class="division-name">The Academy</div>
+        <div class="division-desc">Mentorship-led education. Mike won't let you risk real money until you're ready.</div>
+      </div>
+      <div class="division-item reveal">
+        <div class="division-num">III.</div>
+        <div class="division-name">The Guardian</div>
+        <div class="division-desc">Real intervention. Cooldowns. Lockouts. Capital protection.</div>
+      </div>
+      <div class="division-item reveal reveal-delay-1">
+        <div class="division-num">IV.</div>
+        <div class="division-name">Performance OS</div>
+        <div class="division-desc">Reviews, readiness scoring, behavioral reports, the journal.</div>
+      </div>
+      <div class="division-item reveal">
+        <div class="division-num">V.</div>
+        <div class="division-name">Research Division</div>
+        <div class="division-desc">Behavioral science and decision science informing every mentor session.</div>
+      </div>
+      <div class="division-item reveal reveal-delay-1">
+        <div class="division-num">VI.</div>
+        <div class="division-name">Account Integration</div>
+        <div class="division-desc">Live account visibility. Mike sees your position. Your drawdown. Your risk.</div>
+      </div>
+      <div class="division-item reveal">
+        <div class="division-num">VII.</div>
+        <div class="division-name">The Network</div>
+        <div class="division-desc">Mike's Discipline Room. Ashley's Recovery Room. Weekly breakdowns.</div>
+      </div>
+      <div class="division-item reveal reveal-delay-1">
+        <div class="division-num">VIII.</div>
+        <div class="division-name">The Full Institution</div>
+        <div class="division-desc">From "I've never traded" to consistently improving. Complete.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">Edge<span>K</span>eeper</div>
-  <p class="footer-copy">© 2025 EdgeKeeper. A Private Mentorship Institution.</p>
+  <p class="footer-copy">© 2025 EdgeKeeper. A Trader Development Institution.</p>
   <ul class="footer-links">
     <li><a href="/mike">Mike</a></li>
     <li><a href="/ashley">Ashley</a></li>

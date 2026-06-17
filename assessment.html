@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assessment · EdgeKeeper</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:     #050505;
+      --obsidian:  #0a0a0a;
+      --stone:     #111111;
+      --border:    #1e1e1e;
+      --dim:       #2a2a2a;
+      --muted:     #555555;
+      --text:      #d4d0c8;
+      --bright:    #e8e4dc;
+      --white:     #f5f2ec;
+      --gold:      #b8a06a;
+      --gold-dim:  #7a6a45;
+      --green-b:   #6b8c6b;
+      --green-dim: #4a5c4a;
+      --serif:     'Cormorant Garamond', Georgia, serif;
+      --sans:      'Inter', sans-serif;
+      --mono:      'DM Mono', monospace;
+      /* set by JS based on mentor */
+      --mc:        #b8a06a;
+      --mc-dim:    #7a6a45;
+      --mc-bg:     rgba(184,160,106,0.06);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.7;
+      cursor: none;
+      overflow: hidden;
+    }
+
+    /* ── CUSTOM CURSOR ── */
+    #cursor {
+      position: fixed; width: 8px; height: 8px;
+      background: var(--mc); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: background 0.4s ease;
+    }
+    #cursor-ring {
+      position: fixed; width: 36px; height: 36px;
+      border: 1px solid rgba(184,160,106,0.25); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: left .1s ease, top .1s ease, border-color 0.4s ease;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    #assessment-shell {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    /* ── TOP LABEL ── */
+    #top-label {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 22px 48px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 10;
+    }
+    #top-brand {
+      font-family: var(--serif);
+      font-size: 0.85rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    #top-brand span { color: var(--mc-dim); transition: color 0.4s ease; }
+    #top-meta {
+      font-family: var(--mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 10px;
+    }
+    #top-meta::before {
+      content: '';
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--mc);
+      flex-shrink: 0;
+      animation: blink-dot 2.5s ease-in-out infinite;
+      transition: background 0.4s ease;
+    }
+    @keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* ── QUESTION FIELD ── */
+    #question-field {
+      max-width: 580px;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 500ms ease, transform 500ms ease;
+    }
+    #question-field.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #question-field.hiding {
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 300ms ease, transform 300ms ease;
+    }
+
+    /* mentor signature line above question */
+    .q-mentor-sig {
+      font-family: var(--mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--mc-dim);
+      margin-bottom: 28px;
+      display: flex; align-items: center; gap: 14px;
+      transition: color 0.4s ease;
+    }
+    .q-mentor-sig::before {
+      content: '';
+      width: 24px; height: 1px;
+      background: var(--mc-dim);
+      flex-shrink: 0;
+      transition: background 0.4s ease;
+    }
+
+    /* the question itself */
+    #question-text {
+      font-family: var(--serif);
+      font-size: clamp(1.3rem, 2vw, 1.55rem);
+      font-weight: 300;
+      line-height: 1.75;
+      color: rgba(245,242,236,0.85);
+      margin-bottom: 40px;
+    }
+
+    /* divider line between question and input */
+    .q-divider {
+      width: 40px; height: 1px;
+      background: var(--mc-dim);
+      margin-bottom: 28px;
+      transition: background 0.4s ease;
+    }
+
+    /* ── TEXTAREA ── */
+    #answer-textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      outline: none;
+      resize: none;
+      padding: 0 0 14px 0;
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.9;
+      color: rgba(212,208,200,0.8);
+      min-height: 80px;
+      overflow: hidden;
+      cursor: none;
+      transition: border-color 0.3s ease;
+    }
+    #answer-textarea::placeholder {
+      color: rgba(255,255,255,0.18);
+    }
+    #answer-textarea:focus {
+      border-bottom-color: rgba(255,255,255,0.22);
+    }
+
+    /* ── CONTINUE BUTTON ── */
+    #continue-btn {
+      margin-top: 32px;
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mc);
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: none;
+      opacity: 0.3;
+      transition: opacity 0.3s ease, color 0.4s ease;
+      pointer-events: none;
+    }
+    #continue-btn.enabled {
+      opacity: 1;
+      pointer-events: all;
+    }
+    #continue-btn.enabled:hover {
+      opacity: 0.7;
+    }
+
+    /* ── PROGRESS ── */
+    #progress-label {
+      position: fixed;
+      bottom: 28px; right: 40px;
+      font-family: var(--mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.18);
+      text-transform: uppercase;
+    }
+
+    /* ── CLOSING SCREEN ── */
+    #closing-screen {
+      position: fixed; inset: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--black);
+      opacity: 0; pointer-events: none;
+      transition: opacity 1s ease;
+    }
+    #closing-screen.visible {
+      opacity: 1; pointer-events: all;
+    }
+    #closing-text {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--mc-dim);
+      transition: color 0.4s ease;
+    }
+
+    /* ── SCROLLBAR ── */
+    * { scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 600px) {
+      #top-label { padding: 16px 22px; }
+      #assessment-shell { padding: 32px 20px; }
+      #question-text { font-size: 1.2rem; }
+      #progress-label { right: 22px; bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- cursor -->
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- top bar -->
+  <div id="top-label">
+    <a href="/" id="top-brand">Edge<span>Keeper</span></a>
+    <div id="top-meta">
+      <span id="mentor-name-label">Mike</span>
+      &middot;
+      Initial Assessment
+    </div>
+  </div>
+
+  <!-- main field -->
+  <div id="assessment-shell">
+    <div id="question-field">
+      <div class="q-mentor-sig" id="mentor-sig">Mike</div>
+      <div id="question-text"></div>
+      <div class="q-divider" id="q-divider"></div>
+      <textarea
+        id="answer-textarea"
+        rows="3"
+        placeholder="..."
+        spellcheck="false"
+        autocomplete="off"
+      ></textarea>
+      <button id="continue-btn" type="button">Continue &rarr;</button>
+    </div>
+  </div>
+
+  <!-- progress -->
+  <div id="progress-label">1 of 9</div>
+
+  <!-- closing screen -->
+  <div id="closing-screen">
+    <div id="closing-text"></div>
+  </div>
+
+  <script>
+    /* ── CONFIG ─────────────────────────────── */
+    const SUPABASE_URL  = window.__EK_SUPABASE_URL__;
+    const SUPABASE_ANON = window.__EK_SUPABASE_ANON__;
+
+    /* ── MENTOR ─────────────────────────────── */
+    const mentor = (localStorage.getItem('ek_mentor') || 'mike').toLowerCase();
+    const isMike = mentor !== 'ashley';
+
+    const ACCENT      = isMike ? '#b8a06a' : '#6b8c6b';
+    const ACCENT_DIM  = isMike ? '#7a6a45' : '#4a5c4a';
+    const ACCENT_BG   = isMike ? 'rgba(184,160,106,0.06)' : 'rgba(74,92,74,0.06)';
+    const MENTOR_LABEL = isMike ? 'Mike' : 'Ashley';
+
+    /* inject CSS vars */
+    document.documentElement.style.setProperty('--mc',     ACCENT);
+    document.documentElement.style.setProperty('--mc-dim', ACCENT_DIM);
+    document.documentElement.style.setProperty('--mc-bg',  ACCENT_BG);
+
+    /* update text labels */
+    document.getElementById('mentor-name-label').textContent = MENTOR_LABEL;
+    document.getElementById('mentor-sig').textContent        = MENTOR_LABEL;
+
+    /* cursor ring border color */
+    document.getElementById('cursor-ring').style.borderColor =
+      isMike ? 'rgba(184,160,106,0.25)' : 'rgba(74,92,74,0.25)';
+
+    /* ── CURSOR ─────────────────────────────── */
+    const cursor     = document.getElementById('cursor');
+    const cursorRing = document.getElementById('cursor-ring');
+    let mx = -100, my = -100, rx = -100, ry = -100;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px';
+      cursor.style.top  = my + 'px';
+    });
+
+    (function animRing() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      cursorRing.style.left = rx + 'px';
+      cursorRing.style.top  = ry + 'px';
+      requestAnimationFrame(animRing);
+    })();
+
+    /* ── QUESTIONS ──────────────────────────── */
+    const QUESTIONS = [
+      {
+        type: 'experience',
+        mike:   "Before we start — how long have you been trading? Give me the honest version, not the one that sounds better.",
+        ashley: "Tell me about your relationship with trading so far. How long has it been going?"
+      },
+      {
+        type: 'biggest_challenge',
+        mike:   "What's the one thing that keeps costing you? Not the market — you.",
+        ashley: "What pattern keeps showing up for you, even when you know better?"
+      },
+      {
+        type: 'emotional_response_loss',
+        mike:   "Walk me through what happens in your head after a bad trade. Specifically.",
+        ashley: "After a loss, what's the first thing you feel? And what do you do with it?"
+      },
+      {
+        type: 'emotional_response_win',
+        mike:   "What happens after a good trade? Be honest about the temptation.",
+        ashley: "After a win, what changes for you? In your thinking, your risk, your confidence?"
+      },
+      {
+        type: 'biggest_goal',
+        mike:   "What are you actually trying to build here? In real terms.",
+        ashley: "What does success look like for you — not in money, but in who you want to be as a trader?"
+      },
+      {
+        type: 'what_tried',
+        mike:   "What have you already tried? Courses, books, other platforms, coaches. All of it.",
+        ashley: "What have you tried before EdgeKeeper? I want to know what hasn't worked and why."
+      },
+      {
+        type: 'what_went_wrong',
+        mike:   "What's the hardest thing you've done in trading that you'd take back?",
+        ashley: "Is there a trade or a period you'd describe as your lowest point? What happened?"
+      },
+      {
+        type: 'current_rules',
+        mike:   "Do you have trading rules right now? Tell me what they are and whether you follow them.",
+        ashley: "What rules have you set for yourself? And how consistent are you actually being with them?"
+      },
+      {
+        type: 'honest_admission',
+        mike:   "One thing about your trading that you haven't told anyone. I'll find out anyway — might as well start here.",
+        ashley: "What's something true about how you trade that you haven't said out loud before?"
+      }
+    ];
+
+    const CLOSING_LINE = isMike
+      ? 'Alright. Give me a moment with this.'
+      : 'Thank you. I\'ve been listening.';
+
+    /* ── STATE ──────────────────────────────── */
+    let currentIndex = 0;
+    const answers    = {};
+
+    const qField    = document.getElementById('question-field');
+    const qText     = document.getElementById('question-text');
+    const textarea  = document.getElementById('answer-textarea');
+    const continueBtn = document.getElementById('continue-btn');
+    const progressLabel = document.getElementById('progress-label');
+
+    /* ── STAGE INFERENCE ────────────────────── */
+    function inferStage(experienceAnswer) {
+      const a = experienceAnswer.toLowerCase();
+      if (/never|never traded|just started|no trades|no experience/.test(a)) return 'explorer';
+      if (/few months|6 months|started recently|beginner/.test(a)) return 'student';
+      if (/year|years|actively|regularly/.test(a)) return 'developing';
+      return 'explorer';
+    }
+
+    function inferIdentity(lossAnswer) {
+      const a = lossAnswer.toLowerCase();
+      if (/revenge|double down|angry|frustrated|trade again/.test(a)) return 'Reactive Trader';
+      if (/nothing|fine|moves on|detach/.test(a)) return 'Detached Trader';
+      if (/analyze|review|learn from/.test(a)) return 'Reflective Trader';
+      return 'Developing Trader';
+    }
+
+    /* ── SHOW QUESTION ──────────────────────── */
+    function showQuestion(index) {
+      const q = QUESTIONS[index];
+      const text = isMike ? q.mike : q.ashley;
+
+      qText.textContent = text;
+      textarea.value    = '';
+      textarea.style.height = 'auto';
+      continueBtn.classList.remove('enabled');
+      progressLabel.textContent = (index + 1) + ' of ' + QUESTIONS.length;
+
+      // reset and animate in
+      qField.classList.remove('visible', 'hiding');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          qField.classList.add('visible');
+          textarea.focus();
+        });
+      });
+    }
+
+    /* ── ADVANCE ────────────────────────────── */
+    function advance() {
+      const val = textarea.value.trim();
+      if (val.length < 3) return;
+
+      // store answer
+      answers[QUESTIONS[currentIndex].type] = val;
+
+      // hide current
+      qField.classList.remove('visible');
+      qField.classList.add('hiding');
+
+      setTimeout(() => {
+        qField.classList.remove('hiding');
+
+        currentIndex++;
+
+        if (currentIndex < QUESTIONS.length) {
+          setTimeout(() => showQuestion(currentIndex), 60);
+        } else {
+          // all answered — show closing
+          showClosing();
+        }
+      }, 300);
+    }
+
+    /* ── CLOSING ────────────────────────────── */
+    function showClosing() {
+      progressLabel.style.opacity = '0';
+
+      const closingScreen = document.getElementById('closing-screen');
+      const closingText   = document.getElementById('closing-text');
+
+      closingText.textContent = CLOSING_LINE;
+      closingScreen.classList.add('visible');
+
+      setTimeout(() => submitAndRedirect(), 2000);
+    }
+
+    /* ── SUBMIT ─────────────────────────────── */
+    async function submitAndRedirect() {
+      const initial_stage    = inferStage(answers.experience || '');
+      const initial_identity = inferIdentity(answers.emotional_response_loss || '');
+
+      const payload = {
+        answers,
+        initial_stage,
+        initial_identity,
+        mentor: isMike ? 'mike' : 'ashley'
+      };
+
+      try {
+        await fetch('/api/assessment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        // non-blocking — redirect regardless
+        console.warn('Assessment submission failed:', err);
+      }
+
+      window.location.href = '/workspace.html';
+    }
+
+    /* ── TEXTAREA AUTO-EXPAND ───────────────── */
+    textarea.addEventListener('input', () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+
+      const val = textarea.value.trim();
+      if (val.length >= 3) {
+        continueBtn.classList.add('enabled');
+      } else {
+        continueBtn.classList.remove('enabled');
+      }
+    });
+
+    /* ── KEYBOARD SHORTCUT ──────────────────── */
+    textarea.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        if (continueBtn.classList.contains('enabled')) advance();
+      }
+    });
+
+    /* ── CONTINUE BTN ───────────────────────── */
+    continueBtn.addEventListener('click', () => {
+      if (continueBtn.classList.contains('enabled')) advance();
+    });
+
+    /* ── INIT ───────────────────────────────── */
+    // small delay so fonts have settled
+    setTimeout(() => showQuestion(0), 200);
+  </script>
+</body>
+</html>
