@@ -153,8 +153,8 @@
     /* ── HERO ──────────────────────────────────────────────────── */
     #hero {
       position: relative;
-      height: 100vh;
-      min-height: 700px;
+      height: 100dvh;
+      min-height: 600px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -404,9 +404,12 @@
     .narrative-sticky {
       position: sticky;
       top: 0;
-      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       background: var(--black);
+    }
+    @media (max-width: 600px) {
+      #narrative { height: 400vh; }
     }
     #narrative-canvas {
       position: absolute;
@@ -1130,65 +1133,71 @@
       /* Cursor invisible on touch */
       #cursor, #cursor-ring { display: none; }
 
-      /* Nav — keep logo + CTA only, reduce padding */
+      /* Nav */
       nav { padding: 16px 20px; }
       .nav-cta { padding: 9px 16px; font-size: 0.65rem; }
 
-      /* Hero */
-      .hero-content { padding: 0 20px; }
-      .hero-sub { font-size: 0.85rem; }
+      /* Hero — centre-align on mobile, tighten headline */
+      .hero-content { padding: 0 24px; text-align: center; }
+      .hero-headline {
+        font-size: clamp(2.4rem, 10vw, 3.2rem);
+        text-wrap: balance;
+        line-height: 1.12;
+      }
+      .hero-eyebrow { justify-content: center; }
+      .hero-sub { font-size: 0.85rem; max-width: 100%; }
       .hero-ctas { flex-direction: column; align-items: center; gap: 12px; }
-      .btn-mentor { width: 100%; max-width: 280px; justify-content: center; padding: 16px 24px; }
+      .btn-mentor { width: 100%; max-width: 300px; justify-content: center; padding: 16px 24px; }
       .hero-scroll { bottom: 28px; }
 
-      /* Section padding — tighten on very small screens */
-      .section-inner { padding: 0 16px; }
-      #institution,
-      #problem,
-      #mentors,
-      #how,
-      #engine,
-      #results,
-      #passport,
-      #invitation { padding: 80px 0; }
-      #invitation { padding: 100px 0; }
+      /* Section padding */
+      .section-inner { padding: 0 20px; }
+      #institution, #problem, #mentors, #how,
+      #engine, #results, #passport { padding: 72px 0; }
+      #invitation { padding: 96px 0; }
+
+      /* Section headlines — prevent overflow on narrow screens */
+      .inst-headline, .problem-headline, .mentors-headline,
+      .how-headline, .engine-headline, .results-headline,
+      .passport-headline, .invitation-headline {
+        font-size: clamp(1.9rem, 8vw, 2.6rem);
+        text-wrap: balance;
+      }
 
       /* Institution */
-      .inst-grid { gap: 48px; }
+      .inst-grid { gap: 40px; }
       .inst-pillars { grid-template-columns: 1fr; }
 
-      /* Problem — behavior grid single column on very small */
+      /* Problem */
       .behavior-grid { grid-template-columns: 1fr 1fr; }
       .behavior-item { padding: 20px 12px; }
 
-      /* Narrative — reduce scene text padding so it doesn't clip */
-      .scene-text { padding: 0 20px; font-size: clamp(1.8rem, 7vw, 3rem); }
-
       /* Mentor cards */
-      .mentor-card { padding: 36px 24px; }
-      .mentors-intro { margin-bottom: 56px; }
+      .mentor-card { padding: 36px 20px; }
+      .mentor-name { font-size: 1.8rem; }
+      .mentors-intro { margin-bottom: 48px; }
+      .mentor-avatar { width: 56px; height: 56px; }
 
       /* How steps */
       .how-steps { grid-template-columns: 1fr; }
-      .how-step { padding: 32px 24px; }
+      .how-step { padding: 28px 20px; }
       .step-connector { display: none; }
 
       /* Engine */
-      .engine-grid { gap: 48px; }
-      .engine-visual { height: 280px; }
+      .engine-grid { gap: 40px; }
+      .engine-visual { height: 240px; }
       .detect-list { grid-template-columns: 1fr; }
 
       /* Results */
       .results-grid { grid-template-columns: 1fr; }
-      .result-card { padding: 36px 24px; }
+      .result-card { padding: 32px 20px; }
 
       /* Passport */
       .passport-card { padding: 28px 20px; }
       .passport-entries { grid-template-columns: 1fr; }
       .passport-header-row { flex-direction: column; gap: 16px; }
 
-      /* Guardian section — inline-style grids need override via !important */
-      /* The 1fr 1fr and 1fr 2fr grids inside #guardian use inline styles */
+      /* Guardian — inline-style grids */
       #guardian [style*="grid-template-columns:1fr 1fr"],
       #guardian [style*="grid-template-columns: 1fr 1fr"] {
         grid-template-columns: 1fr !important;
@@ -1198,22 +1207,17 @@
         grid-template-columns: 1fr !important;
         gap: 32px !important;
       }
-      /* Lock level rows — stack level label above description */
       #guardian [style*="grid-template-columns:80px 1fr"],
       #guardian [style*="grid-template-columns: 80px 1fr"] {
         grid-template-columns: 1fr !important;
       }
-      /* Guardian section paddings */
-      #guardian [style*="padding:48px 44px"] {
-        padding: 32px 20px !important;
-      }
-      #guardian [style*="padding:56px 52px"] {
-        padding: 32px 20px !important;
-      }
+      #guardian [style*="padding:48px 44px"] { padding: 28px 20px !important; }
+      #guardian [style*="padding:56px 52px"] { padding: 28px 20px !important; }
 
       /* Pricing */
       .pricing-grid { grid-template-columns: 1fr; }
-      .price-card { padding: 32px 24px; }
+      .price-card { padding: 32px 20px; }
+      .price-amount { font-size: clamp(2rem, 12vw, 3rem); }
 
       /* Footer */
       footer {
@@ -1833,38 +1837,50 @@ animateCursor();
     ['One conversation', 'at a time.'],
   ];
 
-  const N_TEXT = 680;   // particles that form text
-  const N_AMB  = 160;   // always-drifting ambient particles
-  const GOLD   = [196, 172, 113];
-  const PALE   = [218, 211, 196];
+  const GOLD = [196, 172, 113];
+  const PALE = [218, 211, 196];
 
-  let textMaps     = [];   // per-scene: [[x,y], ...]
+  // Particle counts and sampling density scale with screen width
+  // so text forms legibly on mobile instead of piling up as a blob
+  function cfg(W) {
+    const mob = W < 600;
+    const tab = W < 900;
+    return {
+      nText: mob ? 320 : tab ? 480 : 680,
+      nAmb:  mob ? 60  : tab ? 100 : 160,
+      step:  mob ? 2   : 3,
+      fs:    mob ? Math.min(W * 0.11, 46)
+                 : Math.min(W * 0.058, H * 0.092, 66),
+    };
+  }
+
+  let textMaps     = [];
   let particles    = [];
   let lastScene    = -1;
-  let currentBlend = 0;   // 0 = fully scattered, 1 = fully formed
+  let currentBlend = 0;
   let raf;
+  let H = window.innerHeight; // tracked so cfg() can reference it
 
   // ── Build pixel maps ──────────────────────────────────────────────
   function buildMaps(W, H) {
+    const c_ = cfg(W);
     textMaps = SCENES.map(lines => {
       const off = document.createElement('canvas');
       off.width  = W; off.height = H;
       const c    = off.getContext('2d');
-      const fs   = Math.min(W * 0.058, H * 0.092, 66);
-      c.font     = `400 ${fs}px "Cormorant Garamond", Georgia, serif`;
+      c.font     = `400 ${c_.fs}px "Cormorant Garamond", Georgia, serif`;
       c.fillStyle = '#fff';
       c.textAlign = 'center';
       c.textBaseline = 'alphabetic';
 
-      const lh     = fs * 1.38;
+      const lh     = c_.fs * 1.38;
       const startY = H / 2 - ((lines.length - 1) * lh) / 2;
       lines.forEach((ln, i) => c.fillText(ln, W / 2, startY + i * lh));
 
       const img = c.getImageData(0, 0, W, H).data;
       const pts = [];
-      const step = 4;
-      for (let x = 0; x < W; x += step) {
-        for (let y = 0; y < H; y += step) {
+      for (let x = 0; x < W; x += c_.step) {
+        for (let y = 0; y < H; y += c_.step) {
           if (img[(y * W + x) * 4 + 3] > 80) pts.push([x, y]);
         }
       }
@@ -1873,28 +1889,29 @@ animateCursor();
         const j = (Math.random() * (i + 1)) | 0;
         [pts[i], pts[j]] = [pts[j], pts[i]];
       }
-      return pts.slice(0, N_TEXT);
+      return pts.slice(0, c_.nText);
     });
   }
 
   // ── Init particles ────────────────────────────────────────────────
   function initParticles(W, H) {
+    const c_ = cfg(W);
     particles = [];
-    for (let i = 0; i < N_TEXT; i++) {
+    for (let i = 0; i < c_.nText; i++) {
       const x = Math.random() * W, y = Math.random() * H;
       particles.push({
         x, y,
-        tx: x, ty: y,   // target
-        ox: x, oy: y,   // scatter home
+        tx: x, ty: y,
+        ox: x, oy: y,
         r: 0.9 + Math.random() * 1.1,
         spd: 0.055 + Math.random() * 0.035,
         alpha: 0,
-        ta: 0,           // target alpha
+        ta: 0,
         col: Math.random() > 0.38 ? GOLD : PALE,
         isText: true,
       });
     }
-    for (let i = 0; i < N_AMB; i++) {
+    for (let i = 0; i < c_.nAmb; i++) {
       particles.push({
         x: Math.random() * W, y: Math.random() * H,
         tx: 0, ty: 0, ox: 0, oy: 0,
@@ -1995,7 +2012,7 @@ animateCursor();
   // ── Resize ────────────────────────────────────────────────────────
   function resize() {
     const W = canvas.width  = window.innerWidth;
-    const H = canvas.height = window.innerHeight;
+    H = canvas.height = window.innerHeight;
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, W, H);
     buildMaps(W, H);
