@@ -60,7 +60,7 @@ We collect:
 - Transaction records (amount, date, subscription tier, status)
 - Your billing email address
 
-We do **not** collect or store your card number, bank account details, or any raw payment instrument data. This is handled entirely by Paystack. See Section 6.
+We do **not** collect or store your card number, bank account details, or any raw payment instrument data. This is handled entirely by Polar.sh. See Section 6.
 
 ### 2.7 Usage and Technical Data
 We automatically collect:
@@ -156,11 +156,11 @@ We work with the following third-party providers. Your data is shared with them 
 **Their policy:** [Supabase Privacy Policy](https://supabase.com/privacy)
 **Data location:** Supabase stores data in the region you select during our infrastructure setup. [Insert your Supabase region here, e.g., EU West, US East.]
 
-### Paystack
-**What we share:** Your email address and transaction data are shared with Paystack to process payments.
+### Polar.sh
+**What we share:** Your email address and subscription data are shared with Polar.sh to process payments.
 **Why:** Payment processing.
-**Their policy:** [Paystack Privacy Policy](https://paystack.com/privacy)
-**Note:** Paystack handles all raw payment instrument data (card numbers, bank details) directly. We never see or store this.
+**Their policy:** [Polar.sh Privacy Policy](https://polar.sh/privacy)
+**Note:** Polar.sh handles all raw payment instrument data (card numbers, bank details) directly. We never see or store this.
 
 ### Analytics (if applicable)
 **[Insert if you use any analytics provider, e.g., PostHog, Plausible, or Google Analytics]**
@@ -171,7 +171,7 @@ We require all third-party providers to maintain appropriate security measures a
 
 ## 7. International Data Transfers
 
-EdgeKeeper is incorporated in Nigeria. Our third-party providers (OpenAI, ElevenLabs, Supabase, Paystack) may process or store data in countries outside Nigeria, including the United States and European countries.
+EdgeKeeper is incorporated in Nigeria. Our third-party providers (OpenAI, ElevenLabs, Supabase, Polar.sh, Resend) may process or store data in countries outside Nigeria, including the United States and European countries.
 
 Where data is transferred outside your home jurisdiction, we rely on:
 - Standard contractual clauses (where applicable)

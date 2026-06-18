@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pricing — EdgeKeeper</title>
-  <meta name="description" content="EdgeKeeper membership — Student $29/mo, Practitioner $69/mo, Professional $129/mo, Institution $249/mo. Choose your depth of AI mentorship." />
+  <meta name="description" content="EdgeKeeper membership — Student $79/mo, Practitioner $149/mo, Professional $299/mo, Institution $499/mo. Choose your depth of AI mentorship." />
   <meta property="og:title" content="EdgeKeeper Pricing — Trader Development Plans" />
   <meta property="og:description" content="Student, Practitioner, Professional, or Institution. Choose the depth of your EdgeKeeper mentorship relationship." />
   <meta property="og:type" content="website" />
@@ -14,9 +14,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
-
-  <!-- Paystack inline popup -->
-  <script src="https://js.paystack.co/v2/inline.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -857,8 +854,6 @@
             <li class="included"><span class="check">✓</span> Session review log</li>
             <li><span class="dash">—</span> Guardian Layer</li>
           </ul>
-          <!-- TODO: Create separate Paystack plan IDs for each tier in Paystack dashboard -->
-          <!-- Student plan maps to existing starter plan; price has changed to $29 -->
           <button class="card-cta" data-plan="starter" onclick="initiateCheckout('starter')">Enroll as Student</button>
         </div>
 
@@ -902,7 +897,6 @@
             <li class="included"><span class="check">✓</span> Priority mentor response</li>
             <li class="included"><span class="check">✓</span> Performance OS (full)</li>
           </ul>
-          <!-- TODO: Create separate Paystack plan IDs for Professional tier in Paystack dashboard -->
           <button class="card-cta" data-plan="professional" onclick="initiateCheckout('professional')">Go Professional</button>
         </div>
 
@@ -923,8 +917,6 @@
             <li class="included"><span class="check">✓</span> Direct office access</li>
             <li class="included"><span class="check">✓</span> Unlimited AI questions</li>
           </ul>
-          <!-- Institution plan maps to existing institutional plan — separate plan ID needed -->
-          <!-- TODO: Create separate Paystack plan IDs for each tier in Paystack dashboard -->
           <button class="card-cta" data-plan="institutional" onclick="initiateCheckout('institutional')">Enter the Institution</button>
         </div>
 
@@ -1258,15 +1250,12 @@ const labelMonthly  = document.getElementById('labelMonthly');
 const labelAnnual   = document.getElementById('labelAnnual');
 const billingToggle = document.getElementById('billingToggle');
 
-// Price display data
-// TODO: Create separate Paystack plan IDs for each tier in Paystack dashboard
-// Plan code mapping: Student→starter, Practitioner→pro, Professional→professional (new), Institution→institutional
+// Price display data — Polar.sh product IDs set via server env vars (POLAR_PRODUCT_*_MONTHLY/ANNUAL)
 const plans = {
   starter: {
     monthly: 79,  annual: 790,
     saveMonthly: 79 * 12,
     saveAnnual:  790,
-    paystackCode: 'PLN_starter', // TODO: update with real Paystack plan code at $79
     cadenceId: 'cadence-starter',
     saveId:    'save-starter',
   },
@@ -1274,7 +1263,6 @@ const plans = {
     monthly: 149, annual: 1490,
     saveMonthly: 149 * 12,
     saveAnnual:  1490,
-    paystackCode: 'PLN_pro', // TODO: update with real Paystack plan code at $149
     cadenceId: 'cadence-pro',
     saveId:    'save-pro',
   },
@@ -1282,7 +1270,6 @@ const plans = {
     monthly: 299, annual: 2990,
     saveMonthly: 299 * 12,
     saveAnnual:  2990,
-    paystackCode: 'PLN_professional', // TODO: create new plan in Paystack dashboard at $299
     cadenceId: 'cadence-professional',
     saveId:    'save-professional',
   },
@@ -1290,7 +1277,6 @@ const plans = {
     monthly: 499, annual: 4990,
     saveMonthly: 499 * 12,
     saveAnnual:  4990,
-    paystackCode: 'PLN_institutional', // TODO: update with real Paystack plan code at $499
     cadenceId: 'cadence-institutional',
     saveId:    'save-institutional',
   },
@@ -1352,7 +1338,7 @@ document.querySelectorAll('.card-cta[data-plan], .btn-mentor[data-plan]').forEac
   });
 });
 
-// ── CHECKOUT — Paystack via server ──────────────────────────────────
+// ── CHECKOUT — Polar.sh via server ───────────────────────────────────
 // If user is already logged in (ek_session cookie exists), initiate
 // payment directly. Otherwise send them through auth first.
 async function initiateCheckout(plan) {

@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 require('dns').setDefaultResultOrder('ipv4first');
 require('dotenv').config();
 
@@ -66,12 +66,13 @@ app.use((req, res, next) => {
     [
       "default-src 'self'",
       // Inline scripts used throughout; migrate to nonces in a future pass
-      "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://js.paystack.co",
+      "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src https://fonts.gstatic.com",
       // Proxy reach: our own API, Supabase, OpenAI (via our proxy only)
       // ElevenLabs SDK: HTTPS for auth + WSS for streaming; livekit-client uses wss://livekit.rtc.elevenlabs.io for WebRTC transport
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.openai.com https://api.paystack.co https://api.elevenlabs.io wss://api.elevenlabs.io wss://livekit.rtc.elevenlabs.io https://livekit.rtc.elevenlabs.io",
+      // Polar.sh: checkout redirect is server-side, no client-side SDK needed
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.openai.com https://api.polar.sh https://api.elevenlabs.io wss://api.elevenlabs.io wss://livekit.rtc.elevenlabs.io https://livekit.rtc.elevenlabs.io",
       "img-src 'self' data:",
       "frame-ancestors 'none'",
     ].join('; ')
@@ -83,6 +84,7 @@ app.use((req, res, next) => {
 const BLOCKED = [
   '/server.js', '/.env', '/package.json', '/package-lock.json',
   '/node_modules', '/.gitignore', '/supabase', '/generate-assets.js',
+  '/edgekeeper/',  // stale duplicate files — never serve publicly
 ];
 app.use((req, res, next) => {
   const p = req.path.toLowerCase();
@@ -310,7 +312,7 @@ app.post('/api/onboarding/register', apiLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Password must be at least 8 characters.' });
   }
 
-  const safePlan = ['free', 'starter', 'pro', 'institutional'].includes(plan) ? plan : 'free';
+  const safePlan = ['free', 'starter', 'pro', 'professional', 'institutional'].includes(plan) ? plan : 'free';
   const safeMentor = ['mike', 'ashley'].includes(mentor) ? mentor : 'mike';
 
   // Create the user. email_confirm: true skips the confirmation email so the
@@ -345,6 +347,20 @@ app.post('/api/onboarding/register', apiLimiter, async (req, res) => {
   }, { onConflict: 'id' });
 
   res.json({ success: true, user_id: userData.user.id, plan: safePlan });
+
+  // Welcome email — fire-and-forget, never blocks the response
+  const mentorDisplay = safeMentor === 'ashley' ? 'Ashley' : 'Mike';
+  sendEmail(
+    email,
+    `${mentorDisplay} is ready for you.`,
+    mentorEmailHtml(
+      mentorDisplay,
+      `Your intake is saved. ${mentorDisplay} has already started building your profile.<br><br>
+      Head into your workspace whenever you're ready — the conversation picks up exactly where the intake left off.`,
+      'Open Your Workspace',
+      (process.env.APP_URL || 'https://edgekeeper.io') + '/workspace.html'
+    )
+  ).catch(() => {});
 });
 app.get('/profile.html',     requireAuthPage, serveInjectedHtml(path.join(__dirname, 'profile.html')));
 app.get('/profile',          requireAuthPage, (req, res) => res.redirect('/profile.html'));
@@ -464,7 +480,9 @@ app.post('/api/chat', requireAuthApi, chatLimiter, async (req, res) => {
         console.error('Usage RPC error:', usageErr.message);
       } else if (usage?.[0]?.limit_reached) {
         const plan = profile?.subscription_status || 'free';
-        const nextPlan = plan === 'free' ? 'Resident' : plan === 'starter' ? 'Fellow' : 'Private Office';
+        const PLAN_DISPLAY = { free: 'Free Trial', starter: 'Student', pro: 'Practitioner', professional: 'Professional', institutional: 'Institution' };
+        const NEXT_PLAN    = { free: 'Student', starter: 'Practitioner', pro: 'Professional', professional: 'Institution' };
+        const nextPlan = NEXT_PLAN[plan] || null;
         return res.status(429).json({
           error: 'Message limit reached for this month.',
           plan,
@@ -634,8 +652,8 @@ app.get('/api/usage', requireAuthApi, apiLimiter, async (req, res) => {
 
   const plan      = profileRes.data?.subscription_status || 'free';
   const bypass    = profileRes.data?.bypass_subscription || false;
-  const limits    = { free: 7, starter: 500, pro: 2000, institutional: null };
-  const limit     = bypass ? null : (limits[plan] ?? 50);
+  const limits    = { free: 10, starter: 30, pro: 100, professional: null, institutional: null };
+  const limit     = bypass ? null : (limits[plan] ?? 30);
 
   const usage = {};
   for (const row of (usageRes.data || [])) {
@@ -655,8 +673,8 @@ app.get('/api/journal', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const jGetPlan   = jGetProfile?.subscription_status || 'free';
   const jGetBypass = jGetProfile?.bypass_subscription || false;
-  if (!jGetBypass && !['starter', 'pro', 'institutional'].includes(jGetPlan)) {
-    return res.status(403).json({ error: 'Journal access requires the Resident plan or higher.' });
+  if (!jGetBypass && !['starter', 'pro', 'professional', 'institutional'].includes(jGetPlan)) {
+    return res.status(403).json({ error: 'Journal access requires the Student plan or above.' });
   }
   const limit  = Math.min(parseInt(req.query.limit  || '50', 10), 100);
   const offset = Math.max(parseInt(req.query.offset || '0',  10), 0);
@@ -685,8 +703,8 @@ app.post('/api/journal', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const jPostPlan   = jPostProfile?.subscription_status || 'free';
   const jPostBypass = jPostProfile?.bypass_subscription || false;
-  if (!jPostBypass && !['starter', 'pro', 'institutional'].includes(jPostPlan)) {
-    return res.status(403).json({ error: 'Journal access requires the Resident plan or higher.' });
+  if (!jPostBypass && !['starter', 'pro', 'professional', 'institutional'].includes(jPostPlan)) {
+    return res.status(403).json({ error: 'Journal access requires the Student plan or above.' });
   }
   const { content, entry_type, trade_data, mentor_notes } = req.body;
 
@@ -846,6 +864,16 @@ app.post('/api/voice/session', requireAuthApi, apiLimiter, async (req, res) => {
     plan = profile?.subscription_status || 'free';
     const bypass = profile?.bypass_subscription || false;
 
+    // Voice is Professional+ only
+    const VOICE_PLANS = ['professional', 'institutional'];
+    if (!bypass && !VOICE_PLANS.includes(plan)) {
+      return res.status(403).json({
+        error: 'Voice sessions are available on the Professional plan and above.',
+        plan,
+        upgrade_to: 'Professional',
+      });
+    }
+
     if (!bypass) {
       const monthKey = new Date().toISOString().slice(0, 7);
       const { data: voiceData, error: voiceErr } = await supabaseAdmin
@@ -858,12 +886,12 @@ app.post('/api/voice/session', requireAuthApi, apiLimiter, async (req, res) => {
 
       const row = voiceData?.[0];
       if (row?.limit_reached) {
-        const VOICE_LIMITS = { free: 1, starter: 3, pro: 8, institutional: 999 };
-        const limit = VOICE_LIMITS[plan] ?? 1;
+        const VOICE_LIMITS = { professional: 5, institutional: 999 };
+        const limit = VOICE_LIMITS[plan] ?? 5;
         return res.status(429).json({
           error: `You've used all ${limit} voice session${limit === 1 ? '' : 's'} for this month.`,
           plan,
-          upgrade_to: plan === 'free' ? 'starter' : plan === 'starter' ? 'pro' : null,
+          upgrade_to: plan === 'professional' ? 'Institution' : null,
         });
       }
     }
@@ -950,8 +978,8 @@ app.get('/api/guardian', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
-  if (!bypass && !['starter', 'pro', 'institutional'].includes(plan)) {
-    return res.status(403).json({ error: 'Guardian Layer requires the Resident plan or higher.' });
+  if (!bypass && !['professional', 'institutional'].includes(plan)) {
+    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
   }
   const { data, error } = await supabaseAdmin
     .from('guardian_data')
@@ -997,8 +1025,8 @@ app.post('/api/guardian/update', apiLimiter, async (req, res) => {
 
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
-  if (!bypass && !['starter', 'pro', 'institutional'].includes(plan)) {
-    return res.status(403).json({ error: 'Guardian Layer requires the Resident plan or higher.' });
+  if (!bypass && !['professional', 'institutional'].includes(plan)) {
+    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
   }
 
   const {
@@ -1053,8 +1081,8 @@ app.get('/api/guardian/token', requireAuthApi, tokenLimiter, async (req, res) =>
     .maybeSingle();
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
-  if (!bypass && !['starter', 'pro', 'institutional'].includes(plan)) {
-    return res.status(403).json({ error: 'Guardian Layer requires the Resident plan or higher.' });
+  if (!bypass && !['professional', 'institutional'].includes(plan)) {
+    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
   }
 
   let token = profile?.guardian_webhook_token;
@@ -1084,8 +1112,8 @@ app.get('/api/guardian/ea/:platform', requireAuthApi, apiLimiter, async (req, re
     .maybeSingle();
   const eaPlan   = profile?.subscription_status || 'free';
   const eaBypass = profile?.bypass_subscription || false;
-  if (!eaBypass && !['starter', 'pro', 'institutional'].includes(eaPlan)) {
-    return res.status(403).json({ error: 'Guardian Layer requires the Resident plan or higher.' });
+  if (!eaBypass && !['pro', 'professional', 'institutional'].includes(eaPlan)) {
+    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
   }
 
   let token = profile?.guardian_webhook_token;
@@ -1300,8 +1328,8 @@ app.post('/api/guardian/disconnect', requireAuthApi, apiLimiter, async (req, res
     .maybeSingle();
   const discPlan   = discProfile?.subscription_status || 'free';
   const discBypass = discProfile?.bypass_subscription || false;
-  if (!discBypass && !['starter', 'pro', 'institutional'].includes(discPlan)) {
-    return res.status(403).json({ error: 'Guardian Layer requires the Resident plan or higher.' });
+  if (!discBypass && !['pro', 'professional', 'institutional'].includes(discPlan)) {
+    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
   }
   const { error } = await supabaseAdmin
     .from('guardian_data')
@@ -1321,8 +1349,8 @@ app.get('/api/vault', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const vaultPlan   = vp?.subscription_status || 'free';
   const vaultBypass = vp?.bypass_subscription || false;
-  if (!vaultBypass && !['pro', 'institutional'].includes(vaultPlan)) {
-    return res.status(403).json({ error: 'The Vault requires the Fellow plan or higher.' });
+  if (!vaultBypass && !['professional', 'institutional'].includes(vaultPlan)) {
+    return res.status(403).json({ error: 'The Vault requires the Professional plan or above.' });
   }
 
   const limit = Math.min(parseInt(req.query.limit || '20', 10), 50);
@@ -1347,8 +1375,8 @@ app.post('/api/vault', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const vaultWritePlan   = vaultWriteProfile?.subscription_status || 'free';
   const vaultWriteBypass = vaultWriteProfile?.bypass_subscription || false;
-  if (!vaultWriteBypass && !['pro', 'institutional'].includes(vaultWritePlan)) {
-    return res.status(403).json({ error: 'The Vault requires the Fellow plan or higher.' });
+  if (!vaultWriteBypass && !['professional', 'institutional'].includes(vaultWritePlan)) {
+    return res.status(403).json({ error: 'The Vault requires the Professional plan or above.' });
   }
   const { instrument, direction, lot_size, lock_level, reason, estimated_outcome, mentor } = req.body;
   if (!reason) return res.status(400).json({ error: 'reason is required' });
@@ -1395,8 +1423,8 @@ app.get('/api/rules', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const rulesPlan   = rulesProfile?.subscription_status || 'free';
   const rulesGetBypass = rulesProfile?.bypass_subscription || false;
-  if (!rulesGetBypass && !['starter', 'pro', 'institutional'].includes(rulesPlan)) {
-    return res.status(403).json({ error: 'Trading Rules require the Resident plan or higher.' });
+  if (!rulesGetBypass && !['starter', 'pro', 'professional', 'institutional'].includes(rulesPlan)) {
+    return res.status(403).json({ error: 'Trading Rules require the Student plan or above.' });
   }
   const { data, error } = await supabaseAdmin
     .from('rule_violation_summary')
@@ -1417,8 +1445,8 @@ app.post('/api/rules', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
-  if (!bypass && !['starter', 'pro', 'institutional'].includes(plan)) {
-    return res.status(403).json({ error: 'Upgrade to Resident or higher to add personal laws.' });
+  if (!bypass && !['starter', 'pro', 'professional', 'institutional'].includes(plan)) {
+    return res.status(403).json({ error: 'Upgrade to Student plan or above to add personal laws.' });
   }
   const { rule_text, category = 'General', rationale } = req.body;
   if (!rule_text || rule_text.trim().length < 5) {
@@ -1448,8 +1476,8 @@ app.patch('/api/rules/:id', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const patchPlan   = patchProfile?.subscription_status || 'free';
   const patchBypass = patchProfile?.bypass_subscription || false;
-  if (!patchBypass && !['starter', 'pro', 'institutional'].includes(patchPlan)) {
-    return res.status(403).json({ error: 'Trading Rules require the Resident plan or higher.' });
+  if (!patchBypass && !['starter', 'pro', 'professional', 'institutional'].includes(patchPlan)) {
+    return res.status(403).json({ error: 'Trading Rules require the Student plan or above.' });
   }
   const { id } = req.params;
   const { is_active } = req.body;
@@ -1474,8 +1502,8 @@ app.delete('/api/rules/:id', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const delPlan   = delProfile?.subscription_status || 'free';
   const delBypass = delProfile?.bypass_subscription || false;
-  if (!delBypass && !['starter', 'pro', 'institutional'].includes(delPlan)) {
-    return res.status(403).json({ error: 'Trading Rules require the Resident plan or higher.' });
+  if (!delBypass && !['starter', 'pro', 'professional', 'institutional'].includes(delPlan)) {
+    return res.status(403).json({ error: 'Trading Rules require the Student plan or above.' });
   }
   const { id } = req.params;
   const { error } = await supabaseAdmin
@@ -1723,8 +1751,8 @@ app.get('/api/passport', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const passGetPlan   = passGetProfile?.subscription_status || 'free';
   const passGetBypass = passGetProfile?.bypass_subscription || false;
-  if (!passGetBypass && !['pro', 'institutional'].includes(passGetPlan)) {
-    return res.status(403).json({ error: 'Decision Passport requires the Fellow plan or higher.' });
+  if (!passGetBypass && !['professional', 'institutional'].includes(passGetPlan)) {
+    return res.status(403).json({ error: 'Decision Passport requires the Professional plan or above.' });
   }
   const userId = req.user.id;
   const [entriesResult, scoreResult, rulesResult, vaultResult] = await Promise.all([
@@ -1775,8 +1803,8 @@ app.post('/api/passport', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const passPostPlan   = passPostProfile?.subscription_status || 'free';
   const passPostBypass = passPostProfile?.bypass_subscription || false;
-  if (!passPostBypass && !['pro', 'institutional'].includes(passPostPlan)) {
-    return res.status(403).json({ error: 'Decision Passport requires the Fellow plan or higher.' });
+  if (!passPostBypass && !['professional', 'institutional'].includes(passPostPlan)) {
+    return res.status(403).json({ error: 'Decision Passport requires the Professional plan or above.' });
   }
   const { summary, badge, score, mentor = 'mike' } = req.body;
   if (!summary || summary.trim().length < 5) {
@@ -1809,8 +1837,8 @@ app.get('/api/analytics', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const anaPlan   = anaProfile?.subscription_status || 'free';
   const anaBypass = anaProfile?.bypass_subscription || false;
-  if (!anaBypass && !['pro', 'institutional'].includes(anaPlan)) {
-    return res.status(403).json({ error: 'Behavior Analytics requires the Fellow plan or higher.' });
+  if (!anaBypass && !['professional', 'institutional'].includes(anaPlan)) {
+    return res.status(403).json({ error: 'Behavior Analytics requires the Professional plan or above.' });
   }
   const userId  = req.user.id;
   const monthKey = new Date().toISOString().slice(0, 7);
@@ -1984,7 +2012,7 @@ async function runProactiveOutreach() {
     const { data: users } = await supabaseAdmin
       .from('user_profiles')
       .select('id, mentor, email_notifications, proactive_messages, subscription_status')
-      .in('subscription_status', ['starter', 'pro', 'institutional'])
+      .in('subscription_status', ['starter', 'pro', 'professional', 'institutional'])
       .eq('proactive_messages', true);
 
     if (!users?.length) return;
@@ -2074,10 +2102,11 @@ app.delete('/api/account', requireAuthApi, apiLimiter, async (req, res) => {
   }
 });
 
-// ── Billing — Paystack: initiate subscription ─────────────────────────────────
+// ── Billing — Polar.sh: create checkout session ───────────────────────────────
 app.post('/api/billing/initiate', requireAuthApi, apiLimiter, async (req, res) => {
   const { plan, billing = 'monthly' } = req.body;
-  if (!['starter', 'pro', 'institutional'].includes(plan)) {
+  const VALID_PLANS = ['starter', 'pro', 'professional', 'institutional'];
+  if (!VALID_PLANS.includes(plan)) {
     return res.status(400).json({ error: 'Invalid plan' });
   }
   if (plan === 'institutional') {
@@ -2088,9 +2117,7 @@ app.post('/api/billing/initiate', requireAuthApi, apiLimiter, async (req, res) =
     return res.status(400).json({ error: 'Invalid user email for billing' });
   }
 
-  // Server-side double-charge guard: refuse to open a new Paystack session if
-  // the user is already on the requested plan or higher. The client performs
-  // the same check but it can be bypassed by direct API calls.
+  // Server-side double-charge guard
   try {
     const { data: profile } = await supabaseAdmin
       .from('user_profiles')
@@ -2102,7 +2129,7 @@ app.post('/api/billing/initiate', requireAuthApi, apiLimiter, async (req, res) =
       return res.status(409).json({ error: 'Account has a manual subscription override — no billing needed.' });
     }
 
-    const PLAN_RANK  = { free: 0, starter: 1, pro: 2, institutional: 3 };
+    const PLAN_RANK   = { free: 0, starter: 1, pro: 2, professional: 3, institutional: 4 };
     const currentPlan = profile?.subscription_status || 'free';
     if ((PLAN_RANK[currentPlan] ?? 0) >= (PLAN_RANK[plan] ?? 1)) {
       return res.status(409).json({
@@ -2112,77 +2139,82 @@ app.post('/api/billing/initiate', requireAuthApi, apiLimiter, async (req, res) =
     }
   } catch (profileCheckErr) {
     console.error('Billing plan pre-check error:', profileCheckErr.message);
-    // Non-fatal — continue and let Paystack handle idempotency
   }
 
-  const paystackKey = process.env.PAYSTACK_SECRET_KEY;
-  if (!paystackKey || paystackKey.startsWith('sk_test_placeholder')) {
+  const polarKey = process.env.POLAR_ACCESS_TOKEN;
+  if (!polarKey) {
     return res.status(501).json({ error: 'Payment not yet configured' });
   }
 
-  const planCodeEnv = `PAYSTACK_PLAN_${plan.toUpperCase()}_${billing === 'annual' ? 'ANNUAL' : 'MONTHLY'}`;
-  const planCode    = process.env[planCodeEnv];
-  if (!planCode) {
-    console.error(`Paystack plan code not configured: ${planCodeEnv}`);
+  // Polar product ID is stored per plan/billing cycle in env
+  const productEnv = `POLAR_PRODUCT_${plan.toUpperCase()}_${billing === 'annual' ? 'ANNUAL' : 'MONTHLY'}`;
+  const productId  = process.env[productEnv];
+  if (!productId) {
+    console.error(`Polar product not configured: ${productEnv}`);
     return res.status(501).json({ error: 'Payment plan not yet configured' });
   }
 
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+
   try {
-    const body = JSON.stringify({
-      email:        req.user.email,
-      plan:         planCode,
-      callback_url: `${process.env.APP_URL || 'http://localhost:3000'}/billing/callback`,
-      metadata: JSON.stringify({ user_id: req.user.id, plan, billing }),
+    const upstream = await fetch('https://api.polar.sh/v1/checkouts', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${polarKey}` },
+      body: JSON.stringify({
+        product_id:    productId,
+        success_url:   `${appUrl}/billing/success?checkout_id={CHECKOUT_ID}`,
+        customer_email: req.user.email,
+        metadata: { user_id: req.user.id, plan, billing },
+      }),
     });
 
-    const upstream = await fetch('https://api.paystack.co/transaction/initialize', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${paystackKey}` },
-      body,
-    });
-    const data = await upstream.json();
-    if (!data.status) {
-      console.error('Paystack init error:', data.message);
+    if (!upstream.ok) {
+      const err = await upstream.json().catch(() => ({}));
+      console.error('Polar checkout error:', upstream.status, err);
       return res.status(502).json({ error: 'Payment initiation failed' });
     }
-    res.json({ url: data.data.authorization_url, reference: data.data.reference });
+
+    const data = await upstream.json();
+    if (!data.url) {
+      console.error('Polar returned no checkout URL:', data);
+      return res.status(502).json({ error: 'Payment initiation failed' });
+    }
+    res.json({ url: data.url });
   } catch (err) {
     console.error('Billing initiate error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// ── Billing — Paystack: callback after payment ────────────────────────────────
-app.get('/billing/callback', requireAuthPage, async (req, res) => {
-  const { reference } = req.query;
-  if (!reference) return res.redirect('/workspace.html');
+// ── Billing — Polar.sh: success redirect after payment ────────────────────────
+app.get('/billing/success', requireAuthPage, async (req, res) => {
+  const { checkout_id } = req.query;
+  if (!checkout_id) return res.redirect('/workspace.html');
 
-  const paystackKey = process.env.PAYSTACK_SECRET_KEY;
+  const polarKey = process.env.POLAR_ACCESS_TOKEN;
   let paymentSucceeded = false;
   try {
     const upstream = await fetch(
-      `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-      { headers: { Authorization: `Bearer ${paystackKey}` } }
+      `https://api.polar.sh/v1/checkouts/${encodeURIComponent(checkout_id)}`,
+      { headers: { Authorization: `Bearer ${polarKey}` } }
     );
     const data = await upstream.json();
 
-    if (data.status && data.data?.status === 'success') {
-      let meta = data.data.metadata || {};
-      if (typeof meta === 'string') { try { meta = JSON.parse(meta); } catch (_) { meta = {}; } }
+    // Polar checkout status: 'succeeded' | 'failed' | 'expired' | 'open'
+    if (data.status === 'succeeded') {
+      const meta     = data.metadata || {};
+      const userId   = meta.user_id;
+      const VALID_CB = ['free', 'starter', 'pro', 'professional', 'institutional'];
+      const plan     = VALID_CB.includes(meta.plan) ? meta.plan : 'starter';
 
-      // Guard: only update the authenticated user — never trust metadata.user_id
-      // to update a different account (prevents privilege escalation via crafted
-      // Paystack transactions).
-      if (meta.user_id && meta.user_id !== req.user.id) {
-        console.error('Billing callback user_id mismatch — possible tampering', {
+      // Guard: session user must match checkout metadata
+      if (userId && userId !== req.user.id) {
+        console.error('Billing success user_id mismatch — possible tampering', {
           session_user: req.user.id,
-          meta_user:    meta.user_id,
+          meta_user:    userId,
         });
         return res.redirect('/workspace.html?payment=error');
       }
-
-      const VALID_CB_PLANS = ['free', 'starter', 'pro', 'institutional'];
-      const plan = VALID_CB_PLANS.includes(meta.plan) ? meta.plan : 'starter';
 
       await supabaseAdmin.from('user_profiles')
         .update({ subscription_status: plan })
@@ -2190,43 +2222,64 @@ app.get('/billing/callback', requireAuthPage, async (req, res) => {
 
       await supabaseAdmin.from('subscriptions').upsert({
         user_id:                 req.user.id,
-        payment_subscription_id: data.data.subscription?.subscription_code || reference,
-        payment_customer_code:   data.data.customer?.customer_code || null,
+        payment_subscription_id: data.subscription_id || checkout_id,
+        payment_customer_code:   data.customer_id     || null,
         plan,
         status: 'active',
       }, { onConflict: 'user_id' });
 
+      // Confirmation email
+      const PLAN_DISPLAY = { starter: 'Student', pro: 'Practitioner', professional: 'Professional', institutional: 'Institution' };
+      const mentorName = req.user.user_metadata?.mentor === 'ashley' ? 'Ashley' : 'Mike';
+      sendEmail(
+        req.user.email,
+        `You're on the ${PLAN_DISPLAY[plan] || plan} plan.`,
+        mentorEmailHtml(
+          mentorName,
+          `Your ${PLAN_DISPLAY[plan] || plan} plan is active. Everything you've unlocked is waiting for you in the workspace.`,
+          'Open Your Workspace',
+          (process.env.APP_URL || 'https://edgekeeper.io') + '/workspace.html'
+        )
+      ).catch(() => {});
+
       paymentSucceeded = true;
     } else {
-      // Transaction was abandoned, declined, or failed — log for visibility.
-      const txStatus = data.data?.status || 'unknown';
-      console.warn('Billing callback: non-success transaction', {
-        reference,
-        status: txStatus,
-        user_id: req.user.id,
-      });
+      console.warn('Billing success: non-succeeded checkout', { checkout_id, status: data.status });
     }
   } catch (err) {
-    console.error('Billing callback error:', err.message);
+    console.error('Billing success callback error:', err.message);
   }
 
-  // Only show ?subscribed=1 when payment actually succeeded.
-  // A failed/abandoned payment redirects with ?payment=failed so the workspace
-  // can surface a helpful message instead of silently implying success.
   res.redirect(paymentSucceeded ? '/workspace.html?subscribed=1' : '/workspace.html?payment=failed');
 });
 
-// ── Billing — Paystack webhook ────────────────────────────────────────────────
-// Raw body required for HMAC-SHA512 signature verification
+// ── Billing — Polar.sh webhook (Standard Webhooks / Svix format) ──────────────
+// Raw body required for HMAC-SHA256 signature verification
 app.post(
   '/api/billing/webhook',
   express.raw({ type: 'application/json', limit: '1mb' }),
   async (req, res) => {
-    const secret    = process.env.PAYSTACK_SECRET_KEY || '';
-    const signature = req.headers['x-paystack-signature'] || '';
-    const hash      = crypto.createHmac('sha512', secret).update(req.body).digest('hex');
+    const webhookId        = req.headers['webhook-id']        || '';
+    const webhookTimestamp = req.headers['webhook-timestamp'] || '';
+    const webhookSignature = req.headers['webhook-signature'] || '';
 
-    if (hash !== signature) return res.status(401).json({ error: 'Invalid signature' });
+    try {
+      // Standard Webhooks verification: HMAC-SHA256 over "id.timestamp.body"
+      const secretRaw = (process.env.POLAR_WEBHOOK_SECRET || '').replace(/^whsec_/, '');
+      const secret    = Buffer.from(secretRaw, 'base64');
+      const signed    = `${webhookId}.${webhookTimestamp}.${req.body.toString()}`;
+      const computed  = crypto.createHmac('sha256', secret).update(signed).digest('base64');
+      const expected  = webhookSignature.split(' ')
+        .map(s => s.split(',').pop())
+        .filter(Boolean);
+
+      if (!expected.some(sig => sig === computed)) {
+        return res.status(401).json({ error: 'Invalid signature' });
+      }
+    } catch (sigErr) {
+      console.error('Webhook signature error:', sigErr.message);
+      return res.status(401).json({ error: 'Signature verification failed' });
+    }
 
     let event;
     try { event = JSON.parse(req.body.toString()); } catch (_) {
@@ -2236,51 +2289,51 @@ app.post(
     // Acknowledge immediately — process async
     res.json({ status: true });
 
-    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const VALID_PLANS = ['free', 'starter', 'pro', 'institutional'];
+    const UUID_RE   = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const VALID_PLANS = ['free', 'starter', 'pro', 'professional', 'institutional'];
 
     try {
-      // Dedup: skip retried webhook deliveries that have already been processed.
-      const eventId = event.id ? String(event.id) : null;
+      // Dedup: skip retried webhook deliveries already processed
+      const eventId = event.data?.id ? String(event.data.id) : (webhookId || null);
       if (eventId) {
         const { error: dedupErr } = await supabaseAdmin
           .from('webhook_events')
-          .insert({ event_id: eventId, event_type: event.event || 'unknown' });
+          .insert({ event_id: eventId, event_type: event.type || 'unknown' });
         if (dedupErr) {
-          // Unique constraint violation = already processed
-          console.log('Webhook already processed, skipping:', eventId, event.event);
+          console.log('Webhook already processed, skipping:', eventId, event.type);
           return;
         }
       }
-    } catch (dedupCheckErr) {
-      // VULN-10: dedup failure is fatal — safer to miss an event than to double-apply a disable
-      console.error('Webhook dedup check error, skipping event to avoid double-processing:', dedupCheckErr.message);
-      return;
-    }
 
-    try {
-      let meta = event.data?.metadata || {};
-      if (typeof meta === 'string') { try { meta = JSON.parse(meta); } catch (_) { meta = {}; } }
+      const meta   = event.data?.metadata || {};
       const userId = meta.user_id;
       const plan   = meta.plan;
 
-      // Validate both fields before touching the DB
       if (userId && !UUID_RE.test(userId)) {
         console.error('Webhook: invalid user_id shape — ignoring', { userId });
         return;
       }
 
-      if (event.event === 'charge.success' || event.event === 'subscription.create') {
+      // Polar webhook events: subscription.created/updated/active → activate
+      //                       subscription.canceled/revoked → downgrade to free
+      const ACTIVATE_EVENTS = ['subscription.created', 'subscription.updated', 'subscription.active', 'order.created'];
+      const CANCEL_EVENTS   = ['subscription.canceled', 'subscription.revoked'];
+
+      if (ACTIVATE_EVENTS.includes(event.type)) {
         if (userId && plan && VALID_PLANS.includes(plan)) {
           await supabaseAdmin.from('user_profiles')
             .update({ subscription_status: plan })
             .eq('id', userId);
         }
-      } else if (event.event === 'subscription.disable' || event.event === 'invoice.payment_failed') {
-        if (userId) {
+      } else if (CANCEL_EVENTS.includes(event.type)) {
+        const cancelUserId = userId || event.data?.user_id;
+        if (cancelUserId && UUID_RE.test(cancelUserId)) {
           await supabaseAdmin.from('user_profiles')
             .update({ subscription_status: 'free' })
-            .eq('id', userId);
+            .eq('id', cancelUserId);
+          await supabaseAdmin.from('subscriptions')
+            .update({ status: 'canceled' })
+            .eq('user_id', cancelUserId);
         }
       }
     } catch (err) {
@@ -2290,7 +2343,7 @@ app.post(
 );
 
 // ── Director AI — admin-only orchestration endpoint ───────────────────────────
-const DIRECTOR_SYSTEM_PROMPT = `You are the Director of EdgeKeeper's internal AI team. EdgeKeeper is a trading psychology AI mentorship platform for retail and prop traders. Features: AI mentors Mike (analytical) and Ashley (empathetic), voice sessions, trading journal, rules engine, Guardian Layer (live account monitoring), The Vault (intervention archive), and proactive mentor outreach. Stack: Node.js/Express, Supabase, OpenAI GPT-4o-mini, ElevenLabs voice, Paystack billing.
+const DIRECTOR_SYSTEM_PROMPT = `You are the Director of EdgeKeeper's internal AI team. EdgeKeeper is a trading psychology AI mentorship platform for retail and prop traders. Features: AI mentors Mike (analytical) and Ashley (empathetic), voice sessions, trading journal, rules engine, Guardian Layer (live account monitoring), The Vault (intervention archive), and proactive mentor outreach. Stack: Node.js/Express, Supabase, OpenAI GPT-4o-mini, ElevenLabs voice, Polar.sh billing, Resend email.
 
 Your team:
 — Claude: Chief Architect & Lead Engineer. Full-stack ownership, auth, AI proxy, security, payments, migrations.
@@ -2301,7 +2354,7 @@ Your team:
 — Kai: AI & Voice Integration Lead. Prompt engineering, ElevenLabs, voice quality.
 — Milo: Growth & Marketing Lead. Landing page conversion, prop firm outreach, content.
 — Sage: Head of Customer Experience. Onboarding flow, user retention, support frameworks.
-— Phoenix: Revenue & Partnerships Lead. Paystack integration, prop firm deals, pricing strategy.
+— Phoenix: Revenue & Partnerships Lead. Polar.sh billing, prop firm deals, pricing strategy.
 — Leo: Data & Analytics Lead. Session instrumentation, behaviour scoring, PostHog/Plausible.
 — Maya: Content & Community Lead. Blog, LinkedIn, trading community presence.
 
@@ -2425,7 +2478,7 @@ app.patch('/api/admin/users/:id', requireAdmin, adminLimiter, async (req, res) =
     return res.status(400).json({ error: 'No valid fields provided' });
   }
 
-  const validPlans = ['free', 'starter', 'pro', 'institutional'];
+  const validPlans = ['free', 'starter', 'pro', 'professional', 'institutional'];
   if (updates.subscription_status && !validPlans.includes(updates.subscription_status)) {
     return res.status(400).json({ error: 'Invalid subscription_status' });
   }
@@ -2567,8 +2620,8 @@ app.get('/api/reports', requireAuthApi, apiLimiter, async (req, res) => {
 
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
-  if (!bypass && !['pro', 'institutional'].includes(plan)) {
-    return res.status(403).json({ error: 'Monthly reports are available on the Fellow plan and above.' });
+  if (!bypass && !['professional', 'institutional'].includes(plan)) {
+    return res.status(403).json({ error: 'Monthly reports are available on the Professional plan and above.' });
   }
 
   const { data, error } = await supabaseAdmin
@@ -2591,8 +2644,8 @@ app.post('/api/reports/generate', requireAuthApi, apiLimiter, async (req, res) =
     .maybeSingle();
   const rptGenPlan   = rptGenProfile?.subscription_status || 'free';
   const rptGenBypass = rptGenProfile?.bypass_subscription || false;
-  if (!rptGenBypass && !['pro', 'institutional'].includes(rptGenPlan)) {
-    return res.status(403).json({ error: 'Monthly reports are available on the Fellow plan and above.' });
+  if (!rptGenBypass && !['professional', 'institutional'].includes(rptGenPlan)) {
+    return res.status(403).json({ error: 'Monthly reports are available on the Professional plan and above.' });
   }
   const { month } = req.body; // optional override, e.g. '2026-05'
   const reportMonth = month || new Date().toISOString().slice(0, 7);
@@ -2615,7 +2668,7 @@ async function generateBehavioralReport(userId, reportMonth) {
 
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
-  if (!bypass && !['pro', 'institutional'].includes(plan)) return;
+  if (!bypass && !['professional', 'institutional'].includes(plan)) return;
 
   const mentor = profile?.mentor || 'mike';
   const [year, month] = reportMonth.split('-').map(Number);
@@ -3036,7 +3089,7 @@ app.get('/api/cron/reports', verifyCronSecret, async (req, res) => {
     const { data: users } = await supabaseAdmin
       .from('user_profiles')
       .select('id')
-      .in('subscription_status', ['pro', 'institutional']);
+      .in('subscription_status', ['professional', 'institutional']);
     if (users?.length) {
       for (const u of users) {
         await generateBehavioralReport(u.id, reportMonth).catch(err =>
@@ -3062,8 +3115,12 @@ if (require.main === module) {
     warnings.push('SUPABASE_URL not set — auth and data will fail');
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY.startsWith('placeholder'))
     warnings.push('SUPABASE_SERVICE_ROLE_KEY not set — server-side auth will fail');
-  if (!process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET_KEY.startsWith('sk_live_your'))
-    warnings.push('PAYSTACK_SECRET_KEY not set — payments will fail');
+  if (!process.env.POLAR_ACCESS_TOKEN || process.env.POLAR_ACCESS_TOKEN.startsWith('polar_at_xxx'))
+    warnings.push('POLAR_ACCESS_TOKEN not set — payments will fail');
+  if (!process.env.POLAR_WEBHOOK_SECRET || process.env.POLAR_WEBHOOK_SECRET.startsWith('whsec_xxx'))
+    warnings.push('POLAR_WEBHOOK_SECRET not set — webhook verification will fail');
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.startsWith('re_xxx'))
+    warnings.push('RESEND_API_KEY not set — transactional emails will be skipped');
   if (process.env.NODE_ENV === 'production' && !process.env.APP_URL) {
     console.error('FATAL: APP_URL must be set in production. Shutting down.');
     process.exit(1);
@@ -3092,7 +3149,7 @@ if (require.main === module) {
       try {
         const { data: users } = await supabaseAdmin
           .from('user_profiles').select('id')
-          .in('subscription_status', ['pro', 'institutional']);
+          .in('subscription_status', ['professional', 'institutional']);
         if (users?.length) {
           for (const u of users) {
             await generateBehavioralReport(u.id, reportMonth).catch(err =>
@@ -3111,3 +3168,5 @@ if (require.main === module) {
 
 // Vercel serverless entry point — exports the Express app as the request handler
 module.exports = app;
+
+

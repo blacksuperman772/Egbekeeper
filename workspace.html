@@ -3763,7 +3763,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     localStorage.removeItem('ek__academy_topic_pending');
   }
 
-  // Handle Paystack billing callback
+  // Handle Polar.sh billing callback
   if (params.get('subscribed') === '1') {
     showPaymentToast('Plan activated — welcome to your new membership.');
   } else if (params.get('payment') === 'failed') {

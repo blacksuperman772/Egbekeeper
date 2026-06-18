@@ -98,7 +98,7 @@ Do not treat AI mentor responses as professional advice of any kind. Use your ow
 
 **Free tier:** If available, the free tier gives you limited access to EdgeKeeper features at no charge.
 
-**Paid subscriptions:** Paid plans are billed on a recurring basis (monthly or annually depending on your selection). Billing is processed through Paystack. By subscribing, you authorize us to charge your payment method on the agreed recurring schedule.
+**Paid subscriptions:** Paid plans are billed on a recurring basis (monthly or annually depending on your selection). Billing is processed through Polar.sh. By subscribing, you authorize us to charge your payment method on the agreed recurring schedule.
 
 **Pricing:** Current pricing is displayed at the time of purchase. We will notify you in advance of any price changes to your active subscription.
 
@@ -129,7 +129,7 @@ EdgeKeeper integrates the following third-party services to operate:
 | OpenAI | Powers the AI text conversations with Mike and Ashley |
 | ElevenLabs | Powers voice synthesis and voice conversations |
 | Supabase | Authentication, database, and data storage |
-| Paystack | Payment processing |
+| Polar.sh | Payment processing |
 
 These providers have their own terms of service and privacy policies. By using EdgeKeeper, you acknowledge that your data is processed by these providers as described in our Privacy Policy. We are not responsible for the acts or omissions of these third-party providers.
 

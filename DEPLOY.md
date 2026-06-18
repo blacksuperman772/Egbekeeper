@@ -1,6 +1,6 @@
 # EdgeKeeper — Production Deployment Checklist
 
-> Stack: Node.js/Express · Supabase · OpenAI · ElevenLabs · Paystack  
+> Stack: Node.js/Express · Supabase · OpenAI · ElevenLabs · Polar.sh · Resend  
 > Target: Ubuntu 22.04 VPS (DigitalOcean / Hetzner / Linode) behind nginx
 
 ---
@@ -85,12 +85,21 @@ ELEVENLABS_API_KEY=sk_...
 ELEVENLABS_MIKE_AGENT_ID=agent_...
 ELEVENLABS_ASHLEY_AGENT_ID=agent_...
 
-# Paystack — use live keys in prod (sk_live_...)
-PAYSTACK_SECRET_KEY=sk_live_...
-PAYSTACK_PLAN_STARTER_MONTHLY=PLN_...
-PAYSTACK_PLAN_STARTER_ANNUAL=PLN_...
-PAYSTACK_PLAN_PRO_MONTHLY=PLN_...
-PAYSTACK_PLAN_PRO_ANNUAL=PLN_...
+# Resend — transactional email
+RESEND_API_KEY=re_...
+RESEND_FROM=EdgeKeeper <noreply@edgekeeper.io>
+
+# Polar.sh — billing (get from polar.sh/settings)
+POLAR_ACCESS_TOKEN=polar_at_...
+POLAR_WEBHOOK_SECRET=whsec_...
+POLAR_PRODUCT_STARTER_MONTHLY=prod_...
+POLAR_PRODUCT_STARTER_ANNUAL=prod_...
+POLAR_PRODUCT_PRO_MONTHLY=prod_...
+POLAR_PRODUCT_PRO_ANNUAL=prod_...
+POLAR_PRODUCT_PROFESSIONAL_MONTHLY=prod_...
+POLAR_PRODUCT_PROFESSIONAL_ANNUAL=prod_...
+POLAR_PRODUCT_INSTITUTIONAL_MONTHLY=prod_...
+POLAR_PRODUCT_INSTITUTIONAL_ANNUAL=prod_...
 
 # Admin
 ADMIN_EMAIL=alexandermwhitmore@gmail.com
@@ -172,7 +181,7 @@ server {
         client_max_body_size 1m;
     }
 
-    # Paystack webhook needs raw body — no buffering issues expected at 1mb
+    # Polar.sh webhook needs raw body for HMAC verification — no buffering issues expected at 1mb
     location /api/billing/webhook {
         proxy_pass         http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -261,14 +270,14 @@ Port 3000 is NOT opened — Node only listens on 127.0.0.1 and nginx proxies to 
 
 ---
 
-## 10. Paystack Webhook Registration
+## 10. Polar.sh Webhook Registration
 
-In your Paystack dashboard:
+In your Polar.sh dashboard:
 
 1. Go to **Settings → Webhooks**
 2. Add webhook URL: `https://edgekeeper.io/api/billing/webhook`
-3. Select events: `charge.success`, `subscription.create`, `subscription.disable`, `invoice.payment_failed`
-4. Confirm the **secret key** used to sign webhooks matches `PAYSTACK_SECRET_KEY` in your `.env`.
+3. Select events: `subscription.created`, `subscription.updated`, `subscription.active`, `subscription.canceled`, `subscription.revoked`, `order.created`
+4. Copy the generated **webhook secret** and set it as `POLAR_WEBHOOK_SECRET` in your `.env` (include the `whsec_` prefix).
 
 ---
 
@@ -311,7 +320,7 @@ curl -I https://edgekeeper.io/.env   # must return 404, never 200
 
 - [ ] Remove `'unsafe-eval'` from the CSP `script-src` directive once you audit which scripts actually need it. This is the highest-risk remaining CSP gap.
 - [ ] Replace `'unsafe-inline'` scripts with CSP nonces in a follow-up pass — this neutralises XSS from any injected content.
-- [ ] Set a Paystack webhook **IP allowlist** (Paystack publishes their IP ranges) at the nginx level for additional webhook hardening.
+- [ ] Set a Polar.sh webhook **IP allowlist** at the nginx level for additional webhook hardening (check Polar.sh docs for their published IP ranges).
 - [ ] Consider adding `compression` middleware (`npm install compression`) before `express.static` for bandwidth savings — no security impact, pure performance.
 - [ ] Add structured logging (e.g. `pino`) so PM2 log files are parseable by a log aggregator in future.
 - [ ] Run `npm audit` before first deploy and pin any high/critical CVEs.
