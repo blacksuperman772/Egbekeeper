@@ -1004,6 +1004,7 @@ function selectLevel(level) {
   sessionStorage.setItem('ek_trader_stage_pre', stage);
   // Write to localStorage so workspace.html can read it before the API profile loads
   localStorage.setItem('ek_trader_stage_onboarding', stage);
+  localStorage.setItem('ek_selected_level_onboarding', level);
 
   const lv = document.getElementById('level-selector');
   lv.classList.add('hidden');
@@ -1369,6 +1370,16 @@ Forbidden: "As an AI", "I understand", "That's great!", "Thanks for sharing", "O
     ? `\nYOUR CURRENT WORKING THEORY: "${currentTheory}"\nYou may confirm, deepen, or revise this — but you must keep thinking.`
     : '';
 
+  const selectedLevel = sessionStorage.getItem('ek_selected_level') || '';
+  const levelContextMap = {
+    foundation:   'Foundation — new to trading or still building consistency. They self-assessed as a beginner.',
+    development:  'Development — understands the basics but hasn\'t built real consistency. They know enough to know what they don\'t have yet.',
+    performance:  'Performance — experienced trader with a working edge. Here to optimize, not to learn basics.',
+  };
+  const levelContext = selectedLevel && levelContextMap[selectedLevel]
+    ? `\nSELF-SELECTED ENTRY: This trader chose the ${selectedLevel.charAt(0).toUpperCase() + selectedLevel.slice(1)} track — ${levelContextMap[selectedLevel]}\nThis is their self-assessment. It may be accurate, inflated, or underselling. Factor it in as one signal. Test it against what they actually say.`
+    : '';
+
   return `You are ${mentor.name}, a Senior Mentor at EdgeKeeper — a private institution dedicated to protecting trader psychology before trader capital.
 
 WHAT YOU ARE:
@@ -1389,6 +1400,7 @@ TIME: ${timeCtx}. Reference naturally when it adds something ("It's late" / "You
 
 ${phaseInstructions[phase]}
 ${theoryContext}
+${levelContext}
 
 INTAKE STAGES — move through these naturally, one at a time:
 ${STAGES.join(' → ')}
