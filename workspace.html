@@ -3801,26 +3801,22 @@ window.addEventListener('DOMContentLoaded', async () => {
   addDateDivider('Today');
   await sleep(500);
 
-  // First-ever visit: show Mentor's Promise before anything else
-  if (visits === 1) {
-    const hasIntakeData = mentorNotebook && (
-      mentorNotebook.currentTheory ||
-      (Array.isArray(mentorNotebook.observations) && mentorNotebook.observations.length > 0)
-    );
+  // First contact — fires on first-ever visit OR when arriving fresh from onboarding
+  // (ek_fresh_account covers returning dev accounts and plan-upgrade re-entries)
+  const freshFromOnboarding = sessionStorage.getItem('ek_fresh_account');
+  if (freshFromOnboarding) sessionStorage.removeItem('ek_fresh_account');
 
-    // First contact — use hard-coded script so the opener is always precise.
-    // AI fires only when the user sends their first real message.
+  if (visits === 1 || freshFromOnboarding) {
+    // Resolve the level the user picked in onboarding
+    const stageRaw = localStorage.getItem('ek_trader_stage_onboarding');
+    const stageToLevel = { explorer: 'foundation', developing: 'development', performance: 'performance' };
     const selectedLevel = sessionStorage.getItem('ek_selected_level')
-      || localStorage.getItem('ek_trader_stage_onboarding') && (
-          localStorage.getItem('ek_trader_stage_onboarding') === 'explorer'    ? 'foundation'   :
-          localStorage.getItem('ek_trader_stage_onboarding') === 'developing'  ? 'development'  :
-          localStorage.getItem('ek_trader_stage_onboarding') === 'performance' ? 'performance'  : 'foundation'
-        )
+      || (stageRaw ? (stageToLevel[stageRaw] || 'foundation') : null)
       || 'foundation';
+
     const mentorKey = mentor?.name?.toLowerCase() || 'mike';
-    const firstScript = (FIRST_CONTACT_SCRIPTS[mentorKey] || FIRST_CONTACT_SCRIPTS.mike)[selectedLevel]
-      || FIRST_CONTACT_SCRIPTS[mentorKey]?.foundation
-      || FIRST_CONTACT_SCRIPTS.mike.foundation;
+    const scripts   = FIRST_CONTACT_SCRIPTS[mentorKey] || FIRST_CONTACT_SCRIPTS.mike;
+    const firstScript = scripts[selectedLevel] || scripts.foundation || FIRST_CONTACT_SCRIPTS.mike.foundation;
 
     await mentorSay(firstScript);
     addToHistory('assistant', firstScript);

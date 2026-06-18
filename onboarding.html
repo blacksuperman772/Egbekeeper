@@ -656,6 +656,9 @@ async function registerAndProceed() {
     btn.textContent = 'Taking you in…';
     const isPaid    = _plan && _plan !== 'free';
 
+    // Signal workspace to always show first contact (even for accounts with visits > 1)
+    sessionStorage.setItem('ek_fresh_account', '1');
+
     // Check whether the assessment has been completed
     let assessComplete = false;
     try {
@@ -957,8 +960,8 @@ function selectMentor(name, e) {
   document.getElementById('selector').classList.add('hidden');
   setTimeout(() => {
     document.getElementById('selector').style.display = 'none';
-    // If level was pre-selected (e.g. from ?path= param), skip the level screen
-    if (sessionStorage.getItem('ek_selected_level')) {
+    // Skip level screen only when a ?path= URL param explicitly pre-selected it
+    if (sessionStorage.getItem('ek_path_preselected')) {
       startIntake();
       return;
     }
@@ -1458,6 +1461,11 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 window.addEventListener('DOMContentLoaded', () => {
   const p = new URLSearchParams(window.location.search);
 
+  // Clear stale level from any prior visit — user must pick fresh every time
+  // (unless a ?path= URL param explicitly pre-selects it below)
+  sessionStorage.removeItem('ek_selected_level');
+  sessionStorage.removeItem('ek_path_preselected');
+
   // Capture plan selection from pricing CTAs
   _plan = p.get('plan') || null;
 
@@ -1474,8 +1482,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const incomingPath = p.get('path');
   if (incomingPath && ['foundation','development','performance'].includes(incomingPath)) {
     sessionStorage.setItem('ek_preselected_path', incomingPath);
-    // Also pre-set the level so the level selector is skipped
     sessionStorage.setItem('ek_selected_level', incomingPath);
+    sessionStorage.setItem('ek_path_preselected', '1'); // skip level screen for URL-driven entry
     const stageMap = { foundation: 'explorer', development: 'developing', performance: 'performance' };
     localStorage.setItem('ek_trader_stage_onboarding', stageMap[incomingPath] || 'explorer');
   }
