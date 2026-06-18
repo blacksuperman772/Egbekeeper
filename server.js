@@ -748,7 +748,7 @@ app.get('/api/journal', requireAuthApi, apiLimiter, async (req, res) => {
   const jGetPlan   = jGetProfile?.subscription_status || 'free';
   const jGetBypass = jGetProfile?.bypass_subscription || false;
   if (!jGetBypass && !['starter', 'pro', 'professional', 'institutional'].includes(jGetPlan)) {
-    return res.status(403).json({ error: 'Journal access requires the Student plan or above.' });
+    return res.status(403).json({ error: 'Journal access requires the Resident plan or above.' });
   }
   const limit  = Math.min(parseInt(req.query.limit  || '50', 10), 100);
   const offset = Math.max(parseInt(req.query.offset || '0',  10), 0);
@@ -778,7 +778,7 @@ app.post('/api/journal', requireAuthApi, apiLimiter, async (req, res) => {
   const jPostPlan   = jPostProfile?.subscription_status || 'free';
   const jPostBypass = jPostProfile?.bypass_subscription || false;
   if (!jPostBypass && !['starter', 'pro', 'professional', 'institutional'].includes(jPostPlan)) {
-    return res.status(403).json({ error: 'Journal access requires the Student plan or above.' });
+    return res.status(403).json({ error: 'Journal access requires the Resident plan or above.' });
   }
   const { content, entry_type, trade_data, mentor_notes } = req.body;
 
@@ -1052,8 +1052,8 @@ app.get('/api/guardian', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
-  if (!bypass && !['professional', 'institutional'].includes(plan)) {
-    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
+  if (!bypass && !['pro', 'professional', 'institutional'].includes(plan)) {
+    return res.status(403).json({ error: 'Guardian Layer is available on the Fellow plan and above.' });
   }
   const { data, error } = await supabaseAdmin
     .from('guardian_data')
@@ -1100,7 +1100,7 @@ app.post('/api/guardian/update', apiLimiter, async (req, res) => {
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
   if (!bypass && !['professional', 'institutional'].includes(plan)) {
-    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
+    return res.status(403).json({ error: 'Guardian Layer is available on the Fellow plan and above.' });
   }
 
   const {
@@ -1156,7 +1156,7 @@ app.get('/api/guardian/token', requireAuthApi, tokenLimiter, async (req, res) =>
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
   if (!bypass && !['professional', 'institutional'].includes(plan)) {
-    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
+    return res.status(403).json({ error: 'Guardian Layer is available on the Fellow plan and above.' });
   }
 
   let token = profile?.guardian_webhook_token;
@@ -1187,7 +1187,7 @@ app.get('/api/guardian/ea/:platform', requireAuthApi, apiLimiter, async (req, re
   const eaPlan   = profile?.subscription_status || 'free';
   const eaBypass = profile?.bypass_subscription || false;
   if (!eaBypass && !['pro', 'professional', 'institutional'].includes(eaPlan)) {
-    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
+    return res.status(403).json({ error: 'Guardian Layer is available on the Fellow plan and above.' });
   }
 
   let token = profile?.guardian_webhook_token;
@@ -1403,7 +1403,7 @@ app.post('/api/guardian/disconnect', requireAuthApi, apiLimiter, async (req, res
   const discPlan   = discProfile?.subscription_status || 'free';
   const discBypass = discProfile?.bypass_subscription || false;
   if (!discBypass && !['pro', 'professional', 'institutional'].includes(discPlan)) {
-    return res.status(403).json({ error: 'Guardian Layer is available from the Practitioner plan.' });
+    return res.status(403).json({ error: 'Guardian Layer is available on the Fellow plan and above.' });
   }
   const { error } = await supabaseAdmin
     .from('guardian_data')
@@ -1424,7 +1424,7 @@ app.get('/api/vault', requireAuthApi, apiLimiter, async (req, res) => {
   const vaultPlan   = vp?.subscription_status || 'free';
   const vaultBypass = vp?.bypass_subscription || false;
   if (!vaultBypass && !['professional', 'institutional'].includes(vaultPlan)) {
-    return res.status(403).json({ error: 'The Vault requires the Professional plan or above.' });
+    return res.status(403).json({ error: 'The Vault requires the Private Office plan or above.' });
   }
 
   const limit = Math.min(parseInt(req.query.limit || '20', 10), 50);
@@ -1450,7 +1450,7 @@ app.post('/api/vault', requireAuthApi, apiLimiter, async (req, res) => {
   const vaultWritePlan   = vaultWriteProfile?.subscription_status || 'free';
   const vaultWriteBypass = vaultWriteProfile?.bypass_subscription || false;
   if (!vaultWriteBypass && !['professional', 'institutional'].includes(vaultWritePlan)) {
-    return res.status(403).json({ error: 'The Vault requires the Professional plan or above.' });
+    return res.status(403).json({ error: 'The Vault requires the Private Office plan or above.' });
   }
   const { instrument, direction, lot_size, lock_level, reason, estimated_outcome, mentor } = req.body;
   if (!reason) return res.status(400).json({ error: 'reason is required' });
@@ -1520,7 +1520,7 @@ app.post('/api/rules', requireAuthApi, apiLimiter, async (req, res) => {
   const plan   = profile?.subscription_status || 'free';
   const bypass = profile?.bypass_subscription || false;
   if (!bypass && !['starter', 'pro', 'professional', 'institutional'].includes(plan)) {
-    return res.status(403).json({ error: 'Upgrade to Student plan or above to add personal laws.' });
+    return res.status(403).json({ error: 'Upgrade to Resident plan or above to add personal laws.' });
   }
   const { rule_text, category = 'General', rationale } = req.body;
   if (!rule_text || rule_text.trim().length < 5) {
@@ -1873,7 +1873,7 @@ app.get('/api/passport', requireAuthApi, apiLimiter, async (req, res) => {
   const passGetPlan   = passGetProfile?.subscription_status || 'free';
   const passGetBypass = passGetProfile?.bypass_subscription || false;
   if (!passGetBypass && !['professional', 'institutional'].includes(passGetPlan)) {
-    return res.status(403).json({ error: 'Decision Passport requires the Professional plan or above.' });
+    return res.status(403).json({ error: 'Decision Passport requires the Private Office plan or above.' });
   }
   const userId = req.user.id;
   const [entriesResult, scoreResult, rulesResult, vaultResult] = await Promise.all([
@@ -1925,7 +1925,7 @@ app.post('/api/passport', requireAuthApi, apiLimiter, async (req, res) => {
   const passPostPlan   = passPostProfile?.subscription_status || 'free';
   const passPostBypass = passPostProfile?.bypass_subscription || false;
   if (!passPostBypass && !['professional', 'institutional'].includes(passPostPlan)) {
-    return res.status(403).json({ error: 'Decision Passport requires the Professional plan or above.' });
+    return res.status(403).json({ error: 'Decision Passport requires the Private Office plan or above.' });
   }
   const { summary, badge, score, mentor = 'mike' } = req.body;
   if (!summary || summary.trim().length < 5) {
@@ -1958,8 +1958,8 @@ app.get('/api/analytics', requireAuthApi, apiLimiter, async (req, res) => {
     .maybeSingle();
   const anaPlan   = anaProfile?.subscription_status || 'free';
   const anaBypass = anaProfile?.bypass_subscription || false;
-  if (!anaBypass && !['professional', 'institutional'].includes(anaPlan)) {
-    return res.status(403).json({ error: 'Behavior Analytics requires the Professional plan or above.' });
+  if (!anaBypass && !['pro', 'professional', 'institutional'].includes(anaPlan)) {
+    return res.status(403).json({ error: 'Behavior Analytics requires the Fellow plan or above.' });
   }
   const userId  = req.user.id;
   const monthKey = new Date().toISOString().slice(0, 7);
