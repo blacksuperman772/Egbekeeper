@@ -459,6 +459,7 @@
   <!-- cursor -->
   <div id="cursor"></div>
   <div id="cursor-ring"></div>
+  <div aria-hidden="true" style="position:fixed;inset:0;z-index:0;background:url('/assets/assessment-ambient.png') center/cover no-repeat;opacity:0.05;pointer-events:none;"></div>
 
   <!-- top bar -->
   <div id="top-label">
@@ -791,6 +792,21 @@
         pathContinue.classList.add('enabled');
       });
     });
+
+    /* Auto-select path if coming from paths.html via onboarding */
+    (function autoSelectPath() {
+      const pre = sessionStorage.getItem('ek_preselected_path');
+      if (!pre) return;
+      sessionStorage.removeItem('ek_preselected_path');
+      const block = document.querySelector(`.path-block[data-path="${pre}"]`);
+      if (!block) return;
+      document.querySelectorAll('.path-block').forEach(b => b.classList.remove('selected'));
+      block.classList.add('selected');
+      selectedPath = pre;
+      pathContinue.classList.add('enabled');
+      /* Small delay so user sees which path was chosen before advancing */
+      setTimeout(() => pathContinue.click(), 600);
+    })();
 
     pathContinue.addEventListener('click', () => {
       if (!selectedPath) return;

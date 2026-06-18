@@ -1383,6 +1383,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const pwEl = document.getElementById('acc-password');
   if (pwEl) pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') registerAndProceed(); });
 
+  // Persist pre-selected path from paths.html so assessment.html can skip Step 0
+  const incomingPath = p.get('path');
+  if (incomingPath && ['foundation','development','performance'].includes(incomingPath)) {
+    sessionStorage.setItem('ek_preselected_path', incomingPath);
+  }
+
   // URL param takes precedence; fall back to sessionStorage (legacy path)
   const m = p.get('mentor') || sessionStorage.getItem('ek_mentor');
   if (m && MENTORS[m]) {
