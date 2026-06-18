@@ -3808,10 +3808,22 @@ window.addEventListener('DOMContentLoaded', async () => {
       (Array.isArray(mentorNotebook.observations) && mentorNotebook.observations.length > 0)
     );
 
-    // Always generate the first message from the AI — never use hardcoded strings.
-    // If there's no intake data the system prompt still has enough context to open naturally.
-    addToHistory('user', '__first_session__');
-    await getAIResponse('__first_session__', false);
+    // First contact — use hard-coded script so the opener is always precise.
+    // AI fires only when the user sends their first real message.
+    const selectedLevel = sessionStorage.getItem('ek_selected_level')
+      || localStorage.getItem('ek_trader_stage_onboarding') && (
+          localStorage.getItem('ek_trader_stage_onboarding') === 'explorer'    ? 'foundation'   :
+          localStorage.getItem('ek_trader_stage_onboarding') === 'developing'  ? 'development'  :
+          localStorage.getItem('ek_trader_stage_onboarding') === 'performance' ? 'performance'  : 'foundation'
+        )
+      || 'foundation';
+    const mentorKey = mentor?.name?.toLowerCase() || 'mike';
+    const firstScript = (FIRST_CONTACT_SCRIPTS[mentorKey] || FIRST_CONTACT_SCRIPTS.mike)[selectedLevel]
+      || FIRST_CONTACT_SCRIPTS[mentorKey]?.foundation
+      || FIRST_CONTACT_SCRIPTS.mike.foundation;
+
+    await mentorSay(firstScript);
+    addToHistory('assistant', firstScript);
 
     await sleep(1000);
     showMentorPromise();
@@ -3901,6 +3913,23 @@ const EK = {
   str:    k => localStorage.getItem(_ekKey(k)) || '',
   setStr: (k,v) => localStorage.setItem(_ekKey(k), String(v)),
   del:    k => localStorage.removeItem(_ekKey(k)),
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// FIRST CONTACT SCRIPTS — hard-coded, never AI-generated
+// One per mentor × level. AI only fires when the user responds.
+// ══════════════════════════════════════════════════════════════════════
+const FIRST_CONTACT_SCRIPTS = {
+  mike: {
+    foundation: "Good. You started somewhere.\n\nMost people think about it for years and never actually sit down. So — what made today the day?",
+    development: "You've got some history. That means you've also got patterns.\n\nSome are working for you. Some aren't. Let's figure out which is which.",
+    performance: "You're past the basics. What we're working on now is the gap between what you know and what you consistently execute when it matters.\n\nThat's a different kind of problem."
+  },
+  ashley: {
+    foundation: "Welcome. I'm glad you're here.\n\nI know starting something like this can feel like a big step. What's been going through your mind leading up to today?",
+    development: "You've been at this for a while. I want to understand something first — what does a good trading day feel like for you right now? Not the numbers. The feeling of it.",
+    performance: "You've done a lot of the hard work already. I'm curious about what's still unsettled.\n\nWhat keeps showing up, even when things are otherwise going well?"
+  }
 };
 
 // ══════════════════════════════════════════════════════════════════════
@@ -4287,7 +4316,8 @@ function buildSystemPrompt() {
     lastBreakthrough && visits > 4 && `A real moment you remember: "${typeof lastBreakthrough === 'object' ? lastBreakthrough.text : lastBreakthrough}" — it is load-bearing context for who they are now.`,
   ].filter(Boolean).join('\n');
 
-  const traderStage = EK.str('ek_trader_stage') || 'explorer';
+  // Use the API-set stage if available; fall back to what was chosen in onboarding
+  const traderStage = EK.str('ek_trader_stage') || localStorage.getItem('ek_trader_stage_onboarding') || 'explorer';
   const currentIdentity = EK.str('ek_current_identity') || null;
   const targetIdentity  = EK.str('ek_target_identity')  || null;
   const readinessLabel  = EK.str('ek_readiness_label')  || null;

@@ -68,6 +68,27 @@
     .sel-mike   .sel-cta { color: var(--gold-dim); }
     .sel-ashley .sel-cta { color: var(--green); }
 
+    /* ── LEVEL SELECTOR ── */
+    #level-selector { position: fixed; inset: 0; z-index: 290; background: var(--black); display: none; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.8s ease; opacity: 0; }
+    #level-selector.visible { display: flex; }
+    #level-selector.active { opacity: 1; }
+    #level-selector.hidden { opacity: 0; pointer-events: none; }
+    .lev-back { position: absolute; top: 28px; left: 48px; font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); cursor: none; background: none; border: none; padding: 0; transition: color 0.2s; }
+    .lev-back:hover { color: var(--gold-dim); }
+    .lev-mentor-tag { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 48px; transition: color 0.4s ease; }
+    .lev-headline { font-family: var(--serif); font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 300; color: var(--white); text-align: center; margin-bottom: 64px; line-height: 1.2; }
+    .lev-headline em { font-style: italic; color: var(--gold); }
+    .lev-cards { display: flex; gap: 2px; background: var(--border); border: 1px solid var(--border); }
+    .lev-card { width: 240px; padding: 44px 36px; background: var(--black); cursor: none; transition: background .3s; position: relative; overflow: hidden; border: none; text-align: left; }
+    .lev-card:hover { background: var(--stone); }
+    .lev-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, var(--mc-dim, var(--gold-dim)), transparent); transition: opacity 0.3s; opacity: 0.6; }
+    .lev-card:hover::before { opacity: 1; }
+    .lev-number { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
+    .lev-title { font-family: var(--serif); font-size: 1.5rem; font-weight: 300; color: var(--white); margin-bottom: 16px; }
+    .lev-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.75; margin-bottom: 28px; }
+    .lev-cta { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mc-dim, var(--gold-dim)); transition: color 0.2s; }
+    .lev-card:hover .lev-cta { color: var(--mc, var(--gold)); }
+
     /* ── INTAKE ROOM ── */
     #intake-room {
       position: fixed; inset: 0; z-index: 1;
@@ -378,6 +399,33 @@
     </a>
   </div>
   <p class="sel-signin-row">Already have an account? <a href="auth.html" class="sel-signin-link">Sign in →</a></p>
+</div>
+
+<!-- LEVEL SELECTOR -->
+<div id="level-selector">
+  <button class="lev-back" onclick="backToMentor()">← Back</button>
+  <p class="lev-mentor-tag" id="lev-mentor-tag">Mike · Private Intake</p>
+  <h1 class="lev-headline">Where are you<br><em>right now?</em></h1>
+  <div class="lev-cards">
+    <button class="lev-card" onclick="selectLevel('foundation')">
+      <div class="lev-number">01</div>
+      <div class="lev-title">Foundation</div>
+      <p class="lev-desc">New to trading, or still finding your footing. You understand the idea but haven't built consistency yet.</p>
+      <div class="lev-cta">Start here →</div>
+    </button>
+    <button class="lev-card" onclick="selectLevel('development')">
+      <div class="lev-number">02</div>
+      <div class="lev-title">Development</div>
+      <p class="lev-desc">You know the mechanics. The problem is execution, discipline, or finding a reliable edge.</p>
+      <div class="lev-cta">This is me →</div>
+    </button>
+    <button class="lev-card" onclick="selectLevel('performance')">
+      <div class="lev-number">03</div>
+      <div class="lev-title">Performance</div>
+      <p class="lev-desc">You have a working edge. You're optimising consistency, psychology at higher stakes, or preparing to scale.</p>
+      <div class="lev-cta">Continue →</div>
+    </button>
+  </div>
 </div>
 
 <!-- INTAKE ROOM -->
@@ -902,9 +950,48 @@ function selectMentor(name, e) {
   if (!m) return;
   mentor = m;
   applyTheme(m);
+
+  // Update level selector mentor tag
+  document.getElementById('lev-mentor-tag').textContent = m.name + ' · Private Intake';
+
   document.getElementById('selector').classList.add('hidden');
   setTimeout(() => {
     document.getElementById('selector').style.display = 'none';
+    // If level was pre-selected (e.g. from ?path= param), skip the level screen
+    if (sessionStorage.getItem('ek_selected_level')) {
+      startIntake();
+      return;
+    }
+    const lv = document.getElementById('level-selector');
+    lv.classList.add('visible');
+    requestAnimationFrame(() => requestAnimationFrame(() => lv.classList.add('active')));
+  }, 800);
+}
+
+function backToMentor() {
+  const lv = document.getElementById('level-selector');
+  lv.classList.remove('active');
+  setTimeout(() => {
+    lv.classList.remove('visible');
+    const sel = document.getElementById('selector');
+    sel.style.display = 'flex';
+    sel.classList.remove('hidden');
+  }, 800);
+}
+
+function selectLevel(level) {
+  const stageMap = { foundation: 'explorer', development: 'developing', performance: 'performance' };
+  const stage = stageMap[level] || 'explorer';
+
+  sessionStorage.setItem('ek_selected_level', level);
+  sessionStorage.setItem('ek_trader_stage_pre', stage);
+  // Write to localStorage so workspace.html can read it before the API profile loads
+  localStorage.setItem('ek_trader_stage_onboarding', stage);
+
+  const lv = document.getElementById('level-selector');
+  lv.classList.add('hidden');
+  setTimeout(() => {
+    lv.classList.remove('visible', 'active', 'hidden');
     startIntake();
   }, 800);
 }
@@ -1387,6 +1474,10 @@ window.addEventListener('DOMContentLoaded', () => {
   const incomingPath = p.get('path');
   if (incomingPath && ['foundation','development','performance'].includes(incomingPath)) {
     sessionStorage.setItem('ek_preselected_path', incomingPath);
+    // Also pre-set the level so the level selector is skipped
+    sessionStorage.setItem('ek_selected_level', incomingPath);
+    const stageMap = { foundation: 'explorer', development: 'developing', performance: 'performance' };
+    localStorage.setItem('ek_trader_stage_onboarding', stageMap[incomingPath] || 'explorer');
   }
 
   // URL param takes precedence; fall back to sessionStorage (legacy path)
