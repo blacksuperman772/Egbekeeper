@@ -494,7 +494,9 @@ app.post('/api/chat', requireAuthApi, chatLimiter, async (req, res) => {
         const NEXT_PLAN    = { free: 'Resident', starter: 'Fellow', pro: 'Private Office', professional: 'Institution' };
         const nextPlan = NEXT_PLAN[plan] || null;
         return res.status(429).json({
-          error: 'Message limit reached for this month.',
+          error: plan === 'free'
+            ? 'Your free trial has ended. Become a Resident to continue.'
+            : 'Monthly limit reached.',
           plan,
           upgrade_to: nextPlan,
           usage_count: usage[0].new_count,
@@ -726,7 +728,7 @@ app.get('/api/usage', requireAuthApi, apiLimiter, async (req, res) => {
 
   const plan      = profileRes.data?.subscription_status || 'free';
   const bypass    = profileRes.data?.bypass_subscription || false;
-  const limits    = { free: 10, starter: 30, pro: 100, professional: null, institutional: null };
+  const limits    = { free: 15, starter: null, pro: null, professional: null, institutional: null };
   const limit     = bypass ? null : (limits[plan] ?? 30);
 
   const usage = {};
@@ -938,13 +940,13 @@ app.post('/api/voice/session', requireAuthApi, apiLimiter, async (req, res) => {
     plan = profile?.subscription_status || 'free';
     const bypass = profile?.bypass_subscription || false;
 
-    // Voice is Professional+ only
-    const VOICE_PLANS = ['professional', 'institutional'];
+    // Voice access: all paid plans included. Free gets 1 session.
+    const VOICE_PLANS = ['free', 'starter', 'pro', 'professional', 'institutional'];
     if (!bypass && !VOICE_PLANS.includes(plan)) {
       return res.status(403).json({
-        error: 'Voice sessions are available on the Professional plan and above.',
+        error: 'Voice sessions are not available on your current plan.',
         plan,
-        upgrade_to: 'Professional',
+        upgrade_to: 'Resident',
       });
     }
 
@@ -958,15 +960,16 @@ app.post('/api/voice/session', requireAuthApi, apiLimiter, async (req, res) => {
         return res.status(500).json({ error: 'Could not verify voice usage. Please try again.' });
       }
 
-      const row = voiceData?.[0];
-      if (row?.limit_reached) {
-        const VOICE_LIMITS = { professional: 5, institutional: 999 };
-        const limit = VOICE_LIMITS[plan] ?? 5;
-        return res.status(429).json({
-          error: `You've used all ${limit} voice session${limit === 1 ? '' : 's'} for this month.`,
-          plan,
-          upgrade_to: plan === 'professional' ? 'Institution' : null,
-        });
+      // Free users: 1 session only. Paid users: access included, no hard session cap.
+      if (plan === 'free') {
+        const row = voiceData?.[0];
+        if (row?.limit_reached) {
+          return res.status(429).json({
+            error: 'Your free voice session has been used. Upgrade to continue.',
+            plan,
+            upgrade_to: 'Resident',
+          });
+        }
       }
     }
   } catch (planCheckErr) {
