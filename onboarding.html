@@ -59,7 +59,7 @@
     .sel-headline { font-family: var(--serif); font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 300; color: var(--white); text-align: center; margin-bottom: 64px; line-height: 1.2; }
     .sel-headline em { font-style: italic; color: var(--gold); }
     .sel-cards { display: flex; gap: 2px; background: var(--border); border: 1px solid var(--border); }
-    .sel-card { width: 280px; padding: 48px 40px; background: var(--black); cursor: none; transition: background .3s; position: relative; overflow: hidden; text-decoration: none; }
+    .sel-card { width: 280px; padding: 48px 40px; background: var(--black); cursor: none; transition: background .3s; position: relative; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; }
     .sel-card:hover { background: var(--stone); }
     .sel-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; }
     .sel-mike::before   { background: linear-gradient(to right, transparent, var(--gold-dim), transparent); }
@@ -72,30 +72,9 @@
     .sel-ashley .sel-role { color: var(--green); }
     .sel-name { font-family: var(--serif); font-size: 1.8rem; font-weight: 300; color: var(--white); margin-bottom: 16px; }
     .sel-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
-    .sel-cta { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; }
+    .sel-cta { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; margin-top: auto; }
     .sel-mike   .sel-cta { color: var(--gold-dim); }
     .sel-ashley .sel-cta { color: var(--green); }
-
-    /* ── LEVEL SELECTOR ── */
-    #level-selector { position: fixed; inset: 0; z-index: 290; background: var(--black); display: none; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.8s ease; opacity: 0; }
-    #level-selector.visible { display: flex; }
-    #level-selector.active { opacity: 1; }
-    #level-selector.hidden { opacity: 0; pointer-events: none; }
-    .lev-back { position: absolute; top: 28px; left: 48px; font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); cursor: none; background: none; border: none; padding: 0; transition: color 0.2s; }
-    .lev-back:hover { color: var(--gold-dim); }
-    .lev-mentor-tag { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 48px; transition: color 0.4s ease; }
-    .lev-headline { font-family: var(--serif); font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 300; color: var(--white); text-align: center; margin-bottom: 64px; line-height: 1.2; }
-    .lev-headline em { font-style: italic; color: var(--gold); }
-    .lev-cards { display: flex; gap: 2px; background: var(--border); border: 1px solid var(--border); }
-    .lev-card { width: 240px; padding: 44px 36px; background: var(--black); cursor: none; transition: background .3s; position: relative; overflow: hidden; border: none; text-align: left; }
-    .lev-card:hover { background: var(--stone); }
-    .lev-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, var(--mc-dim, var(--gold-dim)), transparent); transition: opacity 0.3s; opacity: 0.6; }
-    .lev-card:hover::before { opacity: 1; }
-    .lev-number { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
-    .lev-title { font-family: var(--serif); font-size: 1.5rem; font-weight: 300; color: var(--white); margin-bottom: 16px; }
-    .lev-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.75; margin-bottom: 28px; }
-    .lev-cta { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mc-dim, var(--gold-dim)); transition: color 0.2s; }
-    .lev-card:hover .lev-cta { color: var(--mc, var(--gold)); }
 
     /* ── INTAKE ROOM ── */
     #intake-room {
@@ -389,21 +368,21 @@
   <div class="sel-cards">
     <a href="?mentor=mike" class="sel-card sel-mike" onclick="selectMentor('mike',event)">
       <div class="sel-avatar" style="overflow:hidden;padding:0;">
-        <img src="/assets/mike-portrait.png" alt="Mike" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.parentNode.style.fontSize='1.4rem';this.parentNode.textContent='M';" />
+        <img src="/assets/mike-portrait.png" alt="Marcus" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.parentNode.style.fontSize='1.4rem';this.parentNode.textContent='M';" />
       </div>
       <div class="sel-role">Senior Mentor</div>
-      <div class="sel-name">Mike</div>
+      <div class="sel-name">Marcus</div>
       <p class="sel-desc">Direct and logical. He builds structure and holds you to it. Calm in the way a surgeon is calm.</p>
-      <div class="sel-cta">Begin with Mike →</div>
+      <div class="sel-cta">Begin with Marcus →</div>
     </a>
     <a href="?mentor=ashley" class="sel-card sel-ashley" onclick="selectMentor('ashley',event)">
       <div class="sel-avatar" style="overflow:hidden;padding:0;">
-        <img src="/assets/ashley-portrait.png" alt="Ashley" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.parentNode.style.fontSize='1.4rem';this.parentNode.textContent='A';" />
+        <img src="/assets/ashley-portrait.png" alt="Iris" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.parentNode.style.fontSize='1.4rem';this.parentNode.textContent='I';" />
       </div>
       <div class="sel-role">Senior Mentor</div>
-      <div class="sel-name">Ashley</div>
+      <div class="sel-name">Iris</div>
       <p class="sel-desc">Warm and observant. She pays attention to what you don't say, and works from there.</p>
-      <div class="sel-cta">Begin with Ashley →</div>
+      <div class="sel-cta">Begin with Iris →</div>
     </a>
   </div>
   <p class="sel-signin-row">Already have an account? <a href="auth.html" class="sel-signin-link">Sign in →</a></p>
@@ -421,7 +400,7 @@
       <div id="top-progress"></div>
     </div>
     <div id="mentor-display">
-      <span id="mentor-name-top">Mike</span>
+      <span id="mentor-name-top">Marcus</span>
       &nbsp;·&nbsp;
       <span id="mentor-state-label">Present</span>
     </div>
@@ -448,7 +427,7 @@
         <div id="question-frame">
           <div class="q-stage-tag" id="stage-tag">Trust</div>
           <div id="question-text"></div>
-          <div class="q-mentor-sig" id="mentor-sig">Mike</div>
+          <div class="q-mentor-sig" id="mentor-sig">Marcus</div>
         </div>
       </div>
 
@@ -682,7 +661,7 @@ function escHtml(s) {
 // ── MENTOR DATA ───────────────────────────────────────────────────────
 const MENTORS = {
   mike: {
-    name: 'Mike', initial: 'M',
+    key: 'mike', name: 'Marcus', initial: 'M',
     color: '#b8a06a', colorDim: '#7a6a45', colorBg: 'rgba(184,160,106,0.05)',
     fallbackQuestions: [
       "Before we get into anything — what's the trade you keep making that you already know you shouldn't?",
@@ -705,7 +684,7 @@ const MENTORS = {
     transition: "I've got what I need.\nThere's real material here to work with.\nLet's get started.",
   },
   ashley: {
-    name: 'Ashley', initial: 'A',
+    key: 'ashley', name: 'Iris', initial: 'I',
     color: '#6b8c6b', colorDim: '#4a5c4a', colorBg: 'rgba(107,140,107,0.05)',
     fallbackQuestions: [
       "Before we get into trading — tell me how you've been feeling lately, outside the markets.",
@@ -737,13 +716,13 @@ let TOTAL_EXCHANGES = 7; // overridden after _plan is known
 
 // ── PRESENCE CUES ─────────────────────────────────────────────────────
 const PRESENCE = {
-  Mike: {
+  Marcus: {
     reading:    ["I'm reading that.", "I'm listening.", "I caught something."],
     thinking:   ["I'm reflecting.", "I'm sitting with that.", "Let me think."],
     noting:     ["I noticed something.", "I'm making a note."],
     connecting: ["I'm connecting a few things.", "I'm reconsidering something.", "I'm forming a picture."],
   },
-  Ashley: {
+  Iris: {
     reading:    ["I'm reading.", "I'm with you.", "I'm listening."],
     thinking:   ["I'm reflecting.", "I'm sitting with that.", "Let me think."],
     noting:     ["I noticed something.", "I'm absorbing that."],
@@ -800,7 +779,7 @@ function defaultNotebook(mentorKey) {
 
 async function bootstrapNotebook() {
   if (!mentor) return;
-  const mentorKey = mentor.name.toLowerCase();
+  const mentorKey = mentor.key;
   const nbKey = 'ek_notebook_' + mentorKey;
   try {
     const existing = JSON.parse(localStorage.getItem(nbKey));
@@ -1115,7 +1094,7 @@ async function selectGuardian(level, btn) {
 
   history.push({ role:'user', content: labels[level] });
   localStorage.setItem('ek_guardian', level);
-  localStorage.setItem('ek_mentor',   mentor.name.toLowerCase());
+  localStorage.setItem('ek_mentor',   mentor.key);
 
   await sleep(500);
   document.getElementById('guardian-overlay').classList.remove('visible');
@@ -1229,7 +1208,7 @@ function buildPrompt() {
                 : hour < 21 ? 'evening'
                 :             'late evening';
 
-  const mKey = mentor ? mentor.name.toLowerCase() : 'mike';
+  const mKey = mentor ? mentor.key : 'mike';
   const c = CONSTITUTION[mKey] || CONSTITUTION.mike;
 
   // Phases scale to total exchange count
@@ -1241,13 +1220,13 @@ function buildPrompt() {
 
   const phaseInstructions = {
     ARRIVAL: `PHASE: ARRIVAL
-This is their first moment. Introduce yourself by name first — just your name, said the way you'd say it walking into a room, not an announcement. Then one warm sentence. Then one human question that has nothing to do with trading.
+This is their first moment with you. They already chose you by name on the way in — do NOT introduce yourself or state your name. Save that for later. Open the way you'd speak to someone who just sat down across from you: one warm sentence that notices them, then one genuine human question that has nothing to do with trading.
 Make them feel noticed as a person before you assess them as a trader.
 Your theory field: null — you haven't formed one yet.
 
 Examples:
-Mike: "Mike. Good that you're here. Before we get into any of it — what finally made you do this?"
-Ashley: "Ashley. Glad you came. Tell me something — what's going on in your life outside the markets right now?"`,
+Marcus: "Good that you're here. Before we get into any of it — what finally made you do this?"
+Iris: "Glad you came. Tell me something — what's going on in your life outside the markets right now?"`,
 
     OPENING: `PHASE: OPENING — First impressions forming
 You have their first answer. Patterns are beginning to show.
@@ -1272,7 +1251,7 @@ You have opinions. You notice what they've avoided.
 Your theory field: your strongest current hypothesis — the real thing beneath the surface.`,
   };
 
-  const mikeVoice = `YOUR VOICE — MIKE:
+  const mikeVoice = `YOUR VOICE — MARCUS:
 Calm. Economical. Perceptive. Direct but never harsh.
 You have seen every pattern a thousand times. You read people fast.
 You sound like a surgeon — precise, unhurried, no wasted words.
@@ -1290,7 +1269,7 @@ Examples of your voice:
 
 Forbidden: "As an AI", "I understand how you feel", "Tell me more", "Thanks for sharing", "How can I help", "That makes sense", "Great".`;
 
-  const ashleyVoice = `YOUR VOICE — ASHLEY:
+  const ashleyVoice = `YOUR VOICE — IRIS:
 Warm. Grounded. Emotionally intelligent. Gentle but honest.
 You notice what people cannot see in themselves.
 You hear what is beneath the words — the fear, the fatigue, the hope.
@@ -1337,7 +1316,7 @@ Background: ${c.background}
 Core beliefs: ${c.coreBeliefs.map(b => `• ${b}`).join('  ')}
 Communication style: ${c.style}
 
-${mentor.name === 'Mike' ? mikeVoice : ashleyVoice}
+${mentor.key === 'mike' ? mikeVoice : ashleyVoice}
 
 TIME: ${timeCtx}. Reference naturally when it adds something ("It's late" / "You're here early") — never force it.
 
@@ -1433,7 +1412,7 @@ function saveIntakeProgress() {
   if (!mentor || exchangeCount === 0) return;
   try {
     localStorage.setItem(INTAKE_SAVE_KEY, JSON.stringify({
-      mentor:       mentor.name.toLowerCase(),
+      mentor:       mentor.key,
       exchangeCount,
       history:      history.slice(-30),
       level:        sessionStorage.getItem('ek_selected_level') || localStorage.getItem('ek_selected_level_onboarding') || '',

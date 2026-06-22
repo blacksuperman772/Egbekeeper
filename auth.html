@@ -584,13 +584,15 @@
 
   // ── URL params — capture intent before auth ──────────────────────────────────
   const _params = new URLSearchParams(window.location.search);
-  const _next   = _params.get('next');   // e.g. 'onboarding'
+  const _next   = _params.get('next');   // e.g. 'onboarding' or full path like '/academy-onboarding'
   const _mentor = _params.get('mentor'); // e.g. 'mike' | 'ashley'
   const _plan   = _params.get('plan');   // e.g. 'free' | 'starter' | 'pro' | 'institutional'
 
   // Persist mentor/plan in sessionStorage so onboarding and workspace can read it
   if (_mentor) sessionStorage.setItem('ek_mentor', _mentor);
   if (_plan)   sessionStorage.setItem('ek_plan',   _plan);
+  // Persist arbitrary next-destination for protected page redirects
+  if (_next && _next.startsWith('/')) sessionStorage.setItem('ek_post_auth_dest', _next);
 
   // ── State ────────────────────────────────────────────────────────────────────
   let isLoading = false;
@@ -678,6 +680,14 @@
       return;
     }
 
+    // If redirected here from a protected page, send them back to it
+    const storedDest = sessionStorage.getItem('ek_post_auth_dest');
+    if (storedDest && storedDest.startsWith('/')) {
+      sessionStorage.removeItem('ek_post_auth_dest');
+      window.location.href = storedDest;
+      return;
+    }
+
     // Resolve plan — URL param takes precedence over sessionStorage
     const pendingPlan    = _plan || sessionStorage.getItem('ek_plan');
     const pendingBilling = sessionStorage.getItem('ek_billing') || 'monthly';
@@ -686,10 +696,17 @@
     try {
       const { data: profile } = await sb
         .from('user_profiles')
-        .select('onboarding_complete, subscription_status, bypass_subscription')
+        .select('onboarding_complete, subscription_status, bypass_subscription, academy_track')
         .single();
 
-      const onboarded = profile?.onboarding_complete;
+      const onboarded     = profile?.onboarding_complete;
+      const academyTrack  = profile?.academy_track;
+
+      // Academy-enrolled users who haven't done mentor onboarding → academy dashboard
+      if (academyTrack && !onboarded && !isPaidPlan) {
+        window.location.href = '/academy.html';
+        return;
+      }
 
       // User has a paid plan intent AND has finished onboarding → go straight to billing
       if (isPaidPlan && onboarded) {

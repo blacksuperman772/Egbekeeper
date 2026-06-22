@@ -144,7 +144,10 @@ async function verifySession(req, res, next) {
 // ── Auth-required guard (HTML pages) — redirects to /auth.html ───────────────
 function requireAuthPage(req, res, next) {
   if (req.user) return next();
-  res.redirect('/auth.html');
+  // Preserve destination so auth.html can redirect back after login/signup
+  const dest = req.originalUrl;
+  const safe = dest && dest !== '/' && !dest.startsWith('/auth') ? `?next=${encodeURIComponent(dest)}` : '';
+  res.redirect('/auth.html' + safe);
 }
 
 // ── Auth-required guard (API routes) — returns 401 JSON ──────────────────────
@@ -210,6 +213,34 @@ async function requireIncompleteOnboarding(req, res, next) {
     if (data?.onboarding_complete) return res.redirect('/workspace.html');
   } catch (_) { /* profile missing — let them through to onboarding */ }
   next();
+}
+
+// ── Academy entitlement ───────────────────────────────────────────────────────
+// Track 1 (Market Foundations) is free for any enrolled user — the beginner hook.
+// Tracks 2-6 require any paid plan. Enforced server-side; the UI lock is cosmetic.
+const FREE_ACADEMY_MODULES = new Set([
+  'what_are_markets', 'asset_classes', 'how_orders_work', 'reading_a_chart',
+  'candlestick_basics', 'market_sessions', 'market_participants', 'paper_trading',
+  'choosing_a_broker', 'what_risk_means',
+]);
+const PAID_PLANS = new Set(['starter', 'pro', 'professional', 'institutional']);
+
+// Gate /study routes: free modules always pass; gated modules require a paid plan.
+async function gateAcademyModule(req, res, next) {
+  const moduleKey = String(req.query.module || '').trim();
+  // No module or a free module → always allowed (study.html defaults to a free module)
+  if (!moduleKey || FREE_ACADEMY_MODULES.has(moduleKey)) return next();
+  try {
+    const { data } = await supabaseAdmin
+      .from('user_profiles')
+      .select('subscription_status, bypass_subscription')
+      .eq('id', req.user.id)
+      .maybeSingle();
+    const paid = data?.bypass_subscription || PAID_PLANS.has(data?.subscription_status);
+    if (paid) return next();
+  } catch (_) { /* on lookup failure, fail closed to the locked view */ }
+  // Not entitled — send them back to the curriculum with the lock surfaced
+  return res.redirect('/academy.html?locked=' + encodeURIComponent(moduleKey));
 }
 
 // ── Admin middleware — uses is_admin boolean from DB, fails closed ────────────
@@ -291,9 +322,20 @@ app.get('/edgekeeper.html', serveInjectedHtml(path.join(__dirname, 'edgekeeper.h
 // Without this, a logged-in user hitting /auth.html would see the form
 // briefly before client-side JS redirected them, which also risks running
 // the billing initiation logic a second time.
-app.get('/auth.html', (req, res, next) => {
-  if (req.user) return res.redirect('/workspace.html');
-  next();
+app.get('/auth.html', async (req, res, next) => {
+  if (!req.user) return next();
+  // Route already-authed users to the right dashboard
+  try {
+    const { data } = await supabaseAdmin
+      .from('user_profiles')
+      .select('onboarding_complete, academy_track')
+      .eq('id', req.user.id)
+      .maybeSingle();
+    if (data?.academy_track && !data?.onboarding_complete) {
+      return res.redirect('/academy.html');
+    }
+  } catch (_) { /* fallthrough to workspace */ }
+  return res.redirect('/workspace.html');
 }, serveInjectedHtml(path.join(__dirname, 'auth.html')));
 
 app.get('/reset-password.html', serveInjectedHtml(path.join(__dirname, 'reset-password.html')));
@@ -373,7 +415,7 @@ app.post('/api/onboarding/register', apiLimiter, async (req, res) => {
   res.json({ success: true, user_id: userData.user.id, plan: safePlan });
 
   // Welcome email — fire-and-forget, never blocks the response
-  const mentorDisplay = safeMentor === 'ashley' ? 'Ashley' : 'Mike';
+  const mentorDisplay = safeMentor === 'ashley' ? 'Iris' : 'Marcus';
   sendEmail(
     email,
     `${mentorDisplay} is ready for you.`,
@@ -382,15 +424,28 @@ app.post('/api/onboarding/register', apiLimiter, async (req, res) => {
 });
 app.get('/profile.html',     requireAuthPage, serveInjectedHtml(path.join(__dirname, 'profile.html')));
 app.get('/profile',          requireAuthPage, (req, res) => res.redirect('/profile.html'));
-app.get('/workspace.html',   requireAuthPage, serveInjectedHtml(path.join(__dirname, 'workspace.html')));
+app.get('/workspace.html', requireAuthPage, async (req, res, next) => {
+  try {
+    const { data } = await supabaseAdmin
+      .from('user_profiles')
+      .select('onboarding_complete, academy_track')
+      .eq('id', req.user.id)
+      .maybeSingle();
+    // Academy-only users don't have a workspace yet
+    if (data?.academy_track && !data?.onboarding_complete) {
+      return res.redirect('/academy.html');
+    }
+  } catch (_) { /* let them through — worst case is empty workspace */ }
+  next();
+}, serveInjectedHtml(path.join(__dirname, 'workspace.html')));
 app.get('/settings.html',    requireAuthPage, serveInjectedHtml(path.join(__dirname, 'settings.html')));
 app.get('/assessment.html',  requireAuthPage, serveInjectedHtml(path.join(__dirname, 'assessment.html')));
 app.get('/academy.html',              requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy.html')));
 app.get('/academy',                   requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy.html')));
 app.get('/academy-onboarding.html',   requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy-onboarding.html')));
 app.get('/academy-onboarding',        requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy-onboarding.html')));
-app.get('/study.html',                requireAuthPage, serveInjectedHtml(path.join(__dirname, 'study.html')));
-app.get('/study',                     requireAuthPage, serveInjectedHtml(path.join(__dirname, 'study.html')));
+app.get('/study.html',                requireAuthPage, gateAcademyModule, serveInjectedHtml(path.join(__dirname, 'study.html')));
+app.get('/study',                     requireAuthPage, gateAcademyModule, serveInjectedHtml(path.join(__dirname, 'study.html')));
 // Phase 3-7 pages
 app.get('/reviews.html',      requireAuthPage, serveInjectedHtml(path.join(__dirname, 'reviews.html')));
 app.get('/reviews',           requireAuthPage, serveInjectedHtml(path.join(__dirname, 'reviews.html')));
@@ -678,6 +733,73 @@ app.post('/api/notebook/:mentor', requireAuthApi, apiLimiter, async (req, res) =
   res.json({ notebook: data });
 });
 
+// ── Academy enrollment ────────────────────────────────────────────────────────
+// POST /api/academy/enroll — write academy_track and enrolled_at to user_profiles
+app.post('/api/academy/enroll', requireAuthApi, apiLimiter, async (req, res) => {
+  const { track } = req.body || {};
+  const validTracks = ['foundations', 'technical', 'risk', 'strategy', 'psychology', 'performance'];
+  if (!track || !validTracks.includes(track)) {
+    return res.status(400).json({ error: 'Invalid track' });
+  }
+  const { error } = await supabaseAdmin
+    .from('user_profiles')
+    .update({ academy_track: track, academy_enrolled_at: new Date().toISOString() })
+    .eq('id', req.user.id);
+  if (error) return res.status(500).json({ error: 'Database error' });
+  res.json({ ok: true });
+});
+
+// ── Academy progress ──────────────────────────────────────────────────────────
+// GET  /api/academy/progress — returns { track, progress: {module_key: {started,completed}} }
+app.get('/api/academy/progress', requireAuthApi, apiLimiter, async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('user_profiles')
+    .select('academy_track, academy_enrolled_at, academy_progress, subscription_status, bypass_subscription')
+    .eq('id', req.user.id)
+    .maybeSingle();
+  if (error) return res.status(500).json({ error: 'Database error' });
+  const paid = data?.bypass_subscription || PAID_PLANS.has(data?.subscription_status);
+  res.json({
+    track:    data?.academy_track    || null,
+    enrolled: data?.academy_enrolled_at || null,
+    progress: data?.academy_progress || {},
+    access:   paid ? 'full' : 'free', // 'free' = Track 1 only; 'full' = all tracks
+  });
+});
+
+// POST /api/academy/progress — upsert one module's state
+// body: { module: 'what_are_markets', started: epoch_ms, completed: epoch_ms|null }
+app.post('/api/academy/progress', requireAuthApi, apiLimiter, async (req, res) => {
+  const { module: key, started, completed } = req.body || {};
+  if (!key || typeof key !== 'string' || !/^[a-z0-9_]{2,60}$/.test(key)) {
+    return res.status(400).json({ error: 'Invalid module key' });
+  }
+  const update = {};
+  if (started)   update.started   = started;
+  if (completed) update.completed = completed;
+
+  const { error } = await supabaseAdmin.rpc('upsert_academy_progress', {
+    p_user_id: req.user.id,
+    p_module:  key,
+    p_update:  update,
+  });
+  if (error) {
+    // Fallback: raw JSONB update if RPC not available yet
+    const { data: current } = await supabaseAdmin
+      .from('user_profiles')
+      .select('academy_progress')
+      .eq('id', req.user.id)
+      .maybeSingle();
+    const existing = current?.academy_progress || {};
+    existing[key] = { ...(existing[key] || {}), ...update };
+    await supabaseAdmin
+      .from('user_profiles')
+      .update({ academy_progress: existing })
+      .eq('id', req.user.id);
+  }
+  res.json({ ok: true });
+});
+
 // ── User profile (intake data for client hydration) ──────────────────────────
 app.get('/api/profile', requireAuthApi, apiLimiter, async (req, res) => {
   const { data, error } = await supabaseAdmin
@@ -929,7 +1051,7 @@ Never hallucinate rule IDs — only use IDs from the list provided.`;
 }
 
 // ── Voice agent brain ─────────────────────────────────────────────────────────
-const MIKE_VOICE_PERSONA = `You are Mike — 52, former prop trader, 28 years on the desk. Now a trading psychology mentor. You are in a live voice call with a trader you have been working with in text sessions. You already know them.
+const MIKE_VOICE_PERSONA = `You are Marcus — 52, former prop trader, 28 years on the desk. Now a trading psychology mentor. You are in a live voice call with a trader you have been working with in text sessions. You already know them.
 
 Your voice: direct, unhurried, occasionally dry. You do not explain yourself. You say what you observe. You pause before you respond. You do not perform patience — you just have it.
 
@@ -941,7 +1063,7 @@ Never say: "Great question", "I understand", "How can I assist", "As your mentor
 
 You can end the call when it feels natural. "Alright. Think on that. Talk soon." or similar. Not formal.`;
 
-const ASHLEY_VOICE_PERSONA = `You are Ashley — 42, performance coach. Background in sports psychology before trading. You have been working with this trader in text sessions and this is a live voice call. You already know them.
+const ASHLEY_VOICE_PERSONA = `You are Iris — 42, performance coach. Background in sports psychology before trading. You have been working with this trader in text sessions and this is a live voice call. You already know them.
 
 Your voice: warm, present, unhurried. You notice things. You listen to the spaces between their words. You are not soft — you are clear. You hold what you observe without needing to fix it immediately.
 
@@ -1071,18 +1193,17 @@ app.post('/api/voice/session', requireAuthApi, apiLimiter, async (req, res) => {
   const timeout    = setTimeout(() => controller.abort(), 8000);
 
   try {
+    // ElevenLabs signed-URL endpoint is GET (singular "conversation") with the
+    // agent_id as a query param. The persona/brain prompt cannot be injected here —
+    // it is applied client-side as a session override (requires "System prompt"
+    // overrides enabled in the agent's Security settings). We return the prompt so
+    // the browser SDK can apply it at startSession().
     const upstream = await fetch(
-      'https://api.elevenlabs.io/v1/convai/conversations/get_signed_url',
+      `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${encodeURIComponent(agentId)}`,
       {
-        method:  'POST',
-        headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          agent_id: agentId,
-          conversation_config_override: {
-            agent: { prompt: { prompt: voicePrompt } },
-          },
-        }),
-        signal: controller.signal,
+        method:  'GET',
+        headers: { 'xi-api-key': apiKey },
+        signal:  controller.signal,
       }
     );
     clearTimeout(timeout);
@@ -1092,6 +1213,9 @@ app.post('/api/voice/session', requireAuthApi, apiLimiter, async (req, res) => {
       console.error('ElevenLabs error:', upstream.status, errBody);
       if (upstream.status === 401 || upstream.status === 403) {
         return res.status(502).json({ error: 'Voice service authentication failed. Contact support.' });
+      }
+      if (upstream.status === 404) {
+        return res.status(502).json({ error: 'Voice agent not found. Contact support.' });
       }
       if (upstream.status >= 500) {
         return res.status(502).json({ error: 'Voice service is temporarily unavailable. Please try again in a moment.' });
@@ -1105,7 +1229,7 @@ app.post('/api/voice/session', requireAuthApi, apiLimiter, async (req, res) => {
       return res.status(502).json({ error: 'Voice service returned an unexpected response.' });
     }
 
-    res.json({ signedUrl: data.signed_url });
+    res.json({ signedUrl: data.signed_url, prompt: voicePrompt });
   } catch (err) {
     clearTimeout(timeout);
     if (err.name === 'AbortError') {
@@ -2193,7 +2317,7 @@ app.patch('/api/settings', requireAuthApi, apiLimiter, async (req, res) => {
 
 async function generateMentorMessage(userId, mentor, triggerType, context = '') {
   const mentorPrompts = {
-    mike: `You are Mike. 52, ex-prop trader, now working in trading psychology at EdgeKeeper. You have been doing this long enough to know when someone is circling a problem and when they have gone quiet for a reason.
+    mike: `You are Marcus. 52, ex-prop trader, now working in trading psychology at EdgeKeeper. You have been doing this long enough to know when someone is circling a problem and when they have gone quiet for a reason.
 
 Write a single proactive check-in message to a client you have history with. Trigger: ${triggerType}. Context: ${context}.
 
@@ -2207,7 +2331,7 @@ Examples of the right register:
 "Haven't heard from you. How's the plan holding up?"
 "Been a while. Where are you at?"`,
 
-    ashley: `You are Ashley. 42, performance coach specializing in trading psychology at EdgeKeeper. You have been doing this work long enough to know that absence usually means something.
+    ashley: `You are Iris. 42, performance coach specializing in trading psychology at EdgeKeeper. You have been doing this work long enough to know that absence usually means something.
 
 Write a single proactive check-in message to a client you have history with. Trigger: ${triggerType}. Context: ${context}.
 
@@ -2297,7 +2421,7 @@ async function runProactiveOutreach() {
         const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(user.id);
         const email = authUser?.user?.email;
         if (email) {
-          const mentorName = (user.mentor || 'mike') === 'ashley' ? 'Ashley' : 'Mike';
+          const mentorName = (user.mentor || 'mike') === 'ashley' ? 'Iris' : 'Marcus';
           await sendEmail(
             email,
             `${mentorName} wants to check in`,
@@ -2464,7 +2588,7 @@ app.get('/billing/success', requireAuthPage, async (req, res) => {
 
       // Confirmation email
       const PLAN_DISPLAY = { free: 'Free Trial', starter: 'Resident', pro: 'Fellow', professional: 'Private Office', institutional: 'Institution' };
-      const mentorName = req.user.user_metadata?.mentor === 'ashley' ? 'Ashley' : 'Mike';
+      const mentorName = req.user.user_metadata?.mentor === 'ashley' ? 'Iris' : 'Marcus';
       sendEmail(
         req.user.email,
         `You're on the ${PLAN_DISPLAY[plan] || plan} plan.`,
@@ -2575,7 +2699,7 @@ app.post(
 );
 
 // ── Director AI — admin-only orchestration endpoint ───────────────────────────
-const DIRECTOR_SYSTEM_PROMPT = `You are the Director of EdgeKeeper's internal AI team. EdgeKeeper is a trading psychology AI mentorship platform for retail and prop traders. Features: AI mentors Mike (analytical) and Ashley (empathetic), voice sessions, trading journal, rules engine, Guardian Layer (live account monitoring), The Vault (intervention archive), and proactive mentor outreach. Stack: Node.js/Express, Supabase, OpenAI GPT-4o-mini, ElevenLabs voice, Polar.sh billing, Resend email.
+const DIRECTOR_SYSTEM_PROMPT = `You are the Director of EdgeKeeper's internal AI team. EdgeKeeper is a trading psychology AI mentorship platform for retail and prop traders. Features: AI mentors Marcus (analytical) and Iris (empathetic), voice sessions, trading journal, rules engine, Guardian Layer (live account monitoring), The Vault (intervention archive), and proactive mentor outreach. Stack: Node.js/Express, Supabase, OpenAI GPT-4o-mini, ElevenLabs voice, Polar.sh billing, Resend email.
 
 Your team:
 — Claude: Chief Architect & Lead Engineer. Full-stack ownership, auth, AI proxy, security, payments, migrations.
@@ -2813,7 +2937,7 @@ app.post('/api/admin/announce', requireAdmin, adminLimiter, async (req, res) => 
       worker_id:   'founder',
       worker_name: 'Founder',
       avatar_char: 'F',
-      content:     `Announcement sent to ${users.length} user${users.length !== 1 ? 's' : ''} via ${mentor === 'ashley' ? 'Ashley' : 'Mike'}: "${content.trim().slice(0, 80)}${content.trim().length > 80 ? '…' : ''}"`,
+      content:     `Announcement sent to ${users.length} user${users.length !== 1 ? 's' : ''} via ${mentor === 'ashley' ? 'Iris' : 'Marcus'}: "${content.trim().slice(0, 80)}${content.trim().length > 80 ? '…' : ''}"`,
       msg_type:    'status',
     });
 
@@ -2938,8 +3062,8 @@ async function generateBehavioralReport(userId, reportMonth) {
     : null;
 
   const mentorVoice = mentor === 'ashley'
-    ? 'Ashley: warm, empathetic, holistic perspective on emotional and psychological patterns'
-    : 'Mike: direct, analytical, performance-focused observations on discipline and execution';
+    ? 'Iris: warm, empathetic, holistic perspective on emotional and psychological patterns'
+    : 'Marcus: direct, analytical, performance-focused observations on discipline and execution';
 
   const journalExcerpts = entries.slice(0, 8)
     .map(e => e.content.slice(0, 300))
@@ -3003,7 +3127,7 @@ Journal excerpts:\n${journalExcerpts || '(no entries this month)'}`;
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
     const userEmail = authUser?.user?.email;
     if (userEmail) {
-      const mentorName = mentor === 'ashley' ? 'Ashley' : 'Mike';
+      const mentorName = mentor === 'ashley' ? 'Iris' : 'Marcus';
       await sendEmail(
         userEmail,
         `Your ${new Date(reportMonth + '-02').toLocaleString('en-US', { month: 'long', year: 'numeric' })} report is ready`,
@@ -3261,7 +3385,7 @@ app.get('/api/network/messages/:room', requireAuthApi, apiLimiter, async (req, r
   res.json({ messages: (data || []).reverse() });
 });
 
-// POST /api/network/message — admin-only: post a message to a room as Mike or Ashley
+// POST /api/network/message — admin-only: post a message to a room as Marcus or Iris
 app.post('/api/network/message', requireAdmin, adminLimiter, async (req, res) => {
   const { room_slug, content, author_role = 'mike' } = req.body || {};
   if (!room_slug || typeof room_slug !== 'string' || !/^[a-z0-9-]{1,60}$/.test(room_slug)) {
@@ -3274,7 +3398,7 @@ app.post('/api/network/message', requireAdmin, adminLimiter, async (req, res) =>
     return res.status(400).json({ error: 'author_role must be mike, ashley, or system' });
   }
 
-  const authorName = author_role === 'ashley' ? 'Ashley' : author_role === 'system' ? 'System' : 'Mike';
+  const authorName = author_role === 'ashley' ? 'Iris' : author_role === 'system' ? 'System' : 'Marcus';
 
   const { data, error } = await supabaseAdmin
     .from('network_messages')

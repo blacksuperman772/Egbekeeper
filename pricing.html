@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pricing — EdgeKeeper</title>
-  <meta name="description" content="EdgeKeeper membership — Resident $89/mo, Fellow $219/mo, Private Office $479/mo. Choose the depth of your AI trading mentor relationship." />
-  <meta property="og:title" content="EdgeKeeper Pricing — Trader Mentorship Plans" />
-  <meta property="og:description" content="Resident, Fellow, or Private Office. Choose how deeply your mentor is involved in your trading life." />
+  <meta name="description" content="EdgeKeeper membership — start free in the Academy, then Resident $99/mo, Fellow $249/mo, Private Office $599/mo. Learn the fundamentals, then work with a senior mentor." />
+  <meta property="og:title" content="EdgeKeeper Pricing — Academy & Mentorship Plans" />
+  <meta property="og:description" content="Free Academy to start. Resident to see yourself, Fellow to protect yourself, Private Office to optimize." />
   <meta property="og:type" content="website" />
   <link rel="canonical" href="https://edgekeeper.io/pricing.html" />
 
@@ -339,6 +339,17 @@
       margin-bottom: 28px;
     }
     .price-card.featured .card-tier { color: var(--gold); }
+    .card-tagline {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--faint);
+      margin-top: -18px;
+      margin-bottom: 26px;
+      line-height: 1.3;
+    }
+    .price-card.featured .card-tagline { color: var(--text); }
     .card-price {
       font-family: var(--serif);
       font-size: 3.2rem;
@@ -799,7 +810,7 @@
     <div class="section-inner" style="position:relative;z-index:1;">
       <p class="hero-label">Pricing</p>
       <h1 class="hero-headline">The cost of one bad trade<br>exceeds a year of this.</h1>
-      <p class="hero-sub">Most traders lose more in a single undisciplined session than a month of Professional costs. Choose the tier that matches where you are — and what you can no longer afford to get wrong.</p>
+      <p class="hero-sub">Start free in the Academy and learn the fundamentals with Theo. When you're ready, a senior mentor takes over: Resident to see yourself clearly, Fellow to protect your capital, Private Office to optimize.</p>
       <div class="billing-toggle" id="billingToggle">
         <span class="toggle-label active" id="labelMonthly">Monthly</span>
         <div class="toggle-track" id="toggleTrack">
@@ -816,43 +827,46 @@
     <div class="section-inner">
       <div class="cards-grid reveal">
 
-        <!-- FREE TRIAL -->
+        <!-- FREE / ACADEMY -->
         <div class="price-card">
-          <div class="card-tier">Free Trial</div>
+          <div class="card-tier">Academy</div>
+          <div class="card-tagline">Start here.</div>
           <div class="card-price">
             <span class="price-num" style="font-size:2rem;">Free</span>
           </div>
-          <div class="card-cadence">Enough to meet your mentor. No card required.</div>
+          <div class="card-cadence">Learn the fundamentals. Meet your mentor. No card.</div>
           <div class="save-inline hidden">&nbsp;</div>
           <ul class="card-features">
-            <li class="included"><span class="check">✓</span> 15 mentor exchanges</li>
-            <li class="included"><span class="check">✓</span> Choose Mike or Ashley</li>
+            <li class="included"><span class="check">✓</span> Academy Track 1 — Market Foundations (10 modules)</li>
+            <li class="included"><span class="check">✓</span> Theo, your Academy mentor</li>
+            <li class="included"><span class="check">✓</span> 15 senior-mentor exchanges — Marcus or Iris</li>
             <li class="included"><span class="check">✓</span> Persistent memory — your session stays</li>
             <li class="included"><span class="check">✓</span> One voice session included</li>
-            <li><span class="dash">—</span> Trading journal</li>
-            <li><span class="dash">—</span> Rules engine</li>
+            <li><span class="dash">—</span> Academy Tracks 2–6</li>
+            <li><span class="dash">—</span> Trading journal &amp; rules</li>
             <li><span class="dash">—</span> Guardian Layer</li>
           </ul>
-          <button class="card-cta" onclick="window.location='/onboarding.html?plan=free'">Start free</button>
+          <button class="card-cta" onclick="window.location='/academy-onboarding'">Start free</button>
         </div>
 
         <!-- RESIDENT -->
         <div class="price-card">
           <div class="card-tier">Resident</div>
+          <div class="card-tagline">See yourself.</div>
           <div class="card-price">
-            <span class="currency">$</span><span class="price-num" data-monthly="89" data-annual="890">89</span><span class="period"> <span class="cadence-inline">/mo</span></span>
+            <span class="currency">$</span><span class="price-num" data-monthly="99" data-annual="990">99</span><span class="period"> <span class="cadence-inline">/mo</span></span>
           </div>
           <div class="card-cadence" id="cadence-starter">Billed monthly</div>
-          <div class="save-inline hidden" id="save-starter">Save $178 / year</div>
+          <div class="save-inline hidden" id="save-starter">Save $198 / year</div>
           <ul class="card-features">
-            <li class="included"><span class="check">✓</span> Your mentor, every day</li>
-            <li class="included"><span class="check">✓</span> Both mentors — Mike and Ashley</li>
+            <li class="included"><span class="check">✓</span> The full Academy — all 6 tracks with Theo</li>
+            <li class="included"><span class="check">✓</span> Your senior mentor, every day — Marcus and Iris</li>
             <li class="included"><span class="check">✓</span> Full memory — grows across every session</li>
             <li class="included"><span class="check">✓</span> Voice sessions included</li>
-            <li class="included"><span class="check">✓</span> Trading journal — unlimited entries</li>
-            <li class="included"><span class="check">✓</span> Rules engine — define your guardrails</li>
-            <li class="included"><span class="check">✓</span> Session review log</li>
-            <li><span class="dash">—</span> Guardian Layer</li>
+            <li class="included"><span class="check">✓</span> Connect your account — read-only</li>
+            <li class="included"><span class="check">✓</span> Behavior analytics &amp; drawdown visibility</li>
+            <li class="included"><span class="check">✓</span> Trading journal &amp; rules engine</li>
+            <li><span class="dash">—</span> Guardian intervention</li>
           </ul>
           <button class="card-cta" data-plan="starter" onclick="initiateCheckout('starter')">Become a Resident</button>
         </div>
@@ -861,19 +875,20 @@
         <div class="price-card featured">
           <div class="featured-badge">Most Popular</div>
           <div class="card-tier">Fellow</div>
+          <div class="card-tagline">Protect yourself.</div>
           <div class="card-price">
-            <span class="currency">$</span><span class="price-num" data-monthly="219" data-annual="2190">219</span><span class="period"> <span class="cadence-inline">/mo</span></span>
+            <span class="currency">$</span><span class="price-num" data-monthly="249" data-annual="2490">249</span><span class="period"> <span class="cadence-inline">/mo</span></span>
           </div>
           <div class="card-cadence" id="cadence-pro">Billed monthly</div>
-          <div class="save-inline hidden" id="save-pro">Save $438 / year</div>
+          <div class="save-inline hidden" id="save-pro">Save $498 / year</div>
           <ul class="card-features">
-            <li class="included"><span class="check">✓</span> Your mentor, every day</li>
             <li class="included"><span class="check">✓</span> Everything in Resident</li>
+            <li class="included"><span class="check">✓</span> Guardian Layer — real-time intervention</li>
+            <li class="included"><span class="check">✓</span> Drawdown &amp; loss limits — enforced, not just shown</li>
+            <li class="included"><span class="check">✓</span> Cooldowns after consecutive losses</li>
+            <li class="included"><span class="check">✓</span> Break Room — mandatory pause before re-entry</li>
+            <li class="included"><span class="check">✓</span> Live trade monitoring — breaches flagged the moment they hit your account</li>
             <li class="included"><span class="check">✓</span> Extended voice access</li>
-            <li class="included"><span class="check">✓</span> Guardian Layer — live account monitoring</li>
-            <li class="included"><span class="check">✓</span> Custom drawdown &amp; loss limits</li>
-            <li class="included"><span class="check">✓</span> Break Room — mandatory pause enforcement</li>
-            <li class="included"><span class="check">✓</span> Behavior analytics dashboard</li>
           </ul>
           <button class="card-cta" data-plan="pro" onclick="initiateCheckout('pro')">Become a Fellow</button>
         </div>
@@ -881,15 +896,17 @@
         <!-- PRIVATE OFFICE -->
         <div class="price-card">
           <div class="card-tier">Private Office</div>
+          <div class="card-tagline">Optimize.</div>
           <div class="card-price">
-            <span class="currency">$</span><span class="price-num" data-monthly="479" data-annual="4790">479</span><span class="period"> <span class="cadence-inline">/mo</span></span>
+            <span class="currency">$</span><span class="price-num" data-monthly="599" data-annual="5990">599</span><span class="period"> <span class="cadence-inline">/mo</span></span>
           </div>
           <div class="card-cadence" id="cadence-professional">Billed monthly</div>
-          <div class="save-inline hidden" id="save-professional">Save $958 / year</div>
+          <div class="save-inline hidden" id="save-professional">Save $1198 / year</div>
           <ul class="card-features">
-            <li class="included"><span class="check">✓</span> Your mentor, every day — no limits</li>
-            <li class="included"><span class="check">✓</span> Everything in Fellow</li>
+            <li class="included"><span class="check">✓</span> Everything in Fellow — no limits</li>
             <li class="included"><span class="check">✓</span> Open voice access</li>
+            <li class="included"><span class="check">✓</span> Custom Guardian rules — built around you</li>
+            <li class="included"><span class="check">✓</span> Multiple account support</li>
             <li class="included"><span class="check">✓</span> The Vault — intervention archive</li>
             <li class="included"><span class="check">✓</span> Decision Passport</li>
             <li class="included"><span class="check">✓</span> Monthly behavioral reports</li>
@@ -900,11 +917,13 @@
         <!-- INSTITUTION -->
         <div class="price-card institutional">
           <div class="card-tier">Institution</div>
+          <div class="card-tagline">Scale it.</div>
           <div class="card-price" style="font-size:2rem;letter-spacing:0.02em;">Custom</div>
           <div class="card-cadence">Prop firms &amp; multi-seat deployments</div>
           <div class="save-inline hidden">&nbsp;</div>
           <ul class="card-features">
-            <li class="included"><span class="check">✓</span> Everything in Private Office</li>
+            <li class="included"><span class="check">✓</span> Everything in Private Office, every seat</li>
+            <li class="included"><span class="check">✓</span> Full Academy for every member</li>
             <li class="included"><span class="check">✓</span> Unlimited voice sessions</li>
             <li class="included"><span class="check">✓</span> Team Guardian — all member accounts</li>
             <li class="included"><span class="check">✓</span> Group behavioral reporting</li>
@@ -933,7 +952,7 @@
           <thead>
             <tr>
               <th style="width:26%">Feature</th>
-              <th>Free Trial</th>
+              <th>Academy</th>
               <th>Resident</th>
               <th class="featured-col">Fellow</th>
               <th>Private Office</th>
@@ -944,10 +963,18 @@
             <tr>
               <td>Price</td>
               <td class="val-text">Free</td>
-              <td class="val-text">$89 / mo</td>
-              <td class="featured-col val-text">$219 / mo</td>
-              <td class="val-text">$479 / mo</td>
+              <td class="val-text">$99 / mo</td>
+              <td class="featured-col val-text">$249 / mo</td>
+              <td class="val-text">$599 / mo</td>
               <td class="val-text">Custom</td>
+            </tr>
+            <tr>
+              <td>Academy access</td>
+              <td class="val-text">Track 1</td>
+              <td class="val-text">All 6 tracks</td>
+              <td class="featured-col val-text">All 6 tracks</td>
+              <td class="val-text">All 6 tracks</td>
+              <td class="val-text">All 6 tracks</td>
             </tr>
             <tr>
               <td>Mentor availability</td>
@@ -1006,7 +1033,23 @@
               <td><span class="check-gold">✓</span></td>
             </tr>
             <tr>
-              <td>Guardian Layer</td>
+              <td>Connect account — read-only</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Behavior analytics &amp; drawdown visibility</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="check-gold">✓</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Guardian — active intervention</td>
               <td><span class="dash-muted">—</span></td>
               <td><span class="dash-muted">—</span></td>
               <td class="featured-col"><span class="check-gold">✓</span></td>
@@ -1014,7 +1057,7 @@
               <td><span class="check-gold">✓</span></td>
             </tr>
             <tr>
-              <td>Drawdown &amp; loss limits</td>
+              <td>Loss limits enforced &amp; cooldowns</td>
               <td><span class="dash-muted">—</span></td>
               <td><span class="dash-muted">—</span></td>
               <td class="featured-col"><span class="check-gold">✓</span></td>
@@ -1022,7 +1065,15 @@
               <td><span class="check-gold">✓</span></td>
             </tr>
             <tr>
-              <td>Behavior analytics</td>
+              <td>Break Room — mandatory pause</td>
+              <td><span class="dash-muted">—</span></td>
+              <td><span class="dash-muted">—</span></td>
+              <td class="featured-col"><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+              <td><span class="check-gold">✓</span></td>
+            </tr>
+            <tr>
+              <td>Live trade monitoring</td>
               <td><span class="dash-muted">—</span></td>
               <td><span class="dash-muted">—</span></td>
               <td class="featured-col"><span class="check-gold">✓</span></td>
@@ -1112,7 +1163,27 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            No. Mike and Ashley are constructed from a decade of behavioral patterns with elite traders. They remember everything. They form opinions. They get to know you. A chatbot resets after every message. Your mentor carries a complete picture of who you are, how you trade, and what you're working on. That picture grows over months and years — not sessions.
+            No. Marcus and Iris are constructed from a decade of behavioral patterns with elite traders. They remember everything. They form opinions. They get to know you. A chatbot resets after every message. Your mentor carries a complete picture of who you are, how you trade, and what you're working on. That picture grows over months and years — not sessions.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            What is the Academy, and who is Theo?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            The Academy is where you learn to trade from the ground up. Six structured tracks, from what a market is to how professional traders think. Theo is your Academy mentor — the same kind of mentor as Marcus and Iris, earlier in the journey. He teaches the fundamentals in order and takes you to the point where you're ready to work one-on-one with a senior mentor. Track 1 is free for anyone. The full Academy unlocks with any paid plan.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            What's the difference between Resident and Fellow?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            Resident is where you see yourself. You connect your trading account read-only, and your mentor shows you your real behavior: your drawdown, your patterns, where discipline breaks down. Fellow is where you're protected. Guardian goes active — loss limits are enforced, not just shown; cooldowns kick in after consecutive losses; the Break Room makes you pause before re-entry; and the execution firewall checks your rules before a trade lands. Resident shows you the problem. Fellow stops it.
           </div>
         </div>
 
@@ -1132,7 +1203,7 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            You choose your primary mentor in onboarding. From Resident upward you have access to both Mike and Ashley — their perspectives are different, and many traders find that working with both creates a more complete picture. Switching your primary mentor is possible but not trivial: your notebook is built around a relationship, and a change resets some of that context.
+            You choose your primary mentor in onboarding. From Resident upward you have access to both Marcus and Iris — their perspectives are different, and many traders find that working with both creates a more complete picture. Switching your primary mentor is possible but not trivial: your notebook is built around a relationship, and a change resets some of that context.
           </div>
         </div>
 
@@ -1152,7 +1223,7 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            The Free tier gives you 15 exchanges and one voice session — enough to see how your mentor thinks before you pay anything. The 30-day guarantee is for paid members: if the first month doesn't change how you see your own trading psychology, we'll refund everything. No forms. People who reach day 30 tend to stay.
+            The free tier gives you Academy Track 1, time with Theo, and 15 senior-mentor exchanges plus one voice session — enough to learn the foundations and see how a mentor thinks before you pay anything. The 30-day guarantee is for paid members: if the first month doesn't change how you see your own trading psychology, we'll refund everything. No forms. People who reach day 30 tend to stay.
           </div>
         </div>
 
@@ -1162,7 +1233,7 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            Guardian connects to your live trading account via a webhook or MT4/MT5 EA. It monitors your account in real time against the drawdown and loss limits you set with your mentor. When a limit is breached, your mentor knows — and the Break Room enforces a mandatory pause before you can keep trading. It's accountability that runs even when the conversation isn't open.
+            Guardian connects to your live trading account via a webhook or MT4/MT5 EA. On Resident it's read-only: it shows you your real behavior — drawdown, loss patterns, where discipline slips. On Fellow it goes active: the loss limits you set with your mentor are enforced, cooldowns kick in after consecutive losses, the Break Room makes you pause before re-entry, and the execution firewall checks your own rules before a trade lands. It never touches your broker's controls — it controls EdgeKeeper's execution layer. Accountability that runs even when the conversation isn't open.
           </div>
         </div>
 
@@ -1188,13 +1259,16 @@
       <div class="final-ctas reveal reveal-delay-2">
         <a href="auth.html?next=onboarding&mentor=mike" class="btn-mentor btn-mike" data-plan="starter" data-mentor="mike">
           <span class="btn-dot"></span>
-          Begin with Mike
+          Begin with Marcus
         </a>
         <a href="auth.html?next=onboarding&mentor=ashley" class="btn-mentor btn-ashley" data-plan="starter" data-mentor="ashley">
           <span class="btn-dot"></span>
-          Begin with Ashley
+          Begin with Iris
         </a>
       </div>
+      <p class="reveal reveal-delay-3" style="margin-top:32px;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.12em;color:var(--faint);">
+        New to trading? <a href="/academy-onboarding" style="color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(184,160,106,0.3);padding-bottom:2px;">Start free in the Academy →</a>
+      </p>
     </div>
   </section>
 
@@ -1238,23 +1312,23 @@ const billingToggle = document.getElementById('billingToggle');
 // Price display data — annual toggle is UI-only until Polar annual products are live
 const plans = {
   starter: {
-    monthly: 89,  annual: 890,
-    saveMonthly: 89 * 12,
-    saveAnnual:  890,
+    monthly: 99,  annual: 990,
+    saveMonthly: 99 * 12,
+    saveAnnual:  990,
     cadenceId: 'cadence-starter',
     saveId:    'save-starter',
   },
   pro: {
-    monthly: 219, annual: 2190,
-    saveMonthly: 219 * 12,
-    saveAnnual:  2190,
+    monthly: 249, annual: 2490,
+    saveMonthly: 249 * 12,
+    saveAnnual:  2490,
     cadenceId: 'cadence-pro',
     saveId:    'save-pro',
   },
   professional: {
-    monthly: 479, annual: 4790,
-    saveMonthly: 479 * 12,
-    saveAnnual:  4790,
+    monthly: 599, annual: 5990,
+    saveMonthly: 599 * 12,
+    saveAnnual:  5990,
     cadenceId: 'cadence-professional',
     saveId:    'save-professional',
   },

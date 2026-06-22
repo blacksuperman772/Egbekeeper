@@ -31,7 +31,7 @@
       --serif:          'Cormorant Garamond', Georgia, serif;
       --sans:           'Space Grotesk', 'Manrope', sans-serif;
 
-      /* Accent defaults to gold; JS swaps to green for Ashley */
+      /* Accent defaults to gold; JS swaps to green for Iris */
       --accent:         var(--gold);
       --accent-dim:     var(--gold-dim);
       --accent-rgb:     201,168,92;
@@ -898,7 +898,7 @@
   /* ── POPULATE CURRENT FOCUS ────────────────────────────────────── */
   function populateCurrentFocus() {
     const topic   = localStorage.getItem('ek_academy_topic');
-    const mentor  = localStorage.getItem('ek_academy_mentor') || 'Mike';
+    const mentor  = localStorage.getItem('ek_academy_mentor') || 'Marcus';
     const section = document.getElementById('current-focus');
     const divider = document.getElementById('focus-divider');
 

@@ -465,7 +465,7 @@
   <div id="top-label">
     <a href="/" id="top-brand">Edge<span>Keeper</span></a>
     <div id="top-meta">
-      <span id="mentor-name-label">Mike</span>
+      <span id="mentor-name-label">Marcus</span>
       &middot;
       Initial Assessment
     </div>
@@ -547,12 +547,12 @@
 
     /* ── MENTOR ─────────────────────────────── */
     const mentor = (localStorage.getItem('ek_mentor') || 'mike').toLowerCase();
-    const isMike = mentor !== 'ashley';
+    const isMarcus = mentor !== 'ashley';
 
-    const ACCENT      = isMike ? '#b8a06a' : '#6b8c6b';
-    const ACCENT_DIM  = isMike ? '#7a6a45' : '#4a5c4a';
-    const ACCENT_BG   = isMike ? 'rgba(184,160,106,0.06)' : 'rgba(74,92,74,0.06)';
-    const MENTOR_LABEL = isMike ? 'Mike' : 'Ashley';
+    const ACCENT      = isMarcus ? '#b8a06a' : '#6b8c6b';
+    const ACCENT_DIM  = isMarcus ? '#7a6a45' : '#4a5c4a';
+    const ACCENT_BG   = isMarcus ? 'rgba(184,160,106,0.06)' : 'rgba(74,92,74,0.06)';
+    const MENTOR_LABEL = isMarcus ? 'Marcus' : 'Iris';
 
     /* inject CSS vars */
     document.documentElement.style.setProperty('--mc',     ACCENT);
@@ -560,7 +560,7 @@
     document.documentElement.style.setProperty('--mc-bg',  ACCENT_BG);
 
     /* body class for ashley overrides */
-    if (!isMike) document.body.classList.add('ashley');
+    if (!isMarcus) document.body.classList.add('ashley');
 
     /* update text labels */
     document.getElementById('mentor-name-label').textContent = MENTOR_LABEL;
@@ -571,7 +571,7 @@
 
     /* cursor ring border color */
     document.getElementById('cursor-ring').style.borderColor =
-      isMike ? 'rgba(184,160,106,0.25)' : 'rgba(74,92,74,0.25)';
+      isMarcus ? 'rgba(184,160,106,0.25)' : 'rgba(74,92,74,0.25)';
 
     /* ── CURSOR ─────────────────────────────── */
     const cursor     = document.getElementById('cursor');
@@ -705,7 +705,7 @@
       {
         key: 'biggest_challenge',
         type: 'textarea',
-        text: isMike
+        text: isMarcus
           ? "What's the one thing about your own behavior that keeps costing you?"
           : "What pattern keeps showing up for you, even when you know better?",
         placeholder: "Be specific..."
@@ -713,7 +713,7 @@
       {
         key: 'emotional_response_loss',
         type: 'pills',
-        text: isMike
+        text: isMarcus
           ? "How do you respond emotionally to a significant loss?"
           : "After a loss, what's the first thing you feel — and what do you do with it?",
         options: [
@@ -726,7 +726,7 @@
       {
         key: 'biggest_goal',
         type: 'textarea',
-        text: isMike
+        text: isMarcus
           ? "What are you actually trying to build here? In real terms."
           : "What does success look like for you — not in money, but in who you want to be as a trader?",
         placeholder: "Beyond profit..."
@@ -734,7 +734,7 @@
       {
         key: 'what_tried',
         type: 'textarea',
-        text: isMike
+        text: isMarcus
           ? "What have you already tried? Courses, books, other platforms, coaches. All of it."
           : "What have you tried before EdgeKeeper? I want to know what hasn't worked and why.",
         placeholder: "Everything counts..."
@@ -742,7 +742,7 @@
       {
         key: 'current_rules',
         type: 'pills',
-        text: isMike
+        text: isMarcus
           ? "Do you have trading rules you follow consistently?"
           : "What rules have you set for yourself — and how consistent are you actually being?",
         options: [
@@ -755,14 +755,14 @@
       {
         key: 'honest_admission',
         type: 'textarea',
-        text: isMike
+        text: isMarcus
           ? "One thing about your trading you haven't told anyone. I'll find out anyway, so you might as well start here."
           : "What's something true about how you trade that you haven't said out loud before?",
         placeholder: "Not what you tell other people. What you know."
       }
     ];
 
-    const CLOSING_LINE = isMike
+    const CLOSING_LINE = isMarcus
       ? 'Alright. Give me a moment with this.'
       : "I've heard enough to start.";
 
@@ -985,7 +985,7 @@
         answers: { ...answers, trading_path: selectedPath },
         initial_stage,
         initial_identity,
-        mentor: isMike ? 'mike' : 'ashley'
+        mentor: isMarcus ? 'mike' : 'ashley'
       };
 
       try {

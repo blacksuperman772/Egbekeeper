@@ -291,8 +291,8 @@
     <div class="mod-spacer"></div>
 
     <div class="companion-badge">
-      <div class="companion-badge-label">Study Companion</div>
-      <div class="companion-badge-desc">Ask anything about this module. The companion explains, gives examples, and tests your understanding when you're ready.</div>
+      <div class="companion-badge-label">Theo · Academy Mentor</div>
+      <div class="companion-badge-desc">Your Academy mentor for this module. Ask Theo anything: he explains, gives examples, and checks your understanding before you move on.</div>
     </div>
   </div>
 
@@ -430,20 +430,61 @@ function loadProgress() {
 }
 loadProgress();
 
+// ── Server sync helpers ─────────────────────────────────────────────────
+async function syncProgress(payload) {
+  try {
+    await fetch('/api/academy/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (_) {}
+}
+
+// Restore progress from DB on load (handles new device / cleared cache)
+(async () => {
+  try {
+    const r    = await fetch('/api/academy/progress');
+    if (!r.ok) return;
+    const data = await r.json();
+    // Restore track if missing
+    if (data.track && !localStorage.getItem('ek_academy_track')) {
+      localStorage.setItem('ek_academy_track', data.track);
+    }
+    // Merge server progress into localStorage
+    if (data.progress && typeof data.progress === 'object') {
+      for (const [key, val] of Object.entries(data.progress)) {
+        if (val.started   && !localStorage.getItem('ek_academy_' + key + '_started'))
+          localStorage.setItem('ek_academy_' + key + '_started',   val.started);
+        if (val.completed && !localStorage.getItem('ek_academy_' + key + '_completed'))
+          localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
+      }
+    }
+    // Re-render status after merge
+    loadProgress();
+  } catch (_) {}
+})();
+
 // mark started on load
-if (!localStorage.getItem('ek_academy_' + moduleKey + '_started')) {
-  localStorage.setItem('ek_academy_' + moduleKey + '_started', Date.now());
-  statusDot.className  = 'status-dot started';
+const _existingStarted = localStorage.getItem('ek_academy_' + moduleKey + '_started');
+const _startedAt = _existingStarted || String(Date.now());
+if (!_existingStarted) {
+  localStorage.setItem('ek_academy_' + moduleKey + '_started', _startedAt);
+  statusDot.className   = 'status-dot started';
   statusText.textContent = 'In progress';
 }
+// Always sync started to DB so cross-device restore works (idempotent — DB keeps earliest)
+syncProgress({ module: moduleKey, started: _startedAt });
 
 function markComplete() {
   if (completeBtn.classList.contains('done')) return;
-  localStorage.setItem('ek_academy_' + moduleKey + '_completed', Date.now());
+  const _completedAt = Date.now();
+  localStorage.setItem('ek_academy_' + moduleKey + '_completed', _completedAt);
   statusDot.className  = 'status-dot completed';
   statusText.textContent = 'Completed';
   completeBtn.textContent = '✓ Completed';
   completeBtn.classList.add('done');
+  syncProgress({ module: moduleKey, completed: _completedAt });
   if (mod.next) {
     setTimeout(() => {
       window.location.href = '/study.html?module=' + mod.next;
@@ -463,7 +504,7 @@ function addMsg(role, text) {
   wrap.className = 'msg ' + (role === 'companion' ? 'companion' : 'user');
   const label = document.createElement('div');
   label.className = 'msg-label';
-  label.textContent = role === 'companion' ? 'Study Companion' : 'You';
+  label.textContent = role === 'companion' ? 'Theo' : 'You';
   const body = document.createElement('div');
   body.className = 'msg-body';
   body.textContent = text;
@@ -480,7 +521,7 @@ function showThinking() {
   wrap.id = 'thinking';
   const label = document.createElement('div');
   label.className = 'msg-label';
-  label.textContent = 'Study Companion';
+  label.textContent = 'Theo';
   const body = document.createElement('div');
   body.className = 'msg-body';
   body.innerHTML = '<div class="thinking-dots"><span></span><span></span><span></span></div>';
@@ -496,49 +537,68 @@ function removeThinking() {
 }
 
 function buildSystemPrompt() {
-  return `You are the EdgeKeeper Study Companion — an educational guide for the EdgeKeeper Academy.
+  return `You are Theo, a mentor in the EdgeKeeper Academy. You are the junior mentor: you teach new traders the fundamentals from the ground up, and you take them as far as the curriculum goes — to the point where they are ready to be handed to the senior mentors, Marcus and Iris, on the main EdgeKeeper platform. You know this material cold and you teach it the way a good instructor does: structured, clear, in order. You are not a chat buddy and you are not a cheerful assistant. You walk a newer trader through the fundamentals, one module at a time.
 
 CURRENT MODULE: ${mod.title}
 TRACK: ${mod.track} — ${mod.trackName}
-TOPIC CONTEXT: ${mod.desc}
+MODULE FOCUS: ${mod.desc}
 
 YOUR ROLE:
-You teach this module's topic clearly and completely. You are not a trading mentor or a psychology coach — that is a separate product. Your job is to teach concepts, mechanics, and frameworks specific to this module.
+Teach this module's topic completely and in a logical order. Build understanding step by step, and check it before moving on. You are the same kind of mentor as Marcus and Iris, earlier in the journey: your job is to get a beginner genuinely competent in the fundamentals. The ongoing one-on-one mentorship that Marcus and Iris do lives on the main platform; you prepare students for it. Your job here is the curriculum: the concepts, mechanics, and frameworks for this specific module.
 
 OPENING (first message only):
-Give a 2-3 sentence opening that introduces what this module covers and what the student will understand by the end. Then invite their first question. Do not summarize a long syllabus — just set the scene and open the floor.
+When the opening message marks this as your first meeting with the student, say your name once, plainly. Otherwise do not restate your name — they already know you. Either way, open with two or three sentences: what this module covers and what they'll be able to do by the end. Then hand them the floor with one clear invitation to begin. Do not recite a syllabus.
 
 VOICE:
-Clear. Patient. Direct. You explain things the way a knowledgeable friend would — no condescension, no oversimplification. When something is complex, you say so and break it down step by step. When there is a clean answer, you give it cleanly. You do not perform enthusiasm. You are not cheerful in an artificial way.
+Plain-spoken and structured, like an instructor who respects the student's time. You explain the way someone does when they genuinely understand the material: no filler, no performed enthusiasm. When something is genuinely complex, you say so and break it into steps. When there is a clean answer, you give it plainly. Use examples, analogies, and short exercises where they help.
 
-You can give examples, analogies, mini-exercises, or test the student's understanding when it feels natural. If they ask something outside this module's topic, briefly address it and return the focus to the module.
+If the student asks about something outside this module, answer briefly and bring the focus back. When a student has clearly outgrown the fundamentals, you can tell them they're ready to work with a senior mentor on the main platform.
 
 PROHIBITIONS:
-- You are not Mike or Ashley. Do not reference them.
-- Do not give financial advice or trading signals.
-- Do not make up trading data or invent statistics.
-- Do not use phrases like "Great question!", "Absolutely!", "Certainly!", "Of course!".
+- You teach the curriculum only. No trade signals, no financial advice, no invented statistics or numbers.
+- You are Theo, not Marcus and not Iris. You can point to them as the senior mentors a student graduates to, but you do not speak as them or run their kind of one-on-one sessions here.
+- Skip the filler openers: no "Great question", "Absolutely", "Certainly", "Of course".
 - Do not start your response with "I".`;
 }
 
 async function callCompanion(userMsg) {
   const sysPrompt = buildSystemPrompt();
-  const messages  = [...history];
-  if (userMsg) messages.push({ role: 'user', content: userMsg });
+  // Keep last 28 messages (14 exchanges) to stay well under the 35-message API limit
+  let messages = history.length > 28 ? history.slice(-28) : [...history];
+  if (userMsg) {
+    messages.push({ role: 'user', content: userMsg });
+  } else if (messages.length === 0) {
+    // Opening call — seed a silent opener so the array is non-empty. Theo only
+    // introduces himself by name on the student's very first module, ever.
+    const firstMeeting = !localStorage.getItem('ek_academy_met_theo');
+    if (firstMeeting) localStorage.setItem('ek_academy_met_theo', Date.now());
+    messages.push({ role: 'user', content: firstMeeting
+      ? `[First meeting with this student — introduce yourself by name, then begin the module: ${mod.title}]`
+      : `[Module opened: ${mod.title}]` });
+  }
 
   const res = await fetch('/api/chat', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      mentor:   'study_companion',
+      mentor:       'study_companion',
       messages,
-      system:   sysPrompt,
+      systemPrompt: sysPrompt,
+      is_opener:    !userMsg,
     }),
   });
 
   if (!res.ok) {
+    // Session expired mid-study — bounce to auth and return here afterward
+    if (res.status === 401) {
+      const back = '/study.html?module=' + encodeURIComponent(moduleKey);
+      window.location.href = '/auth.html?next=' + encodeURIComponent(back);
+      const e = new Error('Session expired'); e.handled = true; throw e;
+    }
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Request failed');
+    const e = new Error(err.error || 'Request failed');
+    e.status = res.status;
+    throw e;
   }
   return res.json();
 }
@@ -552,9 +612,12 @@ async function openingMessage() {
     removeThinking();
     addMsg('companion', reply);
     history.push({ role: 'assistant', content: reply });
-  } catch (_) {
+  } catch (err) {
+    if (err && err.handled) return; // redirecting to auth — leave the screen as-is
     removeThinking();
-    addMsg('companion', 'Something went wrong loading the module. Refresh the page to try again.');
+    addMsg('companion', err && err.status === 429
+      ? 'The room is busy right now. Give it a moment, then refresh to begin.'
+      : 'The connection dropped before this module could load. Refresh the page to try again.');
   }
   busy = false; sendBtn.disabled = false;
   input.focus();
@@ -580,9 +643,12 @@ async function sendMessage() {
     addMsg('companion', reply);
     history.push({ role: 'assistant', content: reply });
   } catch (err) {
+    if (err && err.handled) return; // redirecting to auth
     removeThinking();
-    addMsg('companion', 'Something went wrong. Try again.');
-    history.pop();
+    addMsg('companion', err && err.status === 429
+      ? 'Too many questions too quickly. Give it a moment and ask again.'
+      : 'That didn\'t go through. Check your connection and ask again.');
+    history.pop(); // drop the unanswered user turn so retry is clean
   }
   busy = false; sendBtn.disabled = false;
   input.focus();

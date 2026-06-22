@@ -140,8 +140,8 @@ async function generateWithRetry(prompt, filename, size, attempts = 3) {
   console.log('\n✓ All assets generated in /assets/');
   console.log('\nNext: reference these in edgekeeper.html:');
   console.log('  Hero:      /assets/hero-landing.png');
-  console.log('  Mike:      /assets/mike-portrait.png');
-  console.log('  Ashley:    /assets/ashley-portrait.png');
+  console.log('  Marcus:      /assets/mike-portrait.png');
+  console.log('  Iris:    /assets/ashley-portrait.png');
   console.log('  Workspace: /assets/workspace-ambient.png');
   console.log('  Mobile:    /assets/hero-mobile.png');
 })();

@@ -554,7 +554,7 @@
       if (!res.ok) { window.location.href = '/auth.html'; return; }
       const { profile } = await res.json();
 
-      // Apply mentor accent color if Ashley
+      // Apply mentor accent color if Iris
       if (profile && profile.mentor === 'ashley') {
         document.documentElement.style.setProperty('--mentor-gold', '#5EA68A');
         document.documentElement.style.setProperty('--mentor-gold-dim', 'rgba(94,166,138,0.4)');

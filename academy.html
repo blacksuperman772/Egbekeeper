@@ -408,8 +408,8 @@
   <a href="/edgekeeper.html" class="nav-logo">Edge<span>K</span>eeper</a>
   <ul class="nav-links">
     <li><a href="/edgekeeper.html#institution">Philosophy</a></li>
-    <li><a href="/mike">Mike</a></li>
-    <li><a href="/ashley">Ashley</a></li>
+    <li><a href="/mike">Marcus</a></li>
+    <li><a href="/ashley">Iris</a></li>
     <li><a href="/edgekeeper.html#pricing">Membership</a></li>
     <li><a href="/academy" class="active">Academy</a></li>
   </ul>
@@ -508,7 +508,7 @@
       <p class="track-desc">Learn to read price action. Trends, levels, volume, and the indicators that hold up over time.</p>
       <span class="track-count">9 Modules</span>
     </div>
-    <p class="track-gate" id="gate-track-2">Unlock when you complete Track 1, or available on Starter+ plan.</p>
+    <p class="track-gate" id="gate-track-2">Unlocks with any EdgeKeeper plan.</p>
     <ul class="module-list" id="modules-track-2">
       <li class="module-row reveal" data-module="support_resistance">
         <span class="module-num">01</span>
@@ -573,9 +573,10 @@
       <span class="track-number">Track 3 · All Levels · Critical</span>
       <h2 class="track-title">Risk Management</h2>
       <p class="track-desc">Risk management is the strategy. Everything else depends on it.</p>
-      <span class="track-count">8 Modules · Open to All</span>
+      <span class="track-count">8 Modules</span>
     </div>
-    <ul class="module-list">
+    <p class="track-gate" id="gate-track-3">Unlocks with any EdgeKeeper plan.</p>
+    <ul class="module-list" id="modules-track-3">
       <li class="module-row reveal" data-module="position_sizing">
         <span class="module-num">01</span>
         <span class="module-title">Position Sizing: The Most Important Calculation in Trading</span>
@@ -635,7 +636,7 @@
       <p class="track-desc">A strategy without an edge is a plan to lose slowly. Build yours correctly.</p>
       <span class="track-count">6 Modules</span>
     </div>
-    <p class="track-gate" id="gate-track-4">Unlock when you complete Track 2, or available on Practitioner+ plan.</p>
+    <p class="track-gate" id="gate-track-4">Unlocks with any EdgeKeeper plan.</p>
     <ul class="module-list" id="modules-track-4">
       <li class="module-row reveal" data-module="what_is_edge">
         <span class="module-num">01</span>
@@ -684,7 +685,7 @@
       <p class="track-desc">The technical and psychological sides of trading are inseparable. This track covers the second half.</p>
       <span class="track-count">13 Modules</span>
     </div>
-    <p class="track-gate" id="gate-track-5">Available to Developing+ members, or after 30 days of membership.</p>
+    <p class="track-gate" id="gate-track-5">Unlocks with any EdgeKeeper plan.</p>
     <ul class="module-list" id="modules-track-5">
       <li class="module-row reveal" data-module="what_is_trading">
         <span class="module-num">01</span>
@@ -773,9 +774,9 @@
       <span class="track-number">Track 6 · Advanced</span>
       <h2 class="track-title">Performance OS</h2>
       <p class="track-desc">For traders who have the edge. Now optimize the operator.</p>
-      <span class="track-count">5 Modules · Practitioner+ Plan</span>
+      <span class="track-count">5 Modules</span>
     </div>
-    <p class="track-gate" id="gate-track-6">Available on Practitioner+ plan.</p>
+    <p class="track-gate" id="gate-track-6">Unlocks with any EdgeKeeper plan.</p>
     <ul class="module-list" id="modules-track-6">
       <li class="module-row reveal" data-module="behavioral_analytics">
         <span class="module-num">01</span>
@@ -833,11 +834,41 @@
 </footer>
 
 <script>
+// Academy entitlement: 'free' = Track 1 only, 'full' = all tracks. Server is the
+// source of truth (the /study route is gated server-side); this only drives the UI.
+let academyAccess = 'free';
+
 // ── ENROLLMENT GUARD ────────────────────────────────────────────────────
 // First-time academy visitors must enroll before seeing the curriculum.
-if (!localStorage.getItem('ek_academy_track')) {
+// On a new device: check DB before redirecting so returning users skip re-enrollment.
+(async () => {
+  if (localStorage.getItem('ek_academy_track')) return; // already enrolled locally
+  try {
+    const r = await fetch('/api/academy/progress');
+    if (r.ok) {
+      const data = await r.json();
+      if (data.access) { academyAccess = data.access; applyGates(); }
+      if (data.track) {
+        localStorage.setItem('ek_academy_track', data.track);
+        // Restore module progress too
+        if (data.progress && typeof data.progress === 'object') {
+          for (const [key, val] of Object.entries(data.progress)) {
+            if (val.started)   localStorage.setItem('ek_academy_' + key + '_started',   val.started);
+            if (val.completed) localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
+          }
+          // Re-render dots and gates once DOM is ready
+          if (typeof allModuleKeys !== 'undefined') {
+            allModuleKeys.forEach(key => updateModuleStatus(key));
+            applyGates();
+          }
+        }
+        return; // stay on the page
+      }
+    }
+  } catch (_) {}
+  // Not enrolled anywhere — go to onboarding
   window.location.replace('/academy-onboarding');
-}
+})();
 
 // ── CURSOR ──────────────────────────────────────────────────────────────
 const cursor = document.getElementById('cursor');
@@ -906,51 +937,77 @@ function updateModuleStatus(key) {
 
 allModuleKeys.forEach(key => updateModuleStatus(key));
 
-// ── TRACK GATE LOGIC ─────────────────────────────────────────────────────
-// Track 1 keys for completion check
-const track1Keys = [
-  'what_are_markets','asset_classes','how_orders_work','reading_a_chart',
-  'candlestick_basics','market_sessions','market_participants','paper_trading',
-  'choosing_a_broker','what_risk_means'
-];
-// Track 2 keys for completion check
-const track2Keys = [
-  'support_resistance','trend_identification','moving_averages','volume_basics',
-  'rsi_macd','chart_patterns','multi_timeframe','entry_exit_mechanics','setting_stops_targets'
-];
+// Cross-device progress restore + entitlement: fetch from DB and reconcile
+(async () => {
+  try {
+    const r = await fetch('/api/academy/progress');
+    if (!r.ok) return;
+    const data = await r.json();
+    // Entitlement always drives the locks, even when there's no progress yet
+    if (data.access) academyAccess = data.access;
+    let changed = false;
+    if (data.progress && typeof data.progress === 'object') {
+      for (const [key, val] of Object.entries(data.progress)) {
+        if (val.started && !localStorage.getItem('ek_academy_' + key + '_started')) {
+          localStorage.setItem('ek_academy_' + key + '_started',   val.started);
+          changed = true;
+        }
+        if (val.completed && !localStorage.getItem('ek_academy_' + key + '_completed')) {
+          localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
+          changed = true;
+        }
+      }
+    }
+    if (changed) allModuleKeys.forEach(key => updateModuleStatus(key));
+    applyGates(); // re-apply with the authoritative access level
+  } catch (_) {}
+})();
 
-function isTrackComplete(keys) {
-  return keys.every(k =>
-    localStorage.getItem('ek_academy_' + k + '_started') ||
-    localStorage.getItem('ek_academy_' + k + '_completed')
-  );
+// ── TRACK GATE LOGIC (plan-based) ─────────────────────────────────────────
+// Track 1 (Market Foundations) is free for every enrolled user. Tracks 2-6 unlock
+// with any paid plan. Server enforces the actual access on the /study route; this
+// is the matching UI so locked tracks read clearly and route to pricing.
+const GATED_TRACKS = [2, 3, 4, 5, 6];
+
+function lockTrack(n) {
+  document.querySelectorAll('#modules-track-' + n + ' .module-row')
+    .forEach(r => r.classList.add('locked'));
+  const gate = document.getElementById('gate-track-' + n);
+  if (gate) {
+    gate.style.display = '';
+    gate.classList.add('locked-gate');
+    gate.textContent = 'Unlock all six tracks with any EdgeKeeper plan →';
+    gate.style.cursor = 'pointer';
+    gate.onclick = () => { window.location.href = '/pricing.html'; };
+  }
+}
+
+function unlockTrack(n) {
+  document.querySelectorAll('#modules-track-' + n + ' .module-row')
+    .forEach(r => r.classList.remove('locked'));
+  const gate = document.getElementById('gate-track-' + n);
+  if (gate) gate.style.display = 'none';
 }
 
 function applyGates() {
-  // Track 2: gate if Track 1 not complete
-  const track2Unlocked = isTrackComplete(track1Keys);
-  if (!track2Unlocked) {
-    document.querySelectorAll('#modules-track-2 .module-row').forEach(r => r.classList.add('locked'));
-  } else {
-    document.getElementById('gate-track-2').style.display = 'none';
-  }
-
-  // Track 3: always open — no gate applied
-  // (gate notice text already says "Open to All")
-
-  // Track 4: gate if Track 2 not complete
-  const track4Unlocked = isTrackComplete(track2Keys);
-  if (!track4Unlocked) {
-    document.querySelectorAll('#modules-track-4 .module-row').forEach(r => r.classList.add('locked'));
-  } else {
-    document.getElementById('gate-track-4').style.display = 'none';
-  }
-
-  // Track 5 and 6 gates — plan-based, left to server-side auth in production.
-  // For now, show gate text but don't lock rows (demo/preview mode).
+  const full = academyAccess === 'full';
+  GATED_TRACKS.forEach(n => full ? unlockTrack(n) : lockTrack(n));
 }
 
 applyGates();
+
+// If the server bounced the user here from a gated module, surface why.
+(function handleLockedRedirect() {
+  const locked = new URLSearchParams(window.location.search).get('locked');
+  if (!locked) return;
+  const banner = document.createElement('div');
+  banner.setAttribute('role', 'status');
+  banner.style.cssText = 'position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:200;background:var(--surface,#15110a);border:1px solid var(--gold,#c9a85c);color:var(--text,#ece6db);font-family:var(--mono,monospace);font-size:0.7rem;letter-spacing:0.04em;padding:14px 22px;border-radius:2px;max-width:90vw;text-align:center;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5);';
+  banner.textContent = 'That track is part of the full Academy. Unlock all six tracks with any plan →';
+  banner.onclick = () => { window.location.href = '/pricing.html'; };
+  document.body.appendChild(banner);
+  setTimeout(() => { banner.style.transition = 'opacity .6s'; banner.style.opacity = '0'; setTimeout(() => banner.remove(), 600); }, 8000);
+})();
 
 // ── MODULE STARTED on click ───────────────────────────────────────────────
 document.querySelectorAll('.module-link').forEach(link => {

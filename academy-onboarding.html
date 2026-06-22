@@ -133,6 +133,7 @@
       border-radius: 4px; padding: 28px 24px;
       cursor: pointer; transition: border-color 0.2s, background 0.2s;
       text-align: left; position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
     }
     .track-card::before {
       content: ''; position: absolute; inset: 0;
@@ -156,7 +157,7 @@
     }
     .track-desc {
       font-size: 0.78rem; color: var(--muted); line-height: 1.7;
-      margin-bottom: 16px;
+      margin-bottom: 16px; flex: 1;
     }
     .track-modules {
       font-family: var(--mono); font-size: 0.58rem;
@@ -216,8 +217,8 @@
     <h1 class="intro-headline">Learn to trade.<br><em>Properly.</em></h1>
     <p class="intro-body">
       Six structured tracks. From what a market is to how professional traders think.
-      You will have a study companion with you the entire way — not a mentor, not a coach,
-      but something closer to a knowledgeable friend who has done this before.
+      Theo, your Academy mentor, walks each module with you: he knows the material cold,
+      teaches it in order, and takes you to the point where you're ready for a senior mentor.
     </p>
     <button class="intro-continue" onclick="showTracks()">Choose your starting track</button>
   </div>
@@ -287,11 +288,49 @@ const SUPABASE_ANON = '%%SUPABASE_ANON_KEY%%';
 
 let selectedTrack   = null;
 let selectedFirst   = null;
+let onbAccess       = 'free'; // 'free' = Track 1 only, 'full' = all tracks
+let onbAccessKnown  = false;  // true once the server confirms entitlement
+const GATED_TRACK_IDS = new Set(['technical','risk','strategy','psychology','performance']);
 
 // ── Already enrolled? Skip straight to academy ─────────────────────────
-const existing = localStorage.getItem('ek_academy_track');
-if (existing) {
+if (localStorage.getItem('ek_academy_track')) {
   window.location.replace('/academy.html');
+}
+
+// Cross-device restore + entitlement: check DB for existing enrollment / plan
+(async () => {
+  try {
+    const r = await fetch('/api/academy/progress');
+    if (!r.ok) return;
+    const data = await r.json();
+    if (data.access) { onbAccess = data.access; onbAccessKnown = true; markGatedTracks(); }
+    if (!data.track) return;
+    localStorage.setItem('ek_academy_track', data.track);
+    if (data.progress && typeof data.progress === 'object') {
+      for (const [key, val] of Object.entries(data.progress)) {
+        if (val.started)   localStorage.setItem('ek_academy_' + key + '_started',   val.started);
+        if (val.completed) localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
+      }
+    }
+    window.location.replace('/academy.html');
+  } catch (_) {}
+})();
+
+// Free users: dim the gated track cards and add a lock note so the funnel reads clearly.
+function markGatedTracks() {
+  if (onbAccess === 'full') return;
+  document.querySelectorAll('.track-card').forEach(card => {
+    if (!GATED_TRACK_IDS.has(card.dataset.track)) return;
+    card.classList.add('track-locked');
+    card.style.opacity = '0.62';
+    if (!card.querySelector('.track-lock-note')) {
+      const note = document.createElement('div');
+      note.className = 'track-lock-note';
+      note.style.cssText = 'margin-top:10px;font-family:var(--mono,monospace);font-size:0.52rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold,#c9a85c);opacity:0.85;';
+      note.textContent = 'Unlocks with any plan';
+      card.appendChild(note);
+    }
+  });
 }
 
 // ── PHASE TRANSITIONS ──────────────────────────────────────────────────
@@ -328,17 +367,22 @@ async function beginAcademy() {
   localStorage.setItem('ek_academy_first_module', selectedFirst);
   localStorage.setItem('ek_academy_enrolled_at', Date.now());
 
-  // Best-effort server sync
+  // Best-effort server sync (uses HttpOnly cookie auth — reliable even after JS session expiry)
   try {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      await sb.from('user_profiles')
-        .update({ academy_track: selectedTrack, academy_enrolled_at: new Date().toISOString() })
-        .eq('id', session.user.id);
-    }
+    await fetch('/api/academy/enroll', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ track: selectedTrack }),
+    });
   } catch (_) {}
+
+  // Confirmed-free user who chose a gated track: send them to pricing rather than
+  // into a module the server would bounce. If entitlement is unknown (fetch failed),
+  // fall through and let the server gate decide — never block a possibly-paid user.
+  if (onbAccessKnown && onbAccess !== 'full' && GATED_TRACK_IDS.has(selectedTrack)) {
+    window.location.href = '/pricing.html?from=academy&track=' + encodeURIComponent(selectedTrack);
+    return;
+  }
 
   // Go to first module of selected track
   window.location.href = '/study.html?module=' + selectedFirst + '&track=' + selectedTrack + '&first=1';

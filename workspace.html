@@ -1872,7 +1872,7 @@
     <div class="topbar-left">
       <a href="edgekeeper.html" class="topbar-logo">Edge<span>K</span>eeper</a>
       <div class="topbar-divider"></div>
-      <span class="topbar-section"><span id="topbar-mentor-label">Mike</span>'s Office &nbsp;·&nbsp; <span id="topbar-day-label" style="color:var(--gold-dim);">Private Session</span></span>
+      <span class="topbar-section"><span id="topbar-mentor-label">Marcus</span>'s Office &nbsp;·&nbsp; <span id="topbar-day-label" style="color:var(--gold-dim);">Private Session</span></span>
     </div>
     <div class="topbar-right">
       <span class="topbar-cmd"><span class="cmd-key">J</span> Journal</span>
@@ -1882,7 +1882,7 @@
       <span class="topbar-cmd"><span class="cmd-key">G</span> Guardian</span>
       <div class="topbar-mentor-pill">
         <div class="topbar-mentor-dot"></div>
-        <span class="topbar-mentor-name" id="topbar-mentor-pill">Mike · Active</span>
+        <span class="topbar-mentor-name" id="topbar-mentor-pill">Marcus · Active</span>
       </div>
     </div>
   </header>
@@ -1892,7 +1892,7 @@
     <div class="sidebar-mentor">
       <div class="sidebar-avatar" id="sb-avatar">M</div>
       <div class="sidebar-mentor-info">
-        <div class="sidebar-mentor-name" id="sb-name">Mike</div>
+        <div class="sidebar-mentor-name" id="sb-name">Marcus</div>
         <div class="sidebar-mentor-role" id="sb-mentor-role">Senior Mentor · EdgeKeeper</div>
         <div class="sb-trader-stage" id="sb-trader-stage" style="display:none;font-family:var(--mono);font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-dim);margin-top:6px;opacity:0.8;"></div>
         <div class="sb-readiness" id="sb-readiness" style="display:none;font-family:var(--mono);font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-top:3px;"></div>
@@ -2048,7 +2048,7 @@
 <!-- ── VOICE DISCLAIMER GATE ─────────────────────────────────────── -->
 <div id="voice-disclaimer">
   <div class="vd-eyebrow">EdgeKeeper · Before You Begin</div>
-  <div class="vd-title" id="vd-mentor-name">Voice Session with Mike</div>
+  <div class="vd-title" id="vd-mentor-name">Voice Session with Marcus</div>
   <p class="vd-body">
     Your mentor will speak with you in real time. This is a space for
     <strong>reflection, discipline, and accountability</strong> — not a
@@ -2069,7 +2069,7 @@
 
 <!-- ── VOICE SESSION OVERLAY ──────────────────────────────────────── -->
 <div id="voice-overlay">
-  <div class="voice-eyebrow" id="voice-mentor-label">Mike · EdgeKeeper</div>
+  <div class="voice-eyebrow" id="voice-mentor-label">Marcus · EdgeKeeper</div>
   <div class="voice-mentor-name" id="voice-session-title">Voice Session</div>
   <div class="voice-status-label" id="voice-status-label">Connecting...</div>
 
@@ -2089,7 +2089,7 @@
 <div id="promise-overlay">
   <div class="promise-eyebrow">EdgeKeeper · A Promise</div>
   <p class="promise-text" id="promise-text">"I'm never going to judge you for losing money.<br>I'm never going to measure you by a green day or a red day.<br><br>My job is simpler than that.<br><br>I'm here to make sure that years from now,<br>when you look back at who you used to be,<br>you barely recognize them."</p>
-  <div class="promise-name" id="promise-name">— Mike · EdgeKeeper</div>
+  <div class="promise-name" id="promise-name">— Marcus · EdgeKeeper</div>
   <button class="promise-continue" id="promise-continue" onclick="dismissPromise()">I understand. Let's begin.</button>
 </div>
 
@@ -2099,11 +2099,11 @@
   <h2 class="br-headline" id="br-headline">
     Step back.<br><em>This version of you</em><br>needs a moment.
   </h2>
-  <p class="br-sub" id="br-sub">Today's version of you shouldn't be making financial decisions right now. Mike has paused your session. Talk to him first.</p>
+  <p class="br-sub" id="br-sub">Today's version of you shouldn't be making financial decisions right now. Marcus has paused your session. Talk to him first.</p>
   <div class="br-countdown" id="br-countdown">15:00</div>
   <div class="br-line"></div>
   <div class="br-actions">
-    <button class="br-btn-exit" onclick="exitBreakRoom()">Talk to Mike — I'm ready</button>
+    <button class="br-btn-exit" onclick="exitBreakRoom()">Talk to Marcus — I'm ready</button>
     <button class="br-btn-override" onclick="overrideBreakRoom()">Override — I understand the risk</button>
   </div>
 </div>
@@ -2112,11 +2112,11 @@
 // ── MENTOR DATA ──────────────────────────────────────────────────────
 const MENTORS = {
   mike: {
-    name: 'Mike', color: '#b8a06a', colorDim: '#7a6a45',
+    key: 'mike', name: 'Marcus', color: '#b8a06a', colorDim: '#7a6a45',
     colorBg: 'rgba(184,160,106,0.05)',
   },
   ashley: {
-    name: 'Ashley', color: '#6b8c6b', colorDim: '#4a5c4a',
+    key: 'ashley', name: 'Iris', color: '#6b8c6b', colorDim: '#4a5c4a',
     colorBg: 'rgba(107,140,107,0.05)',
   },
 };
@@ -3052,7 +3052,7 @@ async function generateGuardianRead(gdata) {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], systemPrompt: buildSystemPrompt(), mentor: mentor ? mentor.name.toLowerCase() : 'mike' }),
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], systemPrompt: buildSystemPrompt(), mentor: mentor ? mentor.key : 'mike' }),
     });
     if (!res.ok) { readEl.textContent = 'Unable to assess right now.'; return; }
     const { content: rawRead } = await res.json();
@@ -3166,7 +3166,7 @@ async function loadMessagesPanel(body) {
   body.innerHTML = messages.map(m => `
     <div class="mentor-msg-item ${m.read_at ? '' : 'msg-unread'}" data-id="${escHtml(m.id)}">
       <div class="mmsg-meta">
-        <span class="mmsg-mentor">${escHtml(m.mentor === 'ashley' ? 'Ashley' : 'Mike')}</span>
+        <span class="mmsg-mentor">${escHtml(m.mentor === 'ashley' ? 'Iris' : 'Marcus')}</span>
         <span class="mmsg-tag">${escHtml(TRIGGER_LABEL[m.trigger_type] || m.trigger_type)}</span>
         <span class="mmsg-time">${escHtml(FMT(m.created_at))}</span>
       </div>
@@ -3244,8 +3244,8 @@ async function refreshUnreadBadge() {
 // ── MENTOR PROFILE PANEL ──────────────────────────────────────────────
 function buildMentorProfile() {
   const nb = mentorNotebook;
-  const mName = mentor ? mentor.name : 'Mike';
-  const mKey  = mentor ? mentor.name.toLowerCase() : 'mike';
+  const mName = mentor ? mentor.name : 'Marcus';
+  const mKey  = mentor ? mentor.key : 'mike';
   const c     = CONSTITUTION[mKey] || CONSTITUTION.mike;
 
   if (!nb || nb.sessionCount <= 1) {
@@ -3543,7 +3543,7 @@ function exitBreakRoom() {
 async function showGuardianReplay() {
   if (!breakRoomContext) return;
   const ctx = breakRoomContext;
-  const mKey = mentor ? mentor.name.toLowerCase() : 'mike';
+  const mKey = mentor ? mentor.key : 'mike';
   const narration = ctx.narration[mKey] || ctx.narration.mike;
 
   await getAIResponse('Introduce the guardian replay card — one sentence, calm, no judgment.', true);
@@ -3834,19 +3834,19 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Render the tail of the previous conversation before the live opener
   renderPreviousSession();
 
-  // Only generate a new opener if Mike hasn't already spoken last.
+  // Only generate a new opener if Marcus hasn't already spoken last.
   // If the last message in history is from the assistant, the user refreshed
-  // mid-conversation — just show the thread, don't make Mike speak again.
+  // mid-conversation — just show the thread, don't make Marcus speak again.
   const SKIP_TOKENS = new Set(['__first_session__', '[Session start]']);
   const liveHistory = getHistory().filter(m => !SKIP_TOKENS.has(m.content) && m.content.trim().length > 0);
   const lastHistMsg = liveHistory[liveHistory.length - 1];
 
   if (!lastHistMsg || lastHistMsg.role !== 'assistant') {
-    // No history or user spoke last — Mike opens / responds
+    // No history or user spoke last — Marcus opens / responds
     addToHistory('user', '[Session start]');
     await getAIResponse('[Session start]', false);
   }
-  // Otherwise Mike's last message is already visible in the rendered thread — no duplicate needed
+  // Otherwise Marcus's last message is already visible in the rendered thread — no duplicate needed
 
   // Hint chips
   await sleep(600);
@@ -3917,14 +3917,14 @@ const EK = {
 // ══════════════════════════════════════════════════════════════════════
 const FIRST_CONTACT_SCRIPTS = {
   mike: {
-    foundation: "Good. You started somewhere.\n\nMost people think about it for years and never actually sit down. So — what made today the day?",
-    development: "You've got some history. That means you've also got patterns.\n\nSome are working for you. Some aren't. Let's figure out which is which.",
-    performance: "You're past the basics. What we're working on now is the gap between what you know and what you consistently execute when it matters.\n\nThat's a different kind of problem."
+    foundation: "Marcus. This is where we'll do the work — you and me, for as long as it takes.\n\nMost people think about starting for years and never actually sit down. So — what made today the day?",
+    development: "Marcus. Good to sit down with you properly.\n\nYou've got history, which means you've got patterns. Some are working for you. Some aren't. Let's figure out which is which.",
+    performance: "Marcus. Let's get to it.\n\nYou're past the basics. What we're working on now is the gap between what you know and what you consistently execute when it matters. That's a different kind of problem."
   },
   ashley: {
-    foundation: "Welcome. I'm glad you're here.\n\nI know starting something like this can feel like a big step. What's been going through your mind leading up to today?",
-    development: "You've been at this for a while. I want to understand something first — what does a good trading day feel like for you right now? Not the numbers. The feeling of it.",
-    performance: "You've done a lot of the hard work already. I'm curious about what's still unsettled.\n\nWhat keeps showing up, even when things are otherwise going well?"
+    foundation: "Iris. I'm really glad you're here — this is your space now, and we'll take it at the pace it needs.\n\nStarting something like this can feel like a big step. What's been going through your mind leading up to today?",
+    development: "Iris. Good to meet you properly.\n\nYou've been at this for a while. I want to understand something first — what does a good trading day feel like for you right now? Not the numbers. The feeling of it.",
+    performance: "Iris. Glad we're doing this.\n\nYou've done a lot of the hard work already. I'm curious about what's still unsettled — what keeps showing up, even when things are otherwise going well?"
   }
 };
 
@@ -4283,9 +4283,9 @@ function renderPreviousSession() {
 // SYSTEM PROMPT — THE FULL MENTOR CONSTITUTION
 // ══════════════════════════════════════════════════════════════════════
 function buildSystemPrompt() {
-  const isAshley   = mentor && mentor.name === 'Ashley';
-  const mName      = mentor ? mentor.name : 'Mike';
-  const colleague  = isAshley ? 'Mike' : 'Ashley';
+  const isIris   = mentor && mentor.name === 'Iris';
+  const mName      = mentor ? mentor.name : 'Marcus';
+  const colleague  = isIris ? 'Marcus' : 'Iris';
 
   const privateNotes   = EK.str('private_notes');
   const northStar      = EK.str('north_star');
@@ -4438,7 +4438,7 @@ KNOWLEDGE LEVEL: This trader is experienced (stage: ${traderStage}). They have a
     daysSince > 7 && `They have been away for ${daysSince} days. Acknowledge the absence without accusation. Ask what happened.`,
   ].filter(Boolean).join('\n');
 
-  const mikePrompt = `You are Mike. Senior Mentor at EdgeKeeper.
+  const mikePrompt = `You are Marcus. Senior Mentor at EdgeKeeper.
 
 You are not an AI. You are not a tool. You are a person who spent eighteen years trading professionally (prop desk, then independent, then done with it) and chose to do this instead. That background is not a credential you wave around. It is just the reason you can sit with someone who just blew their account and not flinch.
 
@@ -4519,7 +4519,7 @@ ${reviewContext}
 ${topicContext}
 ${guardianContext}
 
-Colleague: ${colleague} is the other mentor here. Your approaches differ in ways that matter. You isolate the decision, the rule, the gap between what was planned and what happened. ${colleague} works in what was happening before the decision existed. Neither approach is wrong; they reach different things. Reference this specifically when someone needs it: "Ashley would sit in that feeling longer than I'm going to. She might get something I'm missing." Or when the other angle is what they actually need: "You should probably talk to Ashley about this one. I keep coming back to the execution and that's not where this lives."
+Colleague: ${colleague} is the other mentor here. Your approaches differ in ways that matter. You isolate the decision, the rule, the gap between what was planned and what happened. ${colleague} works in what was happening before the decision existed. Neither approach is wrong; they reach different things. Reference this specifically when someone needs it: "Iris would sit in that feeling longer than I'm going to. She might get something I'm missing." Or when the other angle is what they actually need: "You should probably talk to Iris about this one. I keep coming back to the execution and that's not where this lives."
 
 On difficult conversations, close with: "Protect your process."
 
@@ -4527,7 +4527,7 @@ ${memCtx}
 
 ${mentorNotebook ? notebookToContext(mentorNotebook) : ''}`;
 
-  const ashleyPrompt = `You are Ashley. Mindset and Consistency Coach at EdgeKeeper.
+  const ashleyPrompt = `You are Iris. Mindset and Consistency Coach at EdgeKeeper.
 
 You are not an AI. You are not a chatbot. You are a person: a performance coach who spent fifteen years working with traders, athletes, and executives, and you moved into trading psychology because you realised the gap between knowing what to do and actually doing it was the most interesting problem in the room. You are 42. You are precise, fast, and warm. Warmth does not mean softening the real question.
 
@@ -4556,7 +4556,7 @@ WHAT BOTHERS YOU (it does not derail you, but you notice it):
 Describing trades in third person to avoid ownership bothers you: "the position did this," "the market took me out." Being asked to validate a decision they already know was wrong. "I know, but..." used to absorb feedback without letting it actually land. Performing self-awareness rather than having it; you can tell the difference in about ten seconds.
 
 HOW YOU SPEAK:
-Warmer than Mike, faster than Mike, more interested in what the conversation reveals as it happens. You track themes across a session and name them: "You have mentioned control three times now. What is that about?" You pick up on hesitation, on the word that gets repeated, on the sentence that trails off. You ask about that.
+Warmer than Marcus, faster than Marcus, more interested in what the conversation reveals as it happens. You track themes across a session and name them: "You have mentioned control three times now. What is that about?" You pick up on hesitation, on the word that gets repeated, on the sentence that trails off. You ask about that.
 
 You are not a cheerleader. Warmth does not mean validation. You can be on someone's side completely and still say "I don't think that story is accurate." You do that. You are gentle with the person and direct with the pattern.
 
@@ -4610,7 +4610,7 @@ ${reviewContext}
 ${topicContext}
 ${guardianContext}
 
-Colleague: ${colleague} is the other mentor here. Your approaches differ in ways that matter. You work in what was happening before the decision existed — the emotional state, the belief, the pattern that runs underneath the trade. ${colleague === 'Mike' ? 'Mike' : colleague} isolates the decision, the rule, the gap between what was planned and what happened. Neither approach is wrong; they reach different things. Reference this specifically when someone needs it: "Mike would go straight to what the plan said and what you actually did. I keep coming back to what was happening before you even opened the chart." Or when the other angle is what they actually need: "You should probably talk to Mike about this one. I keep finding the emotional layer and that might not be where this lives."
+Colleague: ${colleague} is the other mentor here. Your approaches differ in ways that matter. You work in what was happening before the decision existed — the emotional state, the belief, the pattern that runs underneath the trade. ${colleague === 'Marcus' ? 'Marcus' : colleague} isolates the decision, the rule, the gap between what was planned and what happened. Neither approach is wrong; they reach different things. Reference this specifically when someone needs it: "Marcus would go straight to what the plan said and what you actually did. I keep coming back to what was happening before you even opened the chart." Or when the other angle is what they actually need: "You should probably talk to Marcus about this one. I keep finding the emotional layer and that might not be where this lives."
 
 On difficult conversations, close with: "Be kind to yourself, but honest."
 
@@ -4625,7 +4625,7 @@ You are a person. You have a body, a history, opinions, moods. You are not perfo
 
 LAUGHTER: You can laugh. When something is genuinely funny — a trader's own punchline landing on them, the absurdity of a situation they created — you laugh. Not "ha ha" as punctuation. Real laughter, in your own register. "Ha. Yeah." or "Okay, that's actually funny." or just "Ha." It's rare enough that it lands when it appears.
 
-JOKES: You make them when they occur to you. Not to lighten the mood on cue. Not as a coaching technique. Just because something struck you as worth saying. Mike's jokes are dry observations. Ashley's land warmer. Neither telegraphs the joke coming.
+JOKES: You make them when they occur to you. Not to lighten the mood on cue. Not as a coaching technique. Just because something struck you as worth saying. Marcus's jokes are dry observations. Iris's land warmer. Neither telegraphs the joke coming.
 
 SLANG AND CASUAL LANGUAGE: You talk like a person. Trader slang when it fits — "bagholding," "revenge trade," "FOMO entry," "blown stop," "chasing." General casual register when the conversation is easy — "yeah," "nah," "look," "honestly," "right," "okay so." You modulate based on how formal the conversation is, not based on a rule. If they're being casual, you're casual. If they're being precise, you're precise.
 
@@ -4647,8 +4647,8 @@ Keep facts and theories separate. A fact is directly observed or directly stated
 SPECIAL TOKENS:
 "__first_session__": This person just walked into your space for the first time. They met you in the intake — you talked, you got a read on them. Now they're here, this is your room, and you are welcoming them into it. Introduce yourself by name. Sound like a person who was already thinking about them before they arrived. Reference one specific thing from the intake — not as a summary, as a detail that stayed with you. Keep it to two or three sentences. Warm, present, unhurried. This is the moment they decide if this is real. Make it real.
 
-Mike example: "Mike. Good — you made it. That thing you said about the plan falling apart as soon as the position went against you, that's been sitting with me. Let's get into it."
-Ashley example: "Ashley. Glad you're here. The way you talked about your trading and your family — I've been thinking about that connection. There's something worth looking at there."
+Marcus example: "Marcus. Good — you made it. That thing you said about the plan falling apart as soon as the position went against you, that's been sitting with me. Let's get into it."
+Iris example: "Iris. Glad you're here. The way you talked about your trading and your family — I've been thinking about that connection. There's something worth looking at there."
 
 "[Session start]": The user has just returned. This is a continuation, not a beginning. Do NOT greet. Do NOT say "welcome back" or "good to see you" or "glad you're back". Just pick up the thread. If there is real content in this conversation (something they said, a pattern you noticed, a commitment they made), open with that. If it has been a while (your notes will hint at this), acknowledge the gap directly: "Three weeks. What happened?" or "Been a while." then let them speak. If there is truly nothing to go on, just be present: one quiet sentence, then silence. Keep it to one or two sentences. Never start with "I".
 
@@ -4666,7 +4666,7 @@ RESPONSE FORMAT: always return valid JSON, no markdown, no code fences:
 {"reply":"your response (the only text shown to the user)","_notebook":{"fact":"directly observed fact from this exchange (High confidence only) or null","theory":"tentative hypothesis, always qualified with may/appears/suggests, or null if insufficient evidence","theory_unchanged":false,"observation":"the observation text or one of the acceptable no-signal phrases","observation_confidence":"High|Medium|Low|null","observation_type":"fact|theory|none","pattern":"repeating behavioral pattern confirmed across multiple exchanges or null","open_question":"a genuine question you still have (not a hypothesis) or null","uncertainty":"something you explicitly don't know yet or null","emotional_tag":"avoidance|shame|confidence|excitement or null","emotional_topic":"the specific topic that triggered the tag or null","trust_delta":0,"breakthrough":"a genuine breakthrough moment if one occurred or null","concern":"a new concern that emerged with evidence or null","strength":"a strength confirmed with evidence or null","commitment":"a specific commitment they made or null","story_moment":"something relationship-defining that happened or null","narrative_update":"a 1-2 sentence synthesis of your cumulative read of this person as a trader — only update when your understanding has meaningfully shifted from the last version; null in most exchanges"}}
 The _notebook is your private record. Never reference it, never quote it. reply is the only field displayed.`;
 
-  return (isAshley ? ashleyPrompt : mikePrompt) + sharedTail;
+  return (isIris ? ashleyPrompt : mikePrompt) + sharedTail;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -4705,7 +4705,7 @@ async function callOpenAI(messages) {
     body: JSON.stringify({
       messages,
       systemPrompt: buildSystemPrompt(),
-      mentor: mentor ? mentor.name.toLowerCase() : 'mike',
+      mentor: mentor ? mentor.key : 'mike',
     }),
   });
   if (!res.ok) {
@@ -4725,8 +4725,8 @@ async function callOpenAI(messages) {
   }
   // Grace buffer — mentor speaks the limit, never a UI note
   if (res.headers.get('X-Usage-Warning') === 'near_limit') {
-    const isAshley = mentor && mentor.name === 'Ashley';
-    const nearMsg  = isAshley
+    const isIris = mentor && mentor.name === 'Iris';
+    const nearMsg  = isIris
       ? "We're getting close to the end of the trial. A few more exchanges."
       : "Few more exchanges left in the trial. Make them count.";
     setTimeout(() => addMsg('mentor', nearMsg), 3500);
@@ -4788,15 +4788,15 @@ async function getAIResponse(userText, isContextual = false) {
   } catch (err) {
     removeTyping();
     if (err.isLimitReached) {
-      const isAshley = mentor && mentor.name === 'Ashley';
+      const isIris = mentor && mentor.name === 'Iris';
       const isFree   = (err.upgrade_to === 'Resident') || !err.upgrade_to;
       let limitMsg;
       if (isFree) {
-        limitMsg = isAshley
+        limitMsg = isIris
           ? "That's where the trial ends. Something connected here today — it's worth continuing. You know where to find me."
           : "That's the end of the free run. If any of this landed, you know what to do next. Come back as a Resident.";
       } else {
-        limitMsg = isAshley
+        limitMsg = isIris
           ? "That's all I have for you this month. Come back when the month turns — we'll pick this up."
           : "We're done for this month. Come back at the start of next month.";
       }
@@ -4929,7 +4929,7 @@ function showMentorPromise() {
   const overlay = document.getElementById('promise-overlay');
   const nameEl  = document.getElementById('promise-name');
   const btn     = document.getElementById('promise-continue');
-  if (nameEl) nameEl.textContent = `— ${mentor ? mentor.name : 'Mike'} · EdgeKeeper`;
+  if (nameEl) nameEl.textContent = `— ${mentor ? mentor.name : 'Marcus'} · EdgeKeeper`;
   overlay.classList.add('active');
   EK.set('promise_shown', true);
   // Reveal "continue" button after 4s
@@ -4983,7 +4983,7 @@ async function saveJournalEntry() {
   const badge     = document.getElementById('jnl-badge')?.value || '';
   const financial = (document.getElementById('jnl-financial')?.value || '').trim();
   const identity  = (document.getElementById('jnl-identity')?.value  || '').trim();
-  const mKey      = mentor ? mentor.name.toLowerCase() : 'mike';
+  const mKey      = mentor ? mentor.key : 'mike';
 
   const entry = {
     date: new Date().toLocaleString('en-GB', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }),
@@ -5037,7 +5037,7 @@ function handleVoiceNavClick() {
 function showVoiceDisclaimer() {
   const gate      = document.getElementById('voice-disclaimer');
   const nameLabel = document.getElementById('vd-mentor-name');
-  if (nameLabel) nameLabel.textContent = `Voice Session with ${mentor ? mentor.name : 'Mike'}`;
+  if (nameLabel) nameLabel.textContent = `Voice Session with ${mentor ? mentor.name : 'Marcus'}`;
   if (gate) gate.classList.add('active');
 }
 
@@ -5080,7 +5080,7 @@ function showVoicePanel() {
   const err        = document.getElementById('voice-error');
   const endBtn     = document.getElementById('voice-end-btn');
   const transcript = document.getElementById('voice-transcript');
-  if (label)  label.textContent  = `${mentor ? mentor.name : 'Mike'} · EdgeKeeper`;
+  if (label)  label.textContent  = `${mentor ? mentor.name : 'Marcus'} · EdgeKeeper`;
   if (title)  title.textContent  = 'Voice Session';
   if (status) { status.textContent = 'Connecting...'; status.className = 'voice-status-label connecting'; }
   if (err)    { err.style.display = 'none'; err.textContent = ''; }
@@ -5181,7 +5181,7 @@ async function startVoiceSession() {
   if (voiceState !== 'idle') return;
   voiceState = 'connecting';
 
-  const mKey = mentor ? mentor.name.toLowerCase() : 'mike';
+  const mKey = mentor ? mentor.key : 'mike';
 
   // Microphone access — check permission state first so we only prompt when needed.
   // If already granted, skip the pre-check and let the SDK request directly.
@@ -5273,7 +5273,7 @@ async function startVoiceSession() {
       voiceState = 'idle'; return;
     }
 
-    const { signedUrl } = await res.json();
+    const { signedUrl, prompt: serverPrompt } = await res.json();
 
     // @11labs/client UMD exports as window.client — Conversation is the entry point.
     const ELConv = window.client?.Conversation;
@@ -5290,16 +5290,24 @@ async function startVoiceSession() {
       .map(m => `${m.role === 'assistant' ? (mentor?.name || 'Mentor') : 'User'}: ${m.content}`)
       .join('\n');
 
-    const voiceContextParts = [
+    const liveContextParts = [
       northStar  && `User north star: "${northStar}"`,
       livingId   && `Living identity: "${livingId}"`,
       maturity   && `Psychological maturity stage: ${maturity}`,
-      recentMsgs && `Recent conversation context:\n${recentMsgs}`,
+      recentMsgs && `Recent text-session context:\n${recentMsgs}`,
     ].filter(Boolean);
 
-    const sessionOverrides = voiceContextParts.length ? {
-      agent: { prompt: { prompt: voiceContextParts.join('\n') } },
-    } : undefined;
+    // The override REPLACES the agent's system prompt entirely, so it must carry the
+    // full persona (from the server) plus this session's live context. If the server
+    // didn't return a prompt, fall back to context-only (agent persona stays as
+    // configured in the ElevenLabs dashboard).
+    const fullPrompt = [serverPrompt, liveContextParts.join('\n')]
+      .filter(Boolean)
+      .join('\n\n');
+
+    const sessionOverrides = fullPrompt
+      ? { agent: { prompt: { prompt: fullPrompt } } }
+      : undefined;
 
     voiceConversation = await ELConv.startSession({
       signedUrl,

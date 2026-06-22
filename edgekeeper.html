@@ -456,7 +456,11 @@
       position: relative;
       overflow: hidden;
       transition: background .4s;
+      display: flex;
+      flex-direction: column;
     }
+    /* Pin the begin/office CTA row to the bottom so both cards align regardless of bio length */
+    .mentor-card > div:last-child { margin-top: auto; padding-top: 28px; }
     .mentor-card:hover { background: var(--stone); }
     .mentor-card::before {
       content: '';
@@ -1496,11 +1500,11 @@
     <div class="hero-ctas">
       <a href="onboarding.html?mentor=mike" class="btn-mentor btn-mike">
         <span class="btn-dot"></span>
-        Work with Mike
+        Work with Marcus
       </a>
       <a href="onboarding.html?mentor=ashley" class="btn-mentor btn-ashley">
         <span class="btn-dot"></span>
-        Work with Ashley
+        Work with Iris
       </a>
     </div>
   </div>
@@ -1705,20 +1709,20 @@
         Two people.<br><em>One institution.</em>
       </h2>
       <p class="mentors-sub reveal reveal-delay-2">
-        Mike and Ashley are colleagues at EdgeKeeper. They share your history. They know your patterns. They remember everything.
+        Marcus and Iris are colleagues at EdgeKeeper. They share your history. They know your patterns. They remember everything.
       </p>
     </div>
     <div class="mentors-grid">
       <div class="mentor-card mike reveal">
         <div class="mentor-avatar">
           <div class="mentor-avatar-inner" id="mike-avatar-inner" style="background:linear-gradient(135deg,#1a1810,#2d2410);border:1px solid var(--gold-dim);color:var(--gold);overflow:hidden;padding:0;">
-            <img src="/assets/mike-portrait.png" alt="Mike" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:inherit;" onerror="this.parentNode.innerHTML='M';">
+            <img src="/assets/mike-portrait.png" alt="Marcus" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:inherit;" onerror="this.parentNode.innerHTML='M';">
           </div>
         </div>
         <div class="mentor-role">Senior Mentor · EdgeKeeper</div>
-        <h3 class="mentor-name">Mike</h3>
+        <h3 class="mentor-name">Marcus</h3>
         <p class="mentor-bio">
-          Mike doesn't let you off easy. He'll tell you what you already know but are avoiding. Direct, logical, and methodical, he builds structure where there is none and holds you to it without apology. He is calm in the way a surgeon is calm.
+          Marcus doesn't let you off easy. He'll tell you what you already know but are avoiding. Direct, logical, and methodical, he builds structure where there is none and holds you to it without apology. He is calm in the way a surgeon is calm.
         </p>
         <div class="mentor-traits">
           <span class="trait">Direct</span>
@@ -1730,20 +1734,20 @@
         <blockquote class="mentor-quote">
           "I don't think this is really about the trade."
         </blockquote>
-        <div style="display:flex;align-items:center;gap:20px;margin-top:28px;">
-          <a href="onboarding.html?mentor=mike" class="mentor-cta" style="margin-top:0;">Begin with Mike →</a>
+        <div style="display:flex;align-items:center;gap:20px;">
+          <a href="onboarding.html?mentor=mike" class="mentor-cta" style="margin-top:0;">Begin with Marcus →</a>
           <a href="/mike" style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;transition:color .3s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">His office →</a>
         </div>
       </div>
       <div class="mentor-card ashley reveal reveal-delay-2">
         <div class="mentor-avatar">
-          <img src="/assets/ashley-portrait.png" alt="Ashley" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          <img src="/assets/ashley-portrait.png" alt="Iris" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
           <div class="mentor-avatar-inner" style="display:none;background:linear-gradient(135deg,#111814,#162016);border:1px solid rgba(74,92,74,0.5);color:var(--green-bright);">A</div>
         </div>
         <div class="mentor-role">Senior Mentor · EdgeKeeper</div>
-        <h3 class="mentor-name">Ashley</h3>
+        <h3 class="mentor-name">Iris</h3>
         <p class="mentor-bio">
-          Ashley notices what you don't say. She reads between the trades, between the journal entries, between the silences. Warm but precise, she creates the space where patterns finally become visible. She's the mentor who makes the work feel possible.
+          Iris notices what you don't say. She reads between the trades, between the journal entries, between the silences. Warm but precise, she creates the space where patterns finally become visible. She's the mentor who makes the work feel possible.
         </p>
         <div class="mentor-traits">
           <span class="trait">Empathetic</span>
@@ -1755,8 +1759,8 @@
         <blockquote class="mentor-quote">
           "Tell me what was happening before you took that trade."
         </blockquote>
-        <div style="display:flex;align-items:center;gap:20px;margin-top:28px;">
-          <a href="onboarding.html?mentor=ashley" class="mentor-cta" style="margin-top:0;">Begin with Ashley →</a>
+        <div style="display:flex;align-items:center;gap:20px;">
+          <a href="onboarding.html?mentor=ashley" class="mentor-cta" style="margin-top:0;">Begin with Iris →</a>
           <a href="/ashley" style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--green-bright);text-decoration:none;opacity:0.6;transition:opacity .3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Her office →</a>
         </div>
       </div>
@@ -1780,7 +1784,7 @@
 
       <div class="reveal" style="background:var(--black);padding:52px 56px;display:grid;grid-template-columns:120px 1fr;gap:48px;">
         <div>
-          <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:8px;">Mike</div>
+          <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:8px;">Marcus</div>
           <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.12em;color:var(--dim);">Intervention</div>
         </div>
         <div style="font-family:var(--serif);font-size:1.15rem;font-weight:300;color:var(--text);line-height:1.9;">
@@ -1794,7 +1798,7 @@
 
       <div class="reveal" style="background:var(--obsidian);padding:52px 56px;display:grid;grid-template-columns:120px 1fr;gap:48px;">
         <div>
-          <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Ashley</div>
+          <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Iris</div>
           <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.12em;color:var(--dim);">The real problem</div>
         </div>
         <div style="font-family:var(--serif);font-size:1.15rem;font-weight:300;color:var(--text);line-height:1.9;">
@@ -1808,7 +1812,7 @@
 
       <div class="reveal" style="background:var(--black);padding:52px 56px;display:grid;grid-template-columns:120px 1fr;gap:48px;">
         <div>
-          <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:8px;">Mike</div>
+          <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:8px;">Marcus</div>
           <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.12em;color:var(--dim);">Pattern, not promise</div>
         </div>
         <div style="font-family:var(--serif);font-size:1.15rem;font-weight:300;color:var(--text);line-height:1.9;">
@@ -1822,7 +1826,7 @@
 
       <div class="reveal" style="background:var(--obsidian);padding:52px 56px;display:grid;grid-template-columns:120px 1fr;gap:48px;">
         <div>
-          <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Ashley</div>
+          <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Iris</div>
           <div style="font-family:var(--mono);font-size:0.55rem;letter-spacing:0.12em;color:var(--dim);">The shift</div>
         </div>
         <div style="font-family:var(--serif);font-size:1.15rem;font-weight:300;color:var(--text);line-height:1.9;">
@@ -2075,7 +2079,7 @@
         <div style="display:flex;flex-direction:column;gap:1px;background:var(--border);">
           <div style="display:grid;grid-template-columns:80px 1fr;gap:0;background:var(--border);">
             <div style="padding:16px 20px;background:var(--stone);display:flex;align-items:center;font-family:var(--mono);font-size:0.6rem;color:var(--gold-dim);">Level 1</div>
-            <div style="padding:16px 24px;background:var(--black);font-size:0.82rem;color:var(--muted);">Gentle notice. No restrictions. Mike mentions what he sees.</div>
+            <div style="padding:16px 24px;background:var(--black);font-size:0.82rem;color:var(--muted);">Gentle notice. No restrictions. Marcus mentions what he sees.</div>
           </div>
           <div style="display:grid;grid-template-columns:80px 1fr;gap:0;background:var(--border);">
             <div style="padding:16px 20px;background:var(--stone);display:flex;align-items:center;font-family:var(--mono);font-size:0.6rem;color:var(--gold-dim);">Level 2</div>
@@ -2083,7 +2087,7 @@
           </div>
           <div style="display:grid;grid-template-columns:80px 1fr;gap:0;background:var(--border);">
             <div style="padding:16px 20px;background:var(--stone);display:flex;align-items:center;font-family:var(--mono);font-size:0.6rem;color:var(--gold-dim);">Level 3</div>
-            <div style="padding:16px 24px;background:var(--black);font-size:0.82rem;color:var(--muted);">Mandatory conversation. Mike says: "Talk to me for five minutes first."</div>
+            <div style="padding:16px 24px;background:var(--black);font-size:0.82rem;color:var(--muted);">Mandatory conversation. Marcus says: "Talk to me for five minutes first."</div>
           </div>
           <div style="display:grid;grid-template-columns:80px 1fr;gap:0;background:var(--border);">
             <div style="padding:16px 20px;background:var(--stone);display:flex;align-items:center;font-family:var(--mono);font-size:0.6rem;color:var(--gold-dim);">Level 4</div>
@@ -2108,7 +2112,7 @@
       <div style="padding:48px 44px;background:var(--obsidian);">
         <div style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:20px;">Guardian Contract</div>
         <h3 style="font-family:var(--serif);font-size:1.8rem;font-weight:300;color:var(--white);margin-bottom:20px;line-height:1.2;">You choose the<br>level of protection.</h3>
-        <p style="font-size:0.85rem;color:var(--muted);line-height:1.85;margin-bottom:28px;">During onboarding, before emotions are involved, Mike asks how much protection you want. Your calmer self sets the rules. Your present self operates within them.</p>
+        <p style="font-size:0.85rem;color:var(--muted);line-height:1.85;margin-bottom:28px;">During onboarding, before emotions are involved, Marcus asks how much protection you want. Your calmer self sets the rules. Your present self operates within them.</p>
         <div style="display:flex;flex-direction:column;gap:8px;">
           <div style="padding:12px 16px;background:var(--stone);border:1px solid var(--border);font-size:0.8rem;color:var(--muted);">Observe only — I just want awareness</div>
           <div style="padding:12px 16px;background:var(--stone);border:1px solid var(--border);font-size:0.8rem;color:var(--muted);">Warn me — flag the behavior</div>
@@ -2132,60 +2136,61 @@
     </div>
     <div class="pricing-grid">
       <div class="price-card reveal">
-        <div class="price-tier">Free Trial</div>
+        <div class="price-tier">Academy</div>
         <div class="price-amount">Free</div>
-        <div class="price-period">Enough to meet your mentor. No card, no commitment.</div>
+        <div class="price-period">Start here. Learn the fundamentals. No card.</div>
         <ul class="price-features">
-          <li class="included">15 mentor exchanges</li>
+          <li class="included">Academy Track 1 — Market Foundations</li>
+          <li class="included">Theo, your Academy mentor</li>
+          <li class="included">15 senior-mentor exchanges</li>
           <li class="included">One voice session included</li>
-          <li class="included">Choose Mike or Ashley</li>
-          <li class="included">Persistent memory — your session stays</li>
-          <li>Trading journal</li>
-          <li>Rules engine</li>
+          <li>Academy Tracks 2–6</li>
+          <li>Trading journal &amp; rules</li>
           <li>Guardian Layer</li>
         </ul>
-        <a href="onboarding.html?plan=free" class="price-cta">Start your first session</a>
+        <a href="/academy-onboarding" class="price-cta">Start free</a>
       </div>
       <div class="price-card reveal reveal-delay-1">
         <div class="price-tier">Resident</div>
-        <div class="price-amount">$89<span>/mo</span></div>
-        <div class="price-period">Build the discipline habit.</div>
+        <div class="price-amount">$99<span>/mo</span></div>
+        <div class="price-period">See yourself.</div>
         <ul class="price-features">
-          <li class="included">Your mentor, every day</li>
-          <li class="included">Both mentors — Mike and Ashley</li>
+          <li class="included">The full Academy — all 6 tracks with Theo</li>
+          <li class="included">Your senior mentor, every day — Marcus and Iris</li>
           <li class="included">Voice sessions included</li>
-          <li class="included">Memory grows across every session</li>
-          <li class="included">Trading journal — unlimited entries</li>
-          <li class="included">Rules engine — define your guardrails</li>
-          <li>Guardian Layer</li>
+          <li class="included">Connect your account — read-only</li>
+          <li class="included">Behavior analytics &amp; drawdown visibility</li>
+          <li class="included">Trading journal &amp; rules engine</li>
+          <li>Guardian intervention</li>
         </ul>
         <a href="onboarding.html?plan=starter" class="price-cta">Become a Resident</a>
       </div>
       <div class="price-card featured reveal reveal-delay-2">
         <div class="price-tier">Fellow</div>
-        <div class="price-amount">$219<span>/mo</span></div>
-        <div class="price-period">Stop the trades you'll regret.</div>
+        <div class="price-amount">$249<span>/mo</span></div>
+        <div class="price-period">Protect yourself.</div>
         <ul class="price-features">
-          <li class="included">Your mentor, every day</li>
           <li class="included">Everything in Resident</li>
-          <li class="included">Extended voice access</li>
-          <li class="included">Guardian Layer — hooks into your live account</li>
-          <li class="included">Custom drawdown &amp; loss limits</li>
+          <li class="included">Guardian Layer — real-time intervention</li>
+          <li class="included">Drawdown &amp; loss limits — enforced, not just shown</li>
+          <li class="included">Cooldowns after consecutive losses</li>
           <li class="included">Break Room — mandatory pause before re-entry</li>
-          <li class="included">Analytics — see which conditions break your discipline</li>
+          <li class="included">Execution firewall — rules checked before a trade lands</li>
+          <li class="included">Extended voice access</li>
         </ul>
         <a href="onboarding.html?plan=pro" class="price-cta">Become a Fellow</a>
       </div>
       <div class="price-card reveal reveal-delay-3">
         <div class="price-tier">Private Office</div>
-        <div class="price-amount">$479<span>/mo</span></div>
-        <div class="price-period">Open access. Your mentor, when you need them.</div>
+        <div class="price-amount">$599<span>/mo</span></div>
+        <div class="price-period">Optimize.</div>
         <ul class="price-features">
-          <li class="included">Your mentor, every day — no limits</li>
-          <li class="included">Everything in Fellow</li>
+          <li class="included">Everything in Fellow — no limits</li>
           <li class="included">Open voice access</li>
+          <li class="included">Custom Guardian rules — built around you</li>
+          <li class="included">Multiple account support</li>
           <li class="included">The Vault — every intervention, archived</li>
-          <li class="included">Decision Passport — your psychological profile, built from real behavior</li>
+          <li class="included">Decision Passport — built from real behavior</li>
           <li class="included">Monthly behavioral report from your mentor</li>
         </ul>
         <a href="onboarding.html?plan=professional" class="price-cta">Enter Private Office</a>
@@ -2210,11 +2215,11 @@
     <div class="inv-ctas reveal reveal-delay-3">
       <a href="onboarding.html?mentor=mike" class="btn-mentor btn-mike">
         <span class="btn-dot"></span>
-        Begin with Mike
+        Begin with Marcus
       </a>
       <a href="onboarding.html?mentor=ashley" class="btn-mentor btn-ashley">
         <span class="btn-dot"></span>
-        Begin with Ashley
+        Begin with Iris
       </a>
     </div>
   </div>
@@ -2237,7 +2242,7 @@
       <div class="division-item reveal reveal-delay-1">
         <div class="division-num">II.</div>
         <div class="division-name">The Academy</div>
-        <div class="division-desc">Mentorship-led education. Mike won't let you risk real money until you're ready.</div>
+        <div class="division-desc">Mentorship-led education. Marcus won't let you risk real money until you're ready.</div>
       </div>
       <div class="division-item reveal">
         <div class="division-num">III.</div>
@@ -2257,12 +2262,12 @@
       <div class="division-item reveal reveal-delay-1">
         <div class="division-num">VI.</div>
         <div class="division-name">Account Integration</div>
-        <div class="division-desc">Live account visibility. Mike sees your position. Your drawdown. Your risk.</div>
+        <div class="division-desc">Live account visibility. Marcus sees your position. Your drawdown. Your risk.</div>
       </div>
       <div class="division-item reveal">
         <div class="division-num">VII.</div>
         <div class="division-name">The Network</div>
-        <div class="division-desc">Mike's Discipline Room. Ashley's Recovery Room. Weekly breakdowns.</div>
+        <div class="division-desc">Marcus's Discipline Room. Iris's Recovery Room. Weekly breakdowns.</div>
       </div>
       <div class="division-item reveal reveal-delay-1">
         <div class="division-num">VIII.</div>
@@ -2278,8 +2283,8 @@
   <div class="footer-logo">Edge<span>K</span>eeper</div>
   <p class="footer-copy">© 2025 EdgeKeeper. A Trader Development Institution.</p>
   <ul class="footer-links">
-    <li><a href="/mike">Mike</a></li>
-    <li><a href="/ashley">Ashley</a></li>
+    <li><a href="/mike">Marcus</a></li>
+    <li><a href="/ashley">Iris</a></li>
     <li><a href="/method">The Method</a></li>
     <li><a href="/privacy.html">Privacy</a></li>
     <li><a href="/terms.html">Terms</a></li>
