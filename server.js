@@ -345,8 +345,13 @@ app.get('/404.html',      (req, res) => res.status(404).sendFile(path.join(__dir
 app.get('/robots.txt',    (req, res) => res.type('text/plain').sendFile(path.join(__dirname, 'robots.txt')));
 app.get('/sitemap.xml',   (req, res) => res.type('application/xml').sendFile(path.join(__dirname, 'sitemap.xml')));
 // ── Mentor + Method pages (public) ───────────────────────────────────────────
-app.get('/mike',    (req, res) => res.sendFile(path.join(__dirname, 'mike.html')));
-app.get('/ashley',  (req, res) => res.sendFile(path.join(__dirname, 'ashley.html')));
+// Mentor office pages. Public URLs use the display names (/marcus, /iris).
+// Internal slugs stay mike/ashley everywhere else (DB, API, voice config).
+app.get('/marcus',  (req, res) => res.sendFile(path.join(__dirname, 'mike.html')));
+app.get('/iris',    (req, res) => res.sendFile(path.join(__dirname, 'ashley.html')));
+// 301 the old slug URLs so existing links and bookmarks still resolve.
+app.get(['/mike', '/mike.html'],     (req, res) => res.redirect(301, '/marcus'));
+app.get(['/ashley', '/ashley.html'], (req, res) => res.redirect(301, '/iris'));
 app.get('/method',  (req, res) => res.sendFile(path.join(__dirname, 'method.html')));
 app.get('/academy', requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy.html')));
 
@@ -2027,7 +2032,7 @@ function _cta(text, url, color) {
 }
 
 function welcomeEmailHtml(mentorName) {
-  const color = mentorName.toLowerCase() === 'ashley' ? '#6b8c6b' : '#b8a06a';
+  const color = mentorName === 'Iris' ? '#6b8c6b' : '#b8a06a';
   return _emailShell(color, `
     <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:${color};margin-bottom:28px;">${mentorName} &middot; EdgeKeeper</div>
     <div style="font-size:1.1rem;line-height:1.9;color:#d4d0c8;">
@@ -2039,7 +2044,7 @@ function welcomeEmailHtml(mentorName) {
 }
 
 function outreachEmailHtml(mentorName, messageContent) {
-  const color = mentorName.toLowerCase() === 'ashley' ? '#6b8c6b' : '#b8a06a';
+  const color = mentorName === 'Iris' ? '#6b8c6b' : '#b8a06a';
   const safe  = messageContent.replace(/\n/g, '<br>').slice(0, 1200);
   return _emailShell(color, `
     <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:${color};margin-bottom:28px;">${mentorName} &middot; Checking in</div>
@@ -2049,7 +2054,7 @@ function outreachEmailHtml(mentorName, messageContent) {
 }
 
 function billingEmailHtml(mentorName, planLabel) {
-  const color = mentorName.toLowerCase() === 'ashley' ? '#6b8c6b' : '#b8a06a';
+  const color = mentorName === 'Iris' ? '#6b8c6b' : '#b8a06a';
   return _emailShell(color, `
     <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:${color};margin-bottom:28px;">${mentorName} &middot; Plan confirmed</div>
     <div style="font-size:1.05rem;line-height:1.9;color:#d4d0c8;">
@@ -2061,7 +2066,7 @@ function billingEmailHtml(mentorName, planLabel) {
 }
 
 function reportEmailHtml(mentorName, reportMonth) {
-  const color = mentorName.toLowerCase() === 'ashley' ? '#6b8c6b' : '#b8a06a';
+  const color = mentorName === 'Iris' ? '#6b8c6b' : '#b8a06a';
   const label = new Date(reportMonth + '-02').toLocaleString('en-US', { month: 'long', year: 'numeric' });
   return _emailShell(color, `
     <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:${color};margin-bottom:28px;">${mentorName} &middot; Monthly report</div>

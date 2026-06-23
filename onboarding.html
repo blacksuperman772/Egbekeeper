@@ -564,7 +564,7 @@ async function registerAndProceed() {
   btn.disabled    = true;
   btn.textContent = 'Creating your account…';
 
-  const mentorKey   = mentor?.name?.toLowerCase() || 'mike';
+  const mentorKey   = mentor?.key || 'mike';
   const guardianLvl = localStorage.getItem('ek_guardian') || 'warn';
   const nbRaw       = localStorage.getItem('ek_notebook_' + mentorKey);
   const nb          = nbRaw ? (JSON.parse(nbRaw) || {}) : {};

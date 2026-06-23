@@ -415,6 +415,72 @@
       line-height: 1.7;
     }
 
+    /* ── MENTOR INTRODUCTION (first contact) ─────────────────────────── */
+    .mentor-intro {
+      margin: 6px 0 30px;
+      padding: 30px 32px 32px;
+      background: var(--mentor-color-bg);
+      border: 1px solid var(--mentor-color-dim);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+    }
+    .mentor-intro.show { opacity: 1; }
+    .mentor-intro::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--mentor-color), transparent);
+    }
+    .mentor-intro-head {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .mentor-intro-portrait {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid var(--mentor-color-dim);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--mentor-color-bg);
+    }
+    .mentor-intro-portrait img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center top;
+    }
+    .mentor-intro-portrait.fallback {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      color: var(--mentor-color);
+    }
+    .mentor-intro-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--mentor-color-dim);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .mentor-intro-eyebrow span { opacity: 0.55; }
+    .mentor-intro-body {
+      font-family: var(--serif);
+      font-size: 1.18rem;
+      font-weight: 300;
+      line-height: 1.95;
+      color: rgba(245,242,236,0.92);
+      letter-spacing: 0.01em;
+      white-space: pre-wrap;
+    }
+
     /* command chips in conversation */
     .cmd-chip {
       display: inline-flex;
@@ -2370,6 +2436,39 @@ async function mentorSay(text, delay = 0) {
   await addMsg('mentor', text);
 }
 
+// First-contact introduction — rendered as an owned, mentor-themed arrival rather
+// than a plain chat bubble. Accent, portrait, and eyebrow follow the active mentor's
+// styling (--mentor-color, set by applyTheme). The name lives in the prose itself.
+async function renderMentorIntro(text) {
+  await addMsg('typing', '', 0);
+  await sleep(1700 + Math.random() * 600);
+  removeTyping();
+
+  const key      = mentor?.key || 'mike';
+  const portrait = key === 'ashley' ? '/assets/ashley-portrait.png' : '/assets/mike-portrait.png';
+  const initial  = mentor?.name ? mentor.name.charAt(0) : 'M';
+
+  const msgs = document.getElementById('chat-messages');
+  const el = document.createElement('div');
+  el.className = 'mentor-intro';
+  el.innerHTML = `
+    <div class="mentor-intro-head">
+      <div class="mentor-intro-portrait">
+        <img src="${portrait}" alt="${escHtml(mentor?.name || 'Mentor')}"
+             onerror="this.style.display='none';this.parentNode.classList.add('fallback');this.parentNode.textContent='${escHtml(initial)}';" />
+      </div>
+      <div class="mentor-intro-eyebrow">Senior Mentor<span>·</span>EdgeKeeper</div>
+    </div>
+    <div class="mentor-intro-body">${escHtml(text)}</div>`;
+  msgs.appendChild(el);
+  if (window.gsap) {
+    gsap.fromTo(el, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 1.1, ease: 'power2.out', onComplete: () => el.classList.add('show') });
+  } else {
+    setTimeout(() => el.classList.add('show'), 20);
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ── SEND CHAT ─────────────────────────────────────────────────────────
@@ -3503,7 +3602,7 @@ async function logVaultEntry(lockLevel, ctx) {
         instrument:   ctx?.instrument || null,
         direction:    ctx?.direction  || null,
         lot_size:     ctx?.lots       || null,
-        mentor:       mentor?.name?.toLowerCase() || 'mike',
+        mentor:       mentor?.key || 'mike',
       }),
     });
     // Update vault badge
@@ -3814,11 +3913,11 @@ window.addEventListener('DOMContentLoaded', async () => {
       || (stageRaw ? (stageToLevel[stageRaw] || 'foundation') : null)
       || 'foundation';
 
-    const mentorKey = mentor?.name?.toLowerCase() || 'mike';
-    const scripts   = FIRST_CONTACT_SCRIPTS[mentorKey] || FIRST_CONTACT_SCRIPTS.mike;
-    const firstScript = scripts[selectedLevel] || scripts.foundation || FIRST_CONTACT_SCRIPTS.mike.foundation;
+    const mentorKey = mentor?.key || 'mike';
+    const pool      = MENTOR_INTROS[mentorKey] || MENTOR_INTROS.mike;
+    const firstScript = pool[Math.floor(Math.random() * pool.length)];
 
-    await mentorSay(firstScript);
+    await renderMentorIntro(firstScript);
     addToHistory('assistant', firstScript);
 
     await sleep(1000);
@@ -3912,20 +4011,34 @@ const EK = {
 };
 
 // ══════════════════════════════════════════════════════════════════════
-// FIRST CONTACT SCRIPTS — hard-coded, never AI-generated
-// One per mentor × level. AI only fires when the user responds.
+// FIRST CONTACT — the mentor introduces themselves, in their own voice.
+// Hard-coded, never AI-generated. One is chosen at random on first arrival so
+// the introduction feels owned and personal, not like a label on a profile.
+// Each acknowledges that the trader has already read the site, then lets the
+// mentor properly say who they are. The level-specific depth flows through the
+// AI conversation that follows (buildSystemPrompt carries the trader's level).
 // ══════════════════════════════════════════════════════════════════════
-const FIRST_CONTACT_SCRIPTS = {
-  mike: {
-    foundation: "Marcus. This is where we'll do the work — you and me, for as long as it takes.\n\nMost people think about starting for years and never actually sit down. So — what made today the day?",
-    development: "Marcus. Good to sit down with you properly.\n\nYou've got history, which means you've got patterns. Some are working for you. Some aren't. Let's figure out which is which.",
-    performance: "Marcus. Let's get to it.\n\nYou're past the basics. What we're working on now is the gap between what you know and what you consistently execute when it matters. That's a different kind of problem."
-  },
-  ashley: {
-    foundation: "Iris. I'm really glad you're here — this is your space now, and we'll take it at the pace it needs.\n\nStarting something like this can feel like a big step. What's been going through your mind leading up to today?",
-    development: "Iris. Good to meet you properly.\n\nYou've been at this for a while. I want to understand something first — what does a good trading day feel like for you right now? Not the numbers. The feeling of it.",
-    performance: "Iris. Glad we're doing this.\n\nYou've done a lot of the hard work already. I'm curious about what's still unsettled — what keeps showing up, even when things are otherwise going well?"
-  }
+const MENTOR_INTROS = {
+  mike: [
+    "You've read the page by now. It's clean, it's tidy, and it's about a tenth of the story. A website can't sit across from you, so let me do this properly. I'm Marcus. Twenty years on trading desks watching sharp people lose everything to the same handful of mistakes. Now I work with traders one at a time, so it doesn't happen to them. That's you, starting today. What brought you here?",
+    "Marcus. Whatever the site told you about me is true and incomplete — they always make you sound calmer than you are. Here's what actually matters: I don't trade for you, I don't pick your entries, and I won't tell you what you want to hear. I work on the part of you that keeps undoing your own work. Sit down. Tell me where things stand.",
+    "Let me introduce myself the right way, because a profile page does no one justice. I'm Marcus. Two decades trading other people's capital taught me one thing above all others — the chart is rarely the problem. The person reading it usually is. I'm here for the person. So tell me, honestly: what made today the day you finally did this?",
+    "Marcus. You came in through a page that calls me 'direct and calm.' Fair enough, as far as it goes. The part it leaves out: I remember everything you tell me, I notice what you skip over, and I hold you to the things you say you want. People find that uncomfortable for about a week. Then they don't want to trade without it. Where do we start?",
+    "We should do this properly. I'm Marcus. I've watched more accounts blow up than I can count, and almost none of them died for reasons that had anything to do with the market. My job is to catch yours before it gets there — not with rules you'll ignore, but with a relationship you won't want to lie to. So. Who am I talking to?",
+    "Marcus. The site gives you the brochure. Here's the real version: I came up on prop desks, I've made and lost serious money, and I took the hard lessons so you can skip a few of them. I'm not gentle, but I'm fair, and I don't quit on people. Let's actually get to know each other. What's the honest reason you're here?",
+    "Before any work starts, let me say who I am, since a few paragraphs on a screen can't. Marcus. I build structure for traders who have everything except structure — discipline, risk, process, the unglamorous machinery that keeps you in the game long enough to get good at it. That's what we'll build. First, tell me what's been happening.",
+    "Marcus. You've probably skimmed what they wrote about me. Set it aside. What you need to know is simple: I'm not an assistant and I'm not here to be agreeable. I'm the one who notices when your story doesn't add up and asks about it to your face. If that's what you're after, you're in the right room. So — what's going on?"
+  ],
+  ashley: [
+    "You've read a little about me already, I'd guess. Pages are strange things — they describe a person without ever having met them. So let me introduce myself properly. I'm Iris. I spend my time understanding how traders actually feel inside their decisions, not just what they decide. I'm really glad you came. Tell me where you are right now.",
+    "Iris. The site does its best to explain me, but it can't, not really, because what I do only happens in conversation. So here's the honest version: I notice the things people don't say. The fatigue under the confidence. The fear under the bravado. I don't push. I pay attention. And I'm paying attention now. What's on your mind?",
+    "Let me do this the way it should be done — in person, more or less. I'm Iris. I've sat with hundreds of traders through their worst weeks and their best ones, and I've learned that the market is rarely the thing actually hurting them. I work in that quieter place underneath. So tell me, gently: what's been going on for you?",
+    "Iris. Whatever you read about me on the way in, set it down softly — it's a sketch, and you're a whole person. What you should know is that I'm genuinely curious about you, not just your numbers. The way you trade is telling me something about the way you live. Let's start there. How are you, really?",
+    "I'd rather introduce myself than let a webpage do it. I'm Iris. My work is the inner side of trading — the patterns running underneath your decisions, the ones you can't quite see yet. I'm patient, I don't rush you, and I won't ask you to feel less than you feel. Take a breath. Then tell me what brought you here.",
+    "Iris. They wrote some kind words about me on the site. Kind, but flat — words on a page can't notice you the way I'm going to. I hear what's underneath: the hope, the exhaustion, the thing you almost said and didn't. That's where the real work lives. I'm glad you're here. Where would you like to begin?",
+    "Before anything else, let me properly say hello. I'm Iris. I help traders understand themselves in the markets — the emotions driving the decisions, the stories they tell themselves after a loss. None of it makes you weak. It makes you human, and human is something we can work with. So: how are you, actually?",
+    "Iris. The page introduces a version of me. This is the real one, as close as a screen allows. I'm not here to fix you, because you aren't broken. I'm here to help you see the patterns you keep living out, so that next time you can choose something different. When you're ready, we'll begin. What's been weighing on you?"
+  ]
 };
 
 // ══════════════════════════════════════════════════════════════════════
