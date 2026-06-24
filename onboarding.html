@@ -1497,12 +1497,13 @@ window.addEventListener('DOMContentLoaded', () => {
   sessionStorage.removeItem('ek_selected_level');
   sessionStorage.removeItem('ek_path_preselected');
 
-  const m = p.get('mentor') || sessionStorage.getItem('ek_mentor');
-  if (m && MENTORS[m]) {
-    sessionStorage.removeItem('ek_mentor');
-    document.getElementById('selector').style.display = 'none';
-    selectMentor(m);
-  }
+  // Marcus's intake. In the trinity model the workspace mentor is always Marcus —
+  // Theo teaches in the Academy, Iris is the guardian you meet later through Marcus.
+  // There is no "choose between two mentors" step anymore; any legacy ?mentor=ashley
+  // link is coerced to Marcus.
+  sessionStorage.removeItem('ek_mentor');
+  document.getElementById('selector').style.display = 'none';
+  selectMentor('mike');
 });
 </script>
 </body>

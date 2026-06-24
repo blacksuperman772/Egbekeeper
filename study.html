@@ -7,6 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.19.2/dist/livekit-client.umd.js"></script>
+  <script>window.livekitClient = window.LivekitClient;</script>
+  <script src="https://cdn.jsdelivr.net/npm/@11labs/client@0.2.0/dist/lib.umd.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -156,7 +159,26 @@
       margin-top: 32px; padding: 14px 16px;
       border: 1px solid var(--border); border-radius: 3px;
       background: rgba(201,168,92,0.03);
+      display: flex; gap: 14px; align-items: flex-start;
     }
+    .companion-badge-avatar {
+      width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+      object-fit: cover; object-position: center top;
+      border: 1px solid var(--border);
+    }
+    #voice-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 12px 22px; border-bottom: 1px solid var(--border);
+    }
+    #voice-status { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.03em; color: var(--dim); }
+    #voice-btn {
+      font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gold); background: rgba(201,168,92,0.05); border: 1px solid var(--gold-dim);
+      padding: 8px 16px; cursor: pointer; transition: background .2s; white-space: nowrap;
+    }
+    #voice-btn:hover { background: rgba(201,168,92,0.12); }
+    #voice-btn.active { color: #c8786a; border-color: #c8786a; background: rgba(200,120,106,0.08); }
+    #voice-btn:disabled { opacity: 0.5; cursor: default; }
     .companion-badge-label {
       font-family: var(--mono); font-size: 0.52rem;
       letter-spacing: 0.18em; text-transform: uppercase;
@@ -283,6 +305,8 @@
 
     <button class="btn-complete" id="btn-complete" onclick="markComplete()">Mark as complete</button>
 
+    <div id="exercise-mount"></div>
+
     <div class="mod-nav">
       <a class="nav-btn disabled" id="nav-prev" href="#">← Prev</a>
       <a class="nav-btn disabled" id="nav-next" href="#">Next →</a>
@@ -291,13 +315,20 @@
     <div class="mod-spacer"></div>
 
     <div class="companion-badge">
-      <div class="companion-badge-label">Theo · Academy Mentor</div>
-      <div class="companion-badge-desc">Your Academy mentor for this module. Ask Theo anything: he explains, gives examples, and checks your understanding before you move on.</div>
+      <img class="companion-badge-avatar" src="/assets/theo-portrait.png" alt="Theo" onerror="this.style.display='none'" />
+      <div>
+        <div class="companion-badge-label">Theo · Academy Mentor</div>
+        <div class="companion-badge-desc">Your Academy mentor for this module. Ask Theo anything: he explains, gives examples, and checks your understanding before you move on.</div>
+      </div>
     </div>
   </div>
 
   <!-- COMPANION THREAD -->
   <div id="companion-panel">
+    <div id="voice-bar">
+      <span id="voice-status">Prefer to talk it through?</span>
+      <button id="voice-btn" onclick="toggleTheoVoice()">Talk to Theo</button>
+    </div>
     <div id="thread"></div>
     <div id="input-bar">
       <textarea id="study-input" placeholder="Ask a question about this module..." rows="1"></textarea>
@@ -476,20 +507,94 @@ if (!_existingStarted) {
 // Always sync started to DB so cross-device restore works (idempotent — DB keeps earliest)
 syncProgress({ module: moduleKey, started: _startedAt });
 
-function markComplete() {
-  if (completeBtn.classList.contains('done')) return;
-  const _completedAt = Date.now();
-  localStorage.setItem('ek_academy_' + moduleKey + '_completed', _completedAt);
-  statusDot.className  = 'status-dot completed';
-  statusText.textContent = 'Completed';
-  completeBtn.textContent = '✓ Completed';
-  completeBtn.classList.add('done');
-  syncProgress({ module: moduleKey, completed: _completedAt });
-  if (mod.next) {
-    setTimeout(() => {
-      window.location.href = '/study.html?module=' + mod.next;
-    }, 900);
+function markComplete(opts) {
+  opts = opts || {};
+  if (!completeBtn.classList.contains('done')) {
+    const _completedAt = Date.now();
+    localStorage.setItem('ek_academy_' + moduleKey + '_completed', _completedAt);
+    statusDot.className  = 'status-dot completed';
+    statusText.textContent = 'Completed';
+    completeBtn.textContent = '✓ Completed';
+    completeBtn.classList.add('done');
+    syncProgress({ module: moduleKey, completed: _completedAt });
   }
+  // Did finishing this module just certify its whole track?
+  const certShown = awardCertificationIfEarned();
+  // The manual button advances to the next module. Mastery-driven completion
+  // (advance:false) leaves the student on Theo's confirmation instead of yanking
+  // them away, and a fresh certification always pauses so it can be seen.
+  if (!certShown && opts.advance !== false && mod.next) {
+    setTimeout(() => { window.location.href = '/study.html?module=' + mod.next; }, 900);
+  }
+}
+
+// ── CERTIFICATIONS — a track is certified once every module in it is complete.
+// Computed from completion data, so no extra storage or migration is needed.
+function modulesInTrack(trackLabel) {
+  return Object.keys(MODULES).filter(k => MODULES[k].track === trackLabel);
+}
+// ── THEO'S SIGNATURE MOMENTS — he speaks, in his own voice, at the seams of the
+// journey: certifying a track (points you forward) and finishing the whole Academy
+// (hands you to Marcus). Rotating pools, same idea as Iris's chamber lines.
+const THEO_TRACK_CERT = [
+  "That's {track}. You've got it cold now — more than most people trading a live account. Keep going. And when you're ready to put it to work on your own trading, that's Marcus.",
+  "{track}, done. Not skimmed — understood. That's the part most people skip. When you want to take this to real trades, Marcus is who you'll work with.",
+  "You just finished {track}. I don't hand these out for showing up; you earned it. Next track when you're ready — or Marcus, when your own trading is what you want to work on."
+];
+const THEO_GRADUATION = [
+  "That's all of it. Every track. I've taught you what I can teach — the rest is reps on real decisions, and that happens with Marcus, not here. I'll tell him you're ready.",
+  "You finished the whole Academy. That's rare. There's nothing left for me to teach you that isn't just doing it now. Go find Marcus — he already knows what you've covered.",
+  "Every module, done. You came in not sure what a market was. You're leaving ready to be coached on your own trading. That was always the point of this place. Marcus takes it from here."
+];
+function pickLine(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function isAcademyComplete() { return Object.keys(MODULES).every(k => localStorage.getItem('ek_academy_' + k + '_completed')); }
+
+function awardCertificationIfEarned() {
+  const certKey = 'ek_academy_cert_' + mod.track.replace(/\s+/g, '_').toLowerCase();
+  if (localStorage.getItem(certKey)) return false;
+  const earned = modulesInTrack(mod.track).every(k => localStorage.getItem('ek_academy_' + k + '_completed'));
+  if (!earned) return false;
+  localStorage.setItem(certKey, Date.now());
+  if (isAcademyComplete()) {
+    addMsg('companion', pickLine(THEO_GRADUATION));
+    showGraduationCTA();
+  } else {
+    addMsg('companion', pickLine(THEO_TRACK_CERT).replace('{track}', mod.trackName));
+    showCertificationBanner(mod.trackName);
+  }
+  return true;
+}
+function showGraduationCTA() {
+  const div = document.createElement('div');
+  div.style.cssText = 'margin:20px 0;text-align:center;';
+  div.innerHTML = '<a href="/workspace.html" style="display:inline-block;font-family:var(--mono,monospace);font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold,#c9a85c);border:1px solid var(--gold-dim,#8a6a2a);padding:13px 28px;text-decoration:none;">Work with Marcus &rarr;</a>';
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
+}
+function showCertificationBanner(trackName) {
+  const div = document.createElement('div');
+  div.style.cssText = 'margin:18px 0;padding:20px 22px;border:1px solid var(--gold,#c9a85c);background:rgba(201,168,92,0.06);border-radius:2px;';
+  div.innerHTML = '<div style="font-family:var(--mono,monospace);font-size:0.52rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold,#c9a85c);margin-bottom:8px;">Certification earned</div>'
+    + '<div style="font-family:var(--serif,Georgia),serif;font-size:1.15rem;color:var(--text,#ece6db);line-height:1.4;">' + escText(trackName) + '</div>'
+    + '<div style="font-size:0.82rem;color:var(--muted,#8a8578);margin-top:8px;line-height:1.6;">You\'ve completed this track. When you graduate to the main platform, Marcus will know exactly what you\'ve covered.</div>';
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
+}
+function escText(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+
+// ── MASTERY — Theo confirms understanding by ending a message with [[MASTERED]].
+function stripMasteryTag(reply) {
+  if (!reply || reply.indexOf('[[MASTERED]]') === -1) return { text: reply, mastered: false };
+  return { text: reply.replace(/\[\[\s*MASTERED\s*\]\]/g, '').trim(), mastered: true };
+}
+function onTheoMastery() {
+  if (!completeBtn.classList.contains('done')) markComplete({ advance: false });
+  else awardCertificationIfEarned();
+  const note = document.createElement('div');
+  note.style.cssText = 'margin:14px 0;font-family:var(--mono,monospace);font-size:0.56rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold,#c9a85c);';
+  note.textContent = '✓ Theo confirmed you\'ve got this — module complete';
+  thread.appendChild(note);
+  thread.scrollTop = thread.scrollHeight;
 }
 
 // ── COMPANION THREAD ────────────────────────────────────────────────────
@@ -536,28 +641,254 @@ function removeThinking() {
   if (t) t.remove();
 }
 
+// ── EDGEKEEPER CANON — every entity knows its job, the others', and the platform ──
+// Injected into Theo's prompt so he can place the student in the journey and speak
+// accurately about Marcus and Iris. The same canon (re-rolled per entity) will drive
+// Marcus and Iris in later phases.
+const EDGEKEEPER_CANON = `You are Theo, an instructor at EdgeKeeper. EdgeKeeper is not an app full of chatbots — it is a team of three specialists, each with one job, each aware of what the others do:
+- THEO (you) — the teacher. You run the Academy. You help traders learn and build genuine competence, from the fundamentals up to the point where they're ready to work with a coach.
+- MARCUS — the performance coach. In his Office he works on a trader's actual trading: journals, trade reviews, accountability, the patterns in how they behave. When a student has outgrown the fundamentals, they graduate to Marcus.
+- IRIS — the guardian. She protects traders and their capital. She watches risk and steps in when someone is about to hurt themselves: cooldowns, limits, interventions. Traders meet her when their behaviour shows they need protection.
+Theo teaches. Marcus develops. Iris protects. Knowledge, performance, protection. You know your job, you respect theirs, and you can honestly tell a student where they are in that journey and who they'll work with next.`;
+
+// ── LESSON SPECS — the structure Theo teaches from. Track 1 (the free funnel) is
+// seeded in full; other tracks fall back to objectives derived from the module.
+const LESSON_SPECS = {
+  what_are_markets: {
+    objectives: 'Understand that a market is where buyers and sellers agree a price; that every trade has a counterparty; that price reflects the live balance of supply and demand.',
+    concepts: 'buyer and seller, bid and ask, supply and demand, price discovery, liquidity (intro), the counterparty.',
+    example: 'Walk through one trade: you buy at the ask, which means someone sold to you; price ticks up when buyers are the more aggressive side.',
+    check: '"If you buy and price immediately drops, what does that tell you about who was more aggressive a moment ago?"'
+  },
+  asset_classes: {
+    objectives: 'Tell stocks, forex, futures and crypto apart; understand how their hours, leverage and volatility differ; judge what suits a beginner.',
+    concepts: 'equities, FX pairs, futures contracts, crypto, leverage, trading hours, volatility profile.',
+    example: 'Compare EURUSD (24/5, leveraged) with a single stock (set hours, ownership) and BTC (24/7, highly volatile).',
+    check: '"Which asset class trades around the clock, and why might that matter for someone with a day job?"'
+  },
+  how_orders_work: {
+    objectives: 'Choose the right order type; tell market, limit and stop apart; understand slippage and why a fill is never guaranteed.',
+    concepts: 'market order, limit order, stop order, stop-limit, the spread, slippage, fill.',
+    example: 'A market order fills now at the ask; a limit waits for your price; a stop turns into a market order once it triggers.',
+    check: '"You want to buy only if price falls to 100. Which order type, and what is the risk if price gaps straight through it?"'
+  },
+  reading_a_chart: {
+    objectives: 'Read the price and time axes; understand what a timeframe is; read the raw price feed before any indicator.',
+    concepts: 'price axis, time axis, timeframe, the last traded price, OHLC (intro).',
+    example: 'Show the same market on a 1-minute and a 1-hour chart: identical data, very different story.',
+    check: '"If the 5-minute chart looks bullish but the daily looks bearish, which one is right?"'
+  },
+  candlestick_basics: {
+    objectives: 'Read a candle\'s open, close, high and low; tell body from wick; read who won the period.',
+    concepts: 'open, close, high, low, body, wick/shadow, bullish vs bearish candle.',
+    example: 'A long lower wick means sellers pushed price down during the period and buyers pushed it back up by the close.',
+    check: '"A candle with a tiny body and a long upper wick — what happened during that period?"'
+  },
+  market_sessions: {
+    objectives: 'Name the major sessions; understand when volatility concentrates; align trading time to a style.',
+    concepts: 'Asia, London and New York sessions, the overlap, volatility and liquidity by time of day.',
+    example: 'The London/New York overlap is the most active, highest-volatility window in FX.',
+    check: '"Why might a scalper avoid the quiet hours between the New York close and the Asia open?"'
+  },
+  market_participants: {
+    objectives: 'Identify retail, institutions and market makers; understand how their presence shapes price.',
+    concepts: 'retail traders, institutions, market makers, liquidity providers, order flow.',
+    example: 'A market maker quotes both sides and earns the spread; they profit from flow, not from picking direction.',
+    check: '"If larger players are selling into a crowd of retail buyers, what might a sharp rally on no news actually be?"'
+  },
+  paper_trading: {
+    objectives: 'Use a demo to learn mechanics; understand its limits; know when to go live, small.',
+    concepts: 'demo account, simulation, the emotional gap, slippage realism, the move to live capital.',
+    example: 'Paper trading teaches the buttons and the rules, but not the fear that shows up when real money is on the line.',
+    check: '"What is the one thing paper trading cannot teach you, and how would you bridge that gap?"'
+  },
+  choosing_a_broker: {
+    objectives: 'Evaluate regulation, costs, execution and withdrawals; spot the red flags before depositing.',
+    concepts: 'regulation, spread, commission, execution quality, slippage, withdrawal terms, leverage offered.',
+    example: 'An unregulated broker dangling 1000:1 leverage and deposit bonuses is a stack of red flags, not an opportunity.',
+    check: '"What is the very first thing you would check before depositing a single dollar, and why that one?"'
+  },
+  what_risk_means: {
+    objectives: 'Define risk as exposure to loss, not just losing; understand risk per trade, the idea of R, and survival.',
+    concepts: 'risk per trade, R as a unit of risk, risk of ruin, position sizing (intro), expectancy (intro).',
+    example: 'Risking 1% per trade means a 10-loss streak costs about 10% — survivable. Risking 20% means a streak like that ends you.',
+    check: '"Why is a trader risking 1% per trade far more likely to still be trading in a year than one risking 20%, even with the same win rate?"'
+  },
+
+  // Track 2 — Technical Analysis
+  support_resistance: {
+    objectives: 'Identify horizontal levels where price has reacted; understand why they hold and break; use them to frame decisions.',
+    concepts: 'support, resistance, role reversal (a broken level flips), why more touches mean more significance, why levels break.',
+    example: 'Price bounces off 100 three times — that is support. Once it breaks and holds below, 100 tends to become resistance.',
+    check: '"Price has bounced off 50 four times, then closes decisively below it. What does 50 likely become now?"'
+  },
+  trend_identification: {
+    objectives: 'Classify price as up, down, or ranging; read higher highs / lower lows; understand why this read comes first.',
+    concepts: 'uptrend (higher highs and higher lows), downtrend (lower highs and lower lows), range, trend differs by timeframe.',
+    example: 'A series of higher highs and higher lows is an uptrend — you look to trade with it, not against it.',
+    check: '"You see lower highs and lower lows on the daily. Is buying dips a high-probability play here, and why?"'
+  },
+  moving_averages: {
+    objectives: 'Understand what an MA smooths and lags; use it for trend context and dynamic support/resistance; not as a crystal ball.',
+    concepts: 'simple vs exponential MA, period, lag, dynamic support/resistance, crossovers (handled with caution).',
+    example: 'Price above a rising 50-period MA is uptrend context, and that MA often acts as a floor on pullbacks.',
+    check: '"Why will a moving-average crossover always describe the past, never guarantee the future?"'
+  },
+  volume_basics: {
+    objectives: 'Read volume as confirmation; spot divergence between price and volume.',
+    concepts: 'volume, confirmation, climax / exhaustion, low-volume drift.',
+    example: 'A breakout on high volume is far more trustworthy than the same breakout on thin volume.',
+    check: '"Price makes a new high but volume is well below the last rally. What might that be warning you about?"'
+  },
+  rsi_macd: {
+    objectives: 'Understand what RSI and MACD measure; use them without over-trusting; recognise the classic misreads.',
+    concepts: 'RSI (momentum, overbought / oversold), MACD (momentum and trend), divergence, the "oversold can stay oversold" trap.',
+    example: 'RSI at 80 inside a strong uptrend is not a sell signal by itself — strong trends stay "overbought" for a long time.',
+    check: '"RSI reads 25 (oversold) in a steep downtrend. Why is blindly buying that a common way to lose money?"'
+  },
+  chart_patterns: {
+    objectives: 'Recognise the common patterns and what they represent; treat them as probabilities, not guarantees.',
+    concepts: 'flags, wedges, triangles, head and shoulders, continuation vs reversal, reliability and false breaks.',
+    example: 'A flag after a strong move often signals continuation — but only once the break is confirmed, not before.',
+    check: '"A textbook head-and-shoulders forms, but the neckline break fails and price reclaims it. What does that failure tell you?"'
+  },
+  multi_timeframe: {
+    objectives: 'Align higher-timeframe context with lower-timeframe entries; avoid fighting the bigger trend.',
+    concepts: 'higher-timeframe bias, lower-timeframe trigger, alignment, what to do with conflicting timeframes.',
+    example: 'A daily uptrend plus a 15-minute pullback into support is an aligned long setup.',
+    check: '"Your entry timeframe says buy, but the daily is in a clear downtrend. Whose vote carries more weight, and why?"'
+  },
+  entry_exit_mechanics: {
+    objectives: 'Turn a setup into a clean entry and exit; pre-define both; avoid chasing.',
+    concepts: 'entry trigger, confirmation, getting filled, scaling out, deciding the exit before entry.',
+    example: 'Define entry, stop, and target before you click — not after price has already moved.',
+    check: '"Why does deciding your exit before you enter protect you from your own emotions mid-trade?"'
+  },
+  setting_stops_targets: {
+    objectives: 'Place stops at logical invalidation points; set targets by structure and R; avoid arbitrary placement.',
+    concepts: 'stop at invalidation (not a round number), target by structure, risk/reward, trailing a stop.',
+    example: 'Put the stop just beyond the level that would prove the idea wrong, not at whatever distance feels comfortable.',
+    check: '"Why is a stop placed where it would hurt least usually worse than one placed where the trade idea is actually invalidated?"'
+  },
+
+  // Track 3 — Risk Management
+  position_sizing: {
+    objectives: 'Size every trade off risk rather than gut; compute units from risk and stop distance; keep risk constant trade to trade.',
+    concepts: 'risk per trade, stop distance, the position-size formula, fixed-fractional sizing.',
+    example: 'A $10,000 account, 1% risk, and a 2-point stop gives $100 risk divided by 2 = a 50-unit position.',
+    check: '"If your stop sits twice as far away, what must happen to your position size to keep the dollar risk the same?"'
+  },
+  one_percent_rule: {
+    objectives: 'Understand why capping risk near 1% protects survival; connect it to losing streaks; apply it consistently.',
+    concepts: 'the 1% rule, risk of ruin, losing streaks, consistency.',
+    example: 'At 1% risk, ten losses in a row costs about 10% and is recoverable; at 10% risk the same streak is roughly a 65% drawdown.',
+    check: '"Why does the same strategy survive at 1% risk and blow up at 10%, trading the identical signals?"'
+  },
+  risk_reward_ratio: {
+    objectives: 'Evaluate setups by R multiple; understand how win rate and R interact; reject low-R trades.',
+    concepts: 'R multiple, reward-to-risk, breakeven win rate, expectancy (intro).',
+    example: 'At 2:1 reward-to-risk you can be wrong more than half the time and still come out ahead.',
+    check: '"At 3:1 reward-to-risk, what is the lowest win rate that still makes you money over many trades?"'
+  },
+  daily_loss_limits: {
+    objectives: 'Set and respect a hard daily stop; understand why it prevents spirals; build it into routine.',
+    concepts: 'daily loss limit, tilt, revenge trading, the hard stop.',
+    example: 'Hit minus 3% for the day and you are done — the rule exists to stop the spiral, not to punish you.',
+    check: '"Why is the trade right after you hit your daily loss limit often the most dangerous one you can take?"'
+  },
+  drawdown_management: {
+    objectives: 'Handle a losing streak without compounding it; reduce size in drawdown; protect judgement.',
+    concepts: 'drawdown, size reduction, recovery math, emotional load.',
+    example: 'Deep in a drawdown, cutting size buys time and protects your decision-making while you steady.',
+    check: '"A 50% drawdown needs what gain just to get back to even, and why does that math argue for protecting downside first?"'
+  },
+  account_preservation: {
+    objectives: 'Treat staying in the game as the first goal; understand that compounding needs a surviving base.',
+    concepts: 'capital preservation, survival, optionality, compounding requires a base.',
+    example: 'Capital that stays in the account can compound; capital that leaves it cannot.',
+    check: '"Why does \'don\'t lose the account\' beat \'make a big return\' as a beginner\'s primary goal?"'
+  },
+  compounding_principles: {
+    objectives: 'See how small consistent edges compound; value downside protection over chasing upside.',
+    concepts: 'compounding, consistency, the asymmetry of gains and losses, the cost of one big loss.',
+    example: 'Steady 2% months compound powerfully; a single minus-50% month erases years of that work.',
+    check: '"Why does one large loss damage a compounding curve far more than several small losses of the same total?"'
+  },
+  when_to_stop: {
+    objectives: 'Define the conditions that send you away from the screen; follow them under pressure; understand why most ignore them.',
+    concepts: 'stop conditions, daily and weekly limits, tilt signals, discipline as design rather than willpower.',
+    example: 'Write the rules that pull you away from the screen while you are calm, so they hold when you are not.',
+    check: '"Why should the rules for when to stop be written before the session, not decided in the heat of it?"'
+  }
+};
+
+// ── THEO'S MEMORY — a light summary of what this student has done across the Academy,
+// hydrated from progress already merged into localStorage from the DB.
+function buildTheoMemory() {
+  const done = [];
+  for (const key in MODULES) {
+    const ts = localStorage.getItem('ek_academy_' + key + '_completed');
+    if (ts) done.push({ title: MODULES[key].title, ts: parseInt(ts, 10) || 0 });
+  }
+  if (!done.length) {
+    return '\nYOUR MEMORY OF THIS STUDENT: This may be one of your first lessons together. Set the tone warmly and assume no prior knowledge.';
+  }
+  done.sort((a, b) => a.ts - b.ts);
+  const recent = done.slice(-6).map(d => d.title).join(', ');
+  return `\nYOUR MEMORY OF THIS STUDENT (refer to it naturally; never recite it as a list): They have completed ${done.length} module(s) with you, most recently ${recent}. Connect this lesson to what they already know wherever it genuinely helps.`;
+}
+
 function buildSystemPrompt() {
-  return `You are Theo, a mentor in the EdgeKeeper Academy. You are the junior mentor: you teach new traders the fundamentals from the ground up, and you take them as far as the curriculum goes — to the point where they are ready to be handed to the senior mentors, Marcus and Iris, on the main EdgeKeeper platform. You know this material cold and you teach it the way a good instructor does: structured, clear, in order. You are not a chat buddy and you are not a cheerful assistant. You walk a newer trader through the fundamentals, one module at a time.
+  const spec = LESSON_SPECS[moduleKey];
+  const lessonBlock = spec ? `
+LEARNING OBJECTIVES (what they should be able to do by the end):
+${spec.objectives}
 
-CURRENT MODULE: ${mod.title}
+KEY CONCEPTS TO COVER (in a sensible order):
+${spec.concepts}
+
+A WAY TO DEMONSTRATE IT (use this or your own — always show, never just assert):
+${spec.example}
+
+UNDERSTANDING CHECK (work toward a question like this; adapt it to the student):
+${spec.check}` : `
+LEARNING OBJECTIVES:
+Teach the core ideas of this module thoroughly: ${mod.desc}
+Cover the key concepts in a logical order, demonstrate each with a concrete example, and check understanding before moving on.`;
+
+  return `${EDGEKEEPER_CANON}
+
+YOU ARE TEACHING THIS MODULE RIGHT NOW:
+MODULE: ${mod.title}
 TRACK: ${mod.track} — ${mod.trackName}
-MODULE FOCUS: ${mod.desc}
+WHAT IT COVERS: ${mod.desc}
+${lessonBlock}
+${buildTheoMemory()}
 
-YOUR ROLE:
-Teach this module's topic completely and in a logical order. Build understanding step by step, and check it before moving on. You are the same kind of mentor as Marcus and Iris, earlier in the journey: your job is to get a beginner genuinely competent in the fundamentals. The ongoing one-on-one mentorship that Marcus and Iris do lives on the main platform; you prepare students for it. Your job here is the curriculum: the concepts, mechanics, and frameworks for this specific module.
+HOW YOU TEACH — the lesson flow. Follow it; do not lecture:
+You are running a live lesson, not answering an FAQ. Lead. Move through the objectives one idea at a time:
+1. EXPLAIN the idea plainly, in two or three sentences.
+2. DEMONSTRATE it with a specific, concrete example. Show it.
+3. ASK one focused question that checks whether it actually landed.
+4. Wait. Respond to what they really said: if they have it, say so and move to the next idea; if they're close, nudge; if they're off, explain it a different way. Never glide past a wrong answer as if it were right.
+Keep every turn short enough to read in one breath. One idea per turn. Teaching is a back-and-forth, not a wall of text.
 
-OPENING (first message only):
-When the opening message marks this as your first meeting with the student, say your name once, plainly. Otherwise do not restate your name — they already know you. Either way, open with two or three sentences: what this module covers and what they'll be able to do by the end. Then hand them the floor with one clear invitation to begin. Do not recite a syllabus.
+OPENING (your first message): Do not ask "what do you want to know." Begin the lesson. Greet briefly, say in one line what this module gives them, then teach the first concept — explain it and demonstrate it — and end on your first check question. If your memory shows you've worked together before, acknowledge that in a few words first.
+
+WHEN THEY HAVE THE WHOLE MODULE: tell them plainly they've got it and point at what comes next. If a concept clearly isn't landing after a couple of tries, stay with it rather than rushing them. Mastery is something you confirm, not something they self-declare — only when the student has genuinely demonstrated understanding of ALL the objectives above (in their own words, not just by agreeing), end that one message with the tag [[MASTERED]] on its own final line. Never use the tag before understanding is real, never use it in your opening message, and never mention the tag to the student.
+
+SIGNATURE MOMENTS — your own beats. Deliver them in your voice when the moment is real, never on a script:
+- When understanding genuinely lands (the message right before [[MASTERED]]): name it. Something like "There it is. You didn't repeat what I said — you said it back in your own words. That's the difference between knowing and memorizing." Then the tag.
+- When they ask a "doing" question that isn't yours — a live trade, what to buy, whether to take a setup — hand it off plainly: "That's a Marcus question, or an Iris one. I teach the why; they handle the doing. Stay with me here for now." Then return to the lesson.
 
 VOICE:
-Plain-spoken and structured, like an instructor who respects the student's time. You explain the way someone does when they genuinely understand the material: no filler, no performed enthusiasm. When something is genuinely complex, you say so and break it into steps. When there is a clean answer, you give it plainly. Use examples, analogies, and short exercises where they help.
-
-If the student asks about something outside this module, answer briefly and bring the focus back. When a student has clearly outgrown the fundamentals, you can tell them they're ready to work with a senior mentor on the main platform.
+Patient, curious, encouraging, thoughtful. You guide discovery rather than hand over answers — when a student can reach the conclusion themselves, you would rather ask "what do you notice here?" than state it. Plain-spoken. No filler, no performed enthusiasm.
 
 PROHIBITIONS:
-- You teach the curriculum only. No trade signals, no financial advice, no invented statistics or numbers.
-- You are Theo, not Marcus and not Iris. You can point to them as the senior mentors a student graduates to, but you do not speak as them or run their kind of one-on-one sessions here.
-- Skip the filler openers: no "Great question", "Absolutely", "Certainly", "Of course".
+- You teach the curriculum only. No live trade signals, no financial advice, no invented statistics or numbers.
+- Stay inside this module's scope. If they ask about something from later in the journey, answer briefly and steer back.
+- You are Theo — not Marcus, not Iris. You can tell the student who they are and when they'll meet them, but you never do their jobs here.
+- Skip filler openers: no "Great question", "Absolutely", "Certainly", "Of course".
 - Do not start your response with "I".`;
 }
 
@@ -608,10 +939,10 @@ async function openingMessage() {
   showThinking();
   try {
     const data  = await callCompanion(null);
-    const reply = data.reply || data.content || '';
+    const { text } = stripMasteryTag(data.reply || data.content || ''); // never master on the opener
     removeThinking();
-    addMsg('companion', reply);
-    history.push({ role: 'assistant', content: reply });
+    addMsg('companion', text);
+    history.push({ role: 'assistant', content: text });
   } catch (err) {
     if (err && err.handled) return; // redirecting to auth — leave the screen as-is
     removeThinking();
@@ -638,10 +969,11 @@ async function sendMessage() {
 
   try {
     const data  = await callCompanion(text);
-    const reply = data.reply || data.content || '';
+    const { text: reply, mastered } = stripMasteryTag(data.reply || data.content || '');
     removeThinking();
     addMsg('companion', reply);
     history.push({ role: 'assistant', content: reply });
+    if (mastered) setTimeout(onTheoMastery, 700);
   } catch (err) {
     if (err && err.handled) return; // redirecting to auth
     removeThinking();
@@ -663,7 +995,146 @@ input.addEventListener('input', () => {
   input.style.height = Math.min(input.scrollHeight, 140) + 'px';
 });
 
+// ── PRACTICE EXERCISE — interactive, reviewed by Theo ──────────────────────
+// Modules that share a hands-on tool. Position sizing is the flagship; more can
+// hang off the same mechanism (a calculator + a "show Theo" hand-off into chat).
+const EXERCISES = {
+  position_sizing:      'positionSize',
+  what_risk_means:      'positionSize',
+  one_percent_rule:     'positionSize',
+  risk_reward_ratio:    'positionSize',
+  risk_position_sizing: 'positionSize',
+  daily_loss_limits:    'positionSize',
+};
+
+function mountExercise() {
+  if (EXERCISES[moduleKey] !== 'positionSize') return;
+  const mount = document.getElementById('exercise-mount');
+  if (!mount) return;
+  mount.innerHTML = `
+    <div style="margin-top:26px;padding-top:22px;border-top:1px solid var(--border,#241f17);">
+      <div style="font-family:var(--mono,monospace);font-size:0.52rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold,#c9a85c);margin-bottom:14px;">Practice · Position sizing</div>
+      <div class="ex-field"><label>Account balance ($)</label><input id="ex-bal" type="number" inputmode="decimal" value="10000"></div>
+      <div class="ex-field"><label>Risk per trade (%)</label><input id="ex-risk" type="number" inputmode="decimal" value="1"></div>
+      <div class="ex-field"><label>Entry price</label><input id="ex-entry" type="number" inputmode="decimal" value="100"></div>
+      <div class="ex-field"><label>Stop-loss price</label><input id="ex-stop" type="number" inputmode="decimal" value="98"></div>
+      <button id="ex-calc" type="button">Calculate</button>
+      <div id="ex-out" style="margin-top:14px;font-size:0.82rem;line-height:1.7;color:var(--text,#ece6db);display:none;"></div>
+      <button id="ex-send" type="button" style="display:none;margin-top:12px;">Show Theo my result →</button>
+    </div>`;
+  // Scoped styling for the exercise fields
+  const st = document.createElement('style');
+  st.textContent = '.ex-field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}'
+    + '.ex-field label{font-size:0.78rem;color:var(--muted,#8a8578);}'
+    + '.ex-field input{width:110px;background:var(--surface,#15110a);border:1px solid var(--border,#241f17);color:var(--text,#ece6db);padding:7px 10px;border-radius:2px;font-family:var(--mono,monospace);font-size:0.82rem;text-align:right;}'
+    + '.ex-field input:focus{outline:none;border-color:var(--gold-dim,#8a6a2a);}'
+    + '#ex-calc,#ex-send{width:100%;background:rgba(201,168,92,0.06);border:1px solid var(--gold-dim,#8a6a2a);color:var(--gold,#c9a85c);padding:10px;border-radius:2px;cursor:pointer;font-family:var(--mono,monospace);font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;transition:background .2s;}'
+    + '#ex-calc:hover,#ex-send:hover{background:rgba(201,168,92,0.12);}';
+  mount.appendChild(st);
+
+  let lastResult = null;
+  const num = id => parseFloat(document.getElementById(id).value);
+  document.getElementById('ex-calc').addEventListener('click', () => {
+    const bal = num('ex-bal'), riskPct = num('ex-risk'), entry = num('ex-entry'), stop = num('ex-stop');
+    const out = document.getElementById('ex-out');
+    if ([bal, riskPct, entry, stop].some(v => !isFinite(v)) || bal <= 0 || riskPct <= 0) {
+      out.style.display = 'block'; out.textContent = 'Fill in every field with a positive number.'; return;
+    }
+    const dist = Math.abs(entry - stop);
+    if (dist === 0) { out.style.display = 'block'; out.textContent = 'Entry and stop cannot be the same — your risk would be infinite.'; return; }
+    const riskAmt = bal * (riskPct / 100);
+    const size = riskAmt / dist;
+    lastResult = { bal, riskPct, entry, stop, dist: +dist.toFixed(4), riskAmt: +riskAmt.toFixed(2), size: +size.toFixed(2) };
+    out.style.display = 'block';
+    out.innerHTML = 'Risk amount: <strong>$' + lastResult.riskAmt.toLocaleString() + '</strong><br>'
+      + 'Stop distance: <strong>' + lastResult.dist + '</strong><br>'
+      + 'Position size: <strong>' + lastResult.size.toLocaleString() + ' units</strong>';
+    document.getElementById('ex-send').style.display = 'block';
+  });
+  document.getElementById('ex-send').addEventListener('click', () => {
+    if (!lastResult || busy) return;
+    const r = lastResult;
+    input.value = 'I worked the position-size calculator: a $' + r.bal.toLocaleString() + ' account risking ' + r.riskPct
+      + '% with entry ' + r.entry + ' and a stop at ' + r.stop + '. I got a risk of $' + r.riskAmt.toLocaleString()
+      + ', a stop distance of ' + r.dist + ', and a position of ' + r.size.toLocaleString() + ' units. Did I do that right?';
+    sendMessage();
+  });
+}
+
+// ── VOICE — talk to Theo live (ElevenLabs). Available on the same gating as the
+// other voice sessions; his agent runs his teaching persona plus this module's context.
+let theoVoiceState = 'idle';
+let theoConv = null;
+
+function resetVoice(msg) {
+  theoVoiceState = 'idle';
+  const btn = document.getElementById('voice-btn');
+  const status = document.getElementById('voice-status');
+  if (btn) { btn.disabled = false; btn.textContent = 'Talk to Theo'; btn.classList.remove('active'); }
+  if (status) status.textContent = msg || 'Prefer to talk it through?';
+}
+
+function toggleTheoVoice() {
+  if (theoVoiceState === 'active' || theoVoiceState === 'connecting') { endTheoVoice(); return; }
+  startTheoVoice();
+}
+
+async function startTheoVoice() {
+  const btn = document.getElementById('voice-btn');
+  const status = document.getElementById('voice-status');
+  theoVoiceState = 'connecting';
+  btn.disabled = true; btn.textContent = 'Connecting…';
+  if (status) status.textContent = 'Connecting to Theo…';
+  try {
+    const res = await fetch('/api/voice/session', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+      body: JSON.stringify({ mentor: 'theo' }),
+    });
+    if (res.status === 401) { window.location.href = '/auth.html?next=' + encodeURIComponent('/study.html?module=' + moduleKey); return; }
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      resetVoice(res.status === 429 ? 'No voice sessions left on your plan.' : (e.error || 'Voice unavailable right now.'));
+      return;
+    }
+    const { signedUrl, prompt: serverPrompt } = await res.json();
+    const ELConv = window.client && window.client.Conversation;
+    if (!ELConv || typeof ELConv.startSession !== 'function') { resetVoice('Voice engine failed to load. Refresh and try again.'); return; }
+
+    const moduleCtx = 'You are mid-lesson with this student on the module "' + mod.title + '": ' + mod.desc + ' Teach and check understanding by voice, one idea at a time.';
+    const fullPrompt = [serverPrompt, moduleCtx].filter(Boolean).join('\n\n');
+
+    theoConv = await ELConv.startSession({
+      signedUrl,
+      overrides: fullPrompt ? { agent: { prompt: { prompt: fullPrompt } } } : undefined,
+      onMessage: ({ message, source }) => {
+        if (source === 'ai') { addMsg('companion', message); history.push({ role: 'assistant', content: message }); }
+        else { history.push({ role: 'user', content: message }); }
+      },
+      onModeChange: ({ mode }) => { if (status) status.textContent = mode === 'speaking' ? 'Theo is speaking…' : 'Listening…'; },
+      onStatusChange: ({ status: st }) => {
+        if (st === 'connected') {
+          theoVoiceState = 'active';
+          if (btn) { btn.disabled = false; btn.textContent = 'End call'; btn.classList.add('active'); }
+          if (status) status.textContent = 'Live with Theo';
+        }
+      },
+      onDisconnect: () => { if (theoVoiceState !== 'ending') endTheoVoice(); },
+      onError: (m) => { console.error('Theo voice:', m); resetVoice('Connection lost. Check your mic and try again.'); },
+    });
+  } catch (err) {
+    console.error('startTheoVoice:', err);
+    resetVoice('Could not connect. Check your microphone permissions.');
+  }
+}
+
+async function endTheoVoice() {
+  theoVoiceState = 'ending';
+  if (theoConv) { try { await theoConv.endSession(); } catch (_) {} theoConv = null; }
+  resetVoice('Prefer to talk it through?');
+}
+
 // ── BOOT ─────────────────────────────────────────────────────────────────
+mountExercise();
 openingMessage();
 </script>
 </body>

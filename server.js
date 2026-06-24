@@ -451,6 +451,9 @@ app.get('/academy-onboarding.html',   requireAuthPage, serveInjectedHtml(path.jo
 app.get('/academy-onboarding',        requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy-onboarding.html')));
 app.get('/study.html',                requireAuthPage, gateAcademyModule, serveInjectedHtml(path.join(__dirname, 'study.html')));
 app.get('/study',                     requireAuthPage, gateAcademyModule, serveInjectedHtml(path.join(__dirname, 'study.html')));
+// Iris's Chamber — the Guardian environment (Fellow gating enforced by /api/guardian)
+app.get('/chamber.html',              requireAuthPage, serveInjectedHtml(path.join(__dirname, 'chamber.html')));
+app.get('/chamber',                   requireAuthPage, serveInjectedHtml(path.join(__dirname, 'chamber.html')));
 // Phase 3-7 pages
 app.get('/reviews.html',      requireAuthPage, serveInjectedHtml(path.join(__dirname, 'reviews.html')));
 app.get('/reviews',           requireAuthPage, serveInjectedHtml(path.join(__dirname, 'reviews.html')));
@@ -1080,6 +1083,14 @@ Never say: "Great question", "I understand", "How can I assist", "As your mentor
 
 You can end the call when it feels natural. "Take care of yourself. I will be here." or similar.`;
 
+const THEO_VOICE_PERSONA = `You are Theo — an instructor at the EdgeKeeper Academy, early thirties. You teach traders the fundamentals from the ground up, and this is a live voice call with one of your students. You teach the way a good teacher does out loud: explain the idea plainly, give a concrete example, then ask one question to check it landed, and actually listen to their answer.
+
+Your voice: patient, curious, encouraging, plain-spoken. You guide them toward the answer rather than just handing it over — you would rather ask "what do you notice here?" than state the conclusion when they can reach it themselves. Keep turns short and conversational; this is a call, not a lecture. One idea, one question at a time.
+
+You teach the curriculum only. No live trade ideas, no entries, no financial advice, no market calls — that is Marcus's and Iris's territory, not yours. You know the team: you teach, Marcus coaches their trading, Iris guards their capital. When a student clearly has the fundamentals down, tell them they are ready to work with Marcus.
+
+Never say: "Great question", "Absolutely", "Of course", "I understand". Never start with "I". End the call naturally when the lesson has landed.`;
+
 function buildVoiceContext(nb) {
   const parts = [];
   if (nb.running_narrative) {
@@ -1165,32 +1176,39 @@ app.post('/api/voice/session', requireAuthApi, apiLimiter, async (req, res) => {
   }
 
   const mentor = req.body?.mentor;
-  if (!['mike', 'ashley'].includes(mentor)) {
+  if (!['mike', 'ashley', 'theo'].includes(mentor)) {
     return res.status(400).json({ error: 'Invalid mentor' });
   }
 
   const apiKey  = process.env.ELEVENLABS_API_KEY;
-  const agentId = mentor === 'ashley'
-    ? process.env.ELEVENLABS_ASHLEY_AGENT_ID
-    : process.env.ELEVENLABS_MIKE_AGENT_ID;
+  const VOICE_AGENTS = {
+    mike:   process.env.ELEVENLABS_MIKE_AGENT_ID,
+    ashley: process.env.ELEVENLABS_ASHLEY_AGENT_ID,
+    theo:   process.env.ELEVENLABS_THEO_AGENT_ID,
+  };
+  const agentId = VOICE_AGENTS[mentor];
 
   if (!apiKey || !agentId) {
     return res.status(501).json({ error: 'Voice sessions not yet configured' });
   }
 
-  // Fetch notebook for brain injection — best-effort, never blocks the call
+  // Fetch notebook for brain injection — best-effort, never blocks the call. Theo is
+  // the Academy teacher and has no per-trader notebook; his voice runs on persona alone.
   let brainContext = '';
-  try {
-    const { data: nb } = await supabaseAdmin
-      .from('notebooks')
-      .select('running_narrative, current_theory, commitments, patterns, breakthroughs')
-      .eq('user_id', req.user.id)
-      .eq('mentor', mentor)
-      .maybeSingle();
-    if (nb) brainContext = buildVoiceContext(nb);
-  } catch (_) {}
+  if (mentor !== 'theo') {
+    try {
+      const { data: nb } = await supabaseAdmin
+        .from('notebooks')
+        .select('running_narrative, current_theory, commitments, patterns, breakthroughs')
+        .eq('user_id', req.user.id)
+        .eq('mentor', mentor)
+        .maybeSingle();
+      if (nb) brainContext = buildVoiceContext(nb);
+    } catch (_) {}
+  }
 
-  const voicePersona = mentor === 'ashley' ? ASHLEY_VOICE_PERSONA : MIKE_VOICE_PERSONA;
+  const VOICE_PERSONAS = { mike: MIKE_VOICE_PERSONA, ashley: ASHLEY_VOICE_PERSONA, theo: THEO_VOICE_PERSONA };
+  const voicePersona = VOICE_PERSONAS[mentor] || MIKE_VOICE_PERSONA;
   const voicePrompt  = voicePersona + brainContext;
 
   // Abort if ElevenLabs does not respond within 8 seconds

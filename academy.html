@@ -426,6 +426,8 @@
   </div>
 </section>
 
+<div id="guided-path"></div>
+
 <div class="tracks-wrapper">
 
   <!-- ── TRACK 1: MARKET FOUNDATIONS ── -->
@@ -992,6 +994,66 @@ function unlockTrack(n) {
 function applyGates() {
   const full = academyAccess === 'full';
   GATED_TRACKS.forEach(n => full ? unlockTrack(n) : lockTrack(n));
+  renderGuidedPath();
+}
+
+// ── GUIDED PATH — "you are here / do this next", instead of browse-everything.
+function renderGuidedPath() {
+  const mount = document.getElementById('guided-path');
+  if (!mount) return;
+  const total = allModuleKeys.length;
+  let completed = 0, inProgress = null, firstTodo = null;
+  for (const key of allModuleKeys) {
+    if (localStorage.getItem('ek_academy_' + key + '_completed')) { completed++; continue; }
+    if (!firstTodo) firstTodo = key;
+    if (!inProgress && localStorage.getItem('ek_academy_' + key + '_started')) inProgress = key;
+  }
+  const next = inProgress || firstTodo;
+  const pct  = total ? Math.round((completed / total) * 100) : 0;
+
+  let eyebrow, title, sub, cta, href;
+  if (!next) {
+    eyebrow = 'Academy complete';
+    title   = 'You\'ve finished all 51 modules.';
+    sub     = 'Theo will tell Marcus you\'re ready.';
+    cta     = 'Review a module →';
+    href    = '/study.html?module=' + allModuleKeys[0];
+  } else {
+    const row       = document.querySelector('[data-module="' + next + '"]');
+    const title0    = (row && row.querySelector('.module-title')) ? row.querySelector('.module-title').textContent : 'your next module';
+    const section   = row ? row.closest('.track-section') : null;
+    const trackName = (section && section.querySelector('.track-title')) ? section.querySelector('.track-title').textContent : '';
+    const trackNum  = section ? parseInt(section.dataset.track, 10) : 1;
+    const locked    = GATED_TRACKS.includes(trackNum) && academyAccess !== 'full';
+    if (locked) {
+      eyebrow = 'You\'ve finished the free track';
+      title   = 'Unlock the rest of the Academy';
+      sub     = 'All six tracks open with any EdgeKeeper plan.';
+      cta     = 'See plans →';
+      href    = '/pricing.html';
+    } else {
+      eyebrow = inProgress ? 'Continue where you left off' : (completed ? 'Up next' : 'Start here');
+      title   = title0;
+      sub     = trackName;
+      cta     = inProgress ? 'Continue →' : 'Begin →';
+      href    = '/study.html?module=' + next;
+    }
+  }
+
+  const esc = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; };
+  mount.innerHTML =
+    '<div style="max-width:1000px;margin:0 auto;padding:8px 40px 0;">'
+    + '<a href="' + href + '" style="display:block;text-decoration:none;border:1px solid var(--gold-dim,#8a6a2a);background:rgba(201,168,92,0.05);padding:26px 30px;border-radius:2px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;">'
+    + '<div><div style="font-family:var(--mono,monospace);font-size:0.54rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold,#c9a85c);margin-bottom:8px;">' + esc(eyebrow) + '</div>'
+    + '<div style="font-family:var(--serif,Georgia),serif;font-size:1.5rem;color:var(--text,#ece6db);line-height:1.25;">' + esc(title) + '</div>'
+    + (sub ? '<div style="font-size:0.82rem;color:var(--muted,#8a8578);margin-top:6px;">' + esc(sub) + '</div>' : '')
+    + '</div>'
+    + '<div style="font-family:var(--mono,monospace);font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold,#c9a85c);white-space:nowrap;padding-top:6px;">' + esc(cta) + '</div>'
+    + '</div>'
+    + '<div style="height:2px;background:var(--border,#241f17);margin-top:22px;border-radius:2px;overflow:hidden;"><div style="height:2px;width:' + pct + '%;background:var(--gold,#c9a85c);"></div></div>'
+    + '<div style="font-family:var(--mono,monospace);font-size:0.54rem;letter-spacing:0.12em;color:var(--muted,#8a8578);margin-top:8px;">' + completed + ' of ' + total + ' modules · ' + pct + '%</div>'
+    + '</a></div>';
 }
 
 applyGates();
@@ -1003,7 +1065,7 @@ applyGates();
   const banner = document.createElement('div');
   banner.setAttribute('role', 'status');
   banner.style.cssText = 'position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:200;background:var(--surface,#15110a);border:1px solid var(--gold,#c9a85c);color:var(--text,#ece6db);font-family:var(--mono,monospace);font-size:0.7rem;letter-spacing:0.04em;padding:14px 22px;border-radius:2px;max-width:90vw;text-align:center;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5);';
-  banner.textContent = 'That track is part of the full Academy. Unlock all six tracks with any plan →';
+  banner.textContent = 'Theo: "You\'re reaching for the advanced material. I like that. It opens with a plan — and you\'ll get more from it once Foundations is solid." →';
   banner.onclick = () => { window.location.href = '/pricing.html'; };
   document.body.appendChild(banner);
   setTimeout(() => { banner.style.transition = 'opacity .6s'; banner.style.opacity = '0'; setTimeout(() => banner.remove(), 600); }, 8000);

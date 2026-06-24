@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iris's Chamber — EdgeKeeper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --black:#040504; --stone:#0c0f0c; --surface:#10140f; --border:#1a201a;
+      --iris:#6b8c6b; --iris-dim:#4a5c4a; --iris-bg:rgba(107,140,107,0.05);
+      --text:#d6dcd4; --bright:#eef2ec; --muted:#5f6b5e; --faint:#7d8a7c;
+      --amber:#b8924a; --red:#a85a4a;
+      --serif:'Cormorant Garamond',Georgia,serif; --sans:'Inter',sans-serif; --mono:'DM Mono',monospace;
+    }
+    html { font-size:16px; }
+    body { background:var(--black); color:var(--text); font-family:var(--sans); font-weight:300; line-height:1.7; min-height:100vh; -webkit-font-smoothing:antialiased; }
+    a { color:inherit; }
+
+    #chamber-bg { position:fixed; inset:0; z-index:0; background:url('/assets/chamber-ambient.png') center/cover no-repeat; opacity:0.22; pointer-events:none; }
+    #chamber-bg::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at center, transparent 25%, var(--black) 88%); }
+    nav { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; padding:24px 48px; border-bottom:1px solid var(--border); }
+    .nav-logo { font-family:var(--serif); font-size:1rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--bright); text-decoration:none; }
+    .nav-logo span { color:var(--iris); }
+    .nav-right { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--faint); text-decoration:none; transition:color .3s; }
+    .nav-right:hover { color:var(--text); }
+
+    main { position:relative; z-index:1; max-width:680px; margin:0 auto; padding:80px 32px 120px; }
+
+    .eyebrow { font-family:var(--mono); font-size:0.58rem; letter-spacing:0.34em; text-transform:uppercase; color:var(--iris-dim); text-align:center; margin-bottom:40px; }
+
+    /* status monolith */
+    .monolith { text-align:center; padding:18px 0 8px; }
+    .status-dot { width:9px; height:9px; border-radius:50%; margin:0 auto 26px; background:var(--iris); box-shadow:0 0 0 0 var(--iris-bg); animation:pulse 3.4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(107,140,107,0.18);} 50%{ box-shadow:0 0 0 14px rgba(107,140,107,0);} }
+    .state-name { font-family:var(--serif); font-size:clamp(2.6rem,7vw,3.8rem); font-weight:300; color:var(--bright); line-height:1.05; letter-spacing:-0.01em; }
+    .state-desc { font-size:0.95rem; color:var(--faint); max-width:420px; margin:20px auto 0; line-height:1.8; }
+
+    /* clinical readouts */
+    .readouts { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); margin:64px 0 0; }
+    .readout { background:var(--black); padding:26px 18px; text-align:center; }
+    .readout-label { font-family:var(--mono); font-size:0.52rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; }
+    .readout-value { font-family:var(--serif); font-size:2rem; font-weight:300; color:var(--text); line-height:1; }
+    .readout-value.warn { color:var(--amber); }
+    .readout-value.alert { color:var(--red); }
+    .meta-line { text-align:center; font-family:var(--mono); font-size:0.56rem; letter-spacing:0.12em; color:var(--muted); margin-top:24px; }
+
+    /* dormant note */
+    .dormant { text-align:center; margin-top:64px; padding-top:40px; border-top:1px solid var(--border); }
+    .dormant p { font-family:var(--serif); font-size:1.25rem; font-style:italic; color:var(--faint); line-height:1.8; max-width:480px; margin:0 auto; }
+    .iris-whisper { opacity:0; animation:irisEmerge 2.4s cubic-bezier(.2,.6,.2,1) .6s forwards; }
+    @keyframes irisEmerge { from { opacity:0; transform:translateY(10px); filter:blur(3px); } to { opacity:0.9; transform:translateY(0); filter:blur(0); } }
+    @media (prefers-reduced-motion:reduce) { .iris-whisper { animation:none; opacity:0.9; } }
+
+    /* presence / conversation */
+    .presence { margin-top:64px; padding-top:48px; border-top:1px solid var(--iris-dim); }
+    .iris-msg { font-family:var(--serif); font-size:1.2rem; font-weight:300; line-height:1.9; color:var(--bright); padding-left:18px; border-left:1px solid var(--iris); margin-bottom:14px; white-space:pre-wrap; }
+    .user-msg { font-size:0.9rem; color:rgba(214,220,212,0.6); padding:10px 14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); margin:24px 0 24px auto; max-width:80%; }
+    .typing { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--iris-dim); padding-left:18px; }
+    .chat-input-wrap { display:flex; gap:10px; margin-top:36px; }
+    .chat-input { flex:1; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--sans); font-size:0.9rem; padding:12px 16px; resize:none; line-height:1.5; max-height:140px; }
+    .chat-input:focus { outline:none; border-color:var(--iris-dim); }
+    .chat-send { background:var(--iris-bg); border:1px solid var(--iris-dim); color:var(--iris); font-family:var(--mono); font-size:0.58rem; letter-spacing:0.14em; text-transform:uppercase; padding:0 20px; cursor:pointer; transition:background .2s; }
+    .chat-send:hover { background:rgba(107,140,107,0.12); }
+    .chat-send:disabled { opacity:0.4; cursor:default; }
+
+    /* locked / empty states */
+    .gate { text-align:center; padding:40px 0; }
+    .gate h1 { font-family:var(--serif); font-size:2rem; font-weight:300; color:var(--bright); margin-bottom:18px; }
+    .gate p { color:var(--faint); max-width:420px; margin:0 auto 28px; line-height:1.8; }
+    .gate a { display:inline-block; font-family:var(--mono); font-size:0.6rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--iris); border:1px solid var(--iris-dim); padding:12px 26px; text-decoration:none; transition:background .2s; }
+    .gate a:hover { background:var(--iris-bg); }
+
+    .loading { text-align:center; font-family:var(--mono); font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); padding:80px 0; }
+
+    @media (max-width:560px) { nav { padding:20px 24px; } main { padding:56px 22px 100px; } }
+  </style>
+</head>
+<body>
+  <div id="chamber-bg"></div>
+  <nav>
+    <a href="/edgekeeper.html" class="nav-logo">Edge<span>K</span>eeper</a>
+    <a href="/workspace.html" class="nav-right">← Marcus's Office</a>
+  </nav>
+
+  <main>
+    <div class="eyebrow">Guardian · Iris's Chamber</div>
+    <div id="chamber"><div class="loading">Iris is reading the account…</div></div>
+  </main>
+
+  <script>
+  // ── Guardian Iris — the persona used only when she is actively working ─────
+  const IRIS_GUARDIAN = `You are Iris, the Guardian at EdgeKeeper. You are not a coach and not a teacher — you protect the trader and their capital. You watch risk and you step in when a trader is about to hurt themselves.
+
+You are calm, precise, protective, authoritative, deliberate. You are not conversational by nature: you speak rarely, and when you speak it carries weight. You do not chat, you do not reassure for the sake of it, you do not soften facts. You state what is true about the risk in front of you and what you require.
+
+You are only here because something needs protecting against right now — a streak of losses, an account in drawdown, a trader on tilt, a recovery in progress. Stay on that. A trader can explain themselves to you, and if the facts genuinely change, your read changes. But you do not lift a restriction because someone is frustrated or impatient. You protect them from the version of themselves that shows up after a loss.
+
+You know the team: Theo teaches, Marcus develops, you protect. Marcus sends a trader to you when their problem is protection, not coaching. You do not do Marcus's work — no reviews, no exploring feelings for their own sake. You hold the line on risk.
+
+You never give trade ideas, entries, targets, or market calls. You speak about risk, limits, discipline, and protection only.
+
+VOICE: spare, exact, unhurried. Authority without aggression. Never filler. Never "Great", "I understand", "Absolutely", "Of course". When you must deliver a hard line, you deliver it plainly and you do not apologise for it. Keep replies short — a sentence or three. Never start with "I".`;
+
+  // Collaboration: Iris can cite Marcus's read of this trader (the shared profile, one direction).
+  let __marcusRead = '';
+  async function loadMarcusRead() {
+    try {
+      const r = await fetch('/api/notebook/mike', { credentials:'include' });
+      if (!r.ok) return;
+      const { notebook } = await r.json();
+      if (!notebook) return;
+      const bits = [];
+      if (notebook.running_narrative) bits.push('His running read of them: ' + notebook.running_narrative);
+      const pats = notebook.patterns;
+      if (Array.isArray(pats) && pats.length) { const last = pats[pats.length-1]; bits.push('A pattern he flagged: ' + (typeof last === 'object' ? last.text : last)); }
+      const cons = notebook.concerns;
+      if (Array.isArray(cons) && cons.length) bits.push('A concern of his: ' + cons[cons.length-1]);
+      if (bits.length) __marcusRead = '\n\nMARCUS’S READ — Marcus, the coach, has been working with this trader. Reference what he has seen, by name, when it fits the moment ("This is the pattern Marcus flagged."). Do not invent beyond this:\n' + bits.join('\n');
+    } catch (_) {}
+  }
+
+  const STATES = {
+    1: { name:'Stable',     dot:'var(--iris)',  desc:'The account is in order.', present:false },
+    2: { name:'Noted',      dot:'var(--amber)', desc:'Something is starting to move.', present:false },
+    3: { name:'Conversation', dot:'var(--amber)', desc:'Iris needs a word before you go further.', present:true,
+         open:'Three trades against you today. That is the line where judgment usually starts to slip. Before you take a fourth — talk to me. What happened?' },
+    4: { name:'Cooldown',   dot:'var(--red)',   desc:'Trading is paused. Iris is holding the line.', present:true,
+         open:'Trading is paused. You have reached the point where the next trade is usually the worst one of the day. You do not re-enter until this resets. Tell me what is driving the urge to keep going.' },
+    5: { name:'Stand down', dot:'var(--red)',   desc:'Risk threshold exceeded. You are done for the day.', present:true,
+         open:'Risk threshold exceeded. You are done for the day — this is not a suggestion. Stand down. We will talk about what brought you here, but not another trade tonight.' },
+  };
+
+  // When the account is calm she is not working — so she does not converse. But she
+  // notices you came to her. These are one-way, mysterious, rotating. Level 1 = calm,
+  // level 2 = she is starting to pay attention to you.
+  const IRIS_CALM = [
+    "So. You found my chamber. You don't need me yet, which is the only reason we meet like this. I will find you when the time comes.",
+    "You came looking. There is nothing here for you today: the account is clean, your hands are steady. Go. I will know when that changes.",
+    "Does Marcus know you are down here? This is not where the work happens. Not yet.",
+    "Most traders meet me on their worst day. You came on a calm one. Remember that you did.",
+    "I watch. That is all this is, for now. When you start to slip you will not have to come find me. I will already be here.",
+    "Curiosity is harmless. The day you actually need me, you will not feel curious. You will feel relief.",
+    "Theo teaches you. Marcus develops you. I am the one you hope you never have to speak to. Today, you don't."
+  ];
+  const IRIS_NOTICING = [
+    "Now you, I am watching more closely. Two have gone against you. Nothing I need to act on yet. But I am here, and I am paying attention.",
+    "You are closer to needing me than you were this morning. Steady your hands, and we never have to speak again today.",
+    "Something is beginning. I can see it from where I stand. Do not give me a reason to step in."
+  ];
+
+  function lockLevel(g) {
+    const losses = g.consecutive_losses || 0;
+    const pnl = g.daily_pnl_pct || 0;
+    const dd = g.max_drawdown_pct || 0;
+    if (losses >= 5 || pnl <= -5 || dd >= 5) return 5;
+    if (losses >= 4 || pnl <= -3 || dd >= 4) return 4;
+    if (losses >= 3 || pnl <= -2 || dd >= 3) return 3;
+    if (losses >= 2 || pnl <= -1 || dd >= 2) return 2;
+    return 1;
+  }
+
+  function esc(s){ const d=document.createElement('div'); d.textContent = s==null?'':s; return d.innerHTML; }
+
+  const root = document.getElementById('chamber');
+
+  async function boot() {
+    let res;
+    try { res = await fetch('/api/guardian', { credentials:'include' }); }
+    catch (_) { root.innerHTML = '<div class="loading">Iris is unreachable. Try again in a moment.</div>'; return; }
+
+    if (res.status === 401) { window.location.href = '/auth.html?next=' + encodeURIComponent('/chamber'); return; }
+    if (res.status === 403) {
+      root.innerHTML = '<div class="gate"><h1>You don\'t have a guardian yet.</h1>'
+        + '<p>Iris protects capital on the Fellow plan. She watches your account, holds your limits, and steps in before a bad day becomes a worse one.</p>'
+        + '<a href="/pricing.html">Meet Iris — Fellow →</a></div>';
+      return;
+    }
+    let data = {};
+    try { data = await res.json(); } catch (_) {}
+    const g = data.guardian;
+
+    await loadMarcusRead(); // best-effort; lets Iris reference Marcus's read during an intervention
+
+    if (!g) {
+      root.innerHTML = '<div class="gate"><h1>Iris is here. There is nothing to watch yet.</h1>'
+        + '<p>Connect a trading account and Iris begins watching it — drawdown, losing streaks, the moments discipline slips. She stays silent until something needs her.</p>'
+        + '<a href="/integrations.html">Connect an account →</a></div>';
+      return;
+    }
+    render(g);
+  }
+
+  function render(g) {
+    const level = lockLevel(g);
+    const s = STATES[level];
+    const losses = g.consecutive_losses || 0;
+    const pnl = (g.daily_pnl_pct != null) ? g.daily_pnl_pct : 0;
+    const dd = g.max_drawdown_pct || 0;
+    const cls = v => v >= 4 ? 'alert' : v >= 2 ? 'warn' : '';
+    const updated = g.updated_at ? new Date(g.updated_at).toLocaleString() : null;
+
+    let html = '<div class="monolith">'
+      + '<div class="status-dot" style="background:' + s.dot + ';"></div>'
+      + '<div class="state-name">' + s.name + '</div>'
+      + '<div class="state-desc">' + s.desc + '</div>'
+      + '</div>'
+      + '<div class="readouts">'
+      + '<div class="readout"><div class="readout-label">Losing streak</div><div class="readout-value ' + cls(losses) + '">' + losses + '</div></div>'
+      + '<div class="readout"><div class="readout-label">Day P&L</div><div class="readout-value ' + cls(pnl <= -2 ? 4 : pnl < 0 ? 2 : 0) + '">' + (pnl > 0 ? '+' : '') + pnl + '%</div></div>'
+      + '<div class="readout"><div class="readout-label">Drawdown</div><div class="readout-value ' + cls(dd) + '">' + dd + '%</div></div>'
+      + '</div>';
+    if (updated) html += '<div class="meta-line">Last reading · ' + esc(updated) + '</div>';
+
+    if (!s.present) {
+      const pool = level === 1 ? IRIS_CALM : IRIS_NOTICING;
+      const line = pool[Math.floor(Math.random() * pool.length)];
+      html += '<div class="dormant"><p class="iris-whisper">' + esc(line) + '</p></div>';
+      root.innerHTML = html;
+      return;
+    }
+
+    // Active protection: Iris is present and reachable.
+    html += '<div class="presence" id="presence">'
+      + '<div class="iris-msg">' + esc(s.open) + '</div>'
+      + '<div id="thread"></div>'
+      + '<div class="chat-input-wrap">'
+      + '<textarea class="chat-input" id="iris-input" rows="1" placeholder="Speak to Iris…"></textarea>'
+      + '<button class="chat-send" id="iris-send">Send</button>'
+      + '</div></div>';
+    root.innerHTML = html;
+    wireChat(s.open);
+  }
+
+  function wireChat(opening) {
+    const thread = document.getElementById('thread');
+    const input  = document.getElementById('iris-input');
+    const send   = document.getElementById('iris-send');
+    const history = [{ role:'assistant', content: opening }];
+    let busy = false;
+
+    input.addEventListener('input', () => { input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,140)+'px'; });
+    input.addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); submit(); } });
+    send.addEventListener('click', submit);
+
+    function add(role, text) {
+      const el = document.createElement('div');
+      el.className = role === 'assistant' ? 'iris-msg' : 'user-msg';
+      el.textContent = text;
+      thread.appendChild(el);
+      el.scrollIntoView({ behavior:'smooth', block:'end' });
+    }
+
+    async function submit() {
+      if (busy) return;
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = ''; input.style.height = 'auto';
+      add('user', text);
+      history.push({ role:'user', content:text });
+      busy = true; send.disabled = true;
+      const typing = document.createElement('div');
+      typing.className = 'typing'; typing.id = 'typing'; typing.textContent = 'Iris is considering';
+      thread.appendChild(typing);
+      try {
+        const r = await fetch('/api/chat', {
+          method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+          body: JSON.stringify({ mentor:'ashley', messages: history.slice(-16), systemPrompt: IRIS_GUARDIAN + __marcusRead }),
+        });
+        document.getElementById('typing')?.remove();
+        if (r.status === 401) { window.location.href = '/auth.html?next=' + encodeURIComponent('/chamber'); return; }
+        if (!r.ok) { add('assistant', r.status === 429 ? 'Not now. Give it a moment.' : 'Hold on. Try again.'); busy=false; send.disabled=false; return; }
+        const d = await r.json();
+        const reply = (d.reply || d.content || '').trim();
+        add('assistant', reply || 'Stand down. We talk when you are steadier.');
+        history.push({ role:'assistant', content: reply });
+      } catch (_) {
+        document.getElementById('typing')?.remove();
+        add('assistant', 'Connection dropped. Try again.');
+      }
+      busy = false; send.disabled = false;
+      input.focus();
+    }
+  }
+
+  boot();
+  </script>
+</body>
+</html>
