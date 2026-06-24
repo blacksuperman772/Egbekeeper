@@ -446,14 +446,14 @@
     }
     .mentors-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 2px;
       background: var(--border);
     }
-    @media (max-width: 1024px) { .mentors-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .mentors-grid { grid-template-columns: 1fr; } }
     .mentor-card {
       background: var(--obsidian);
-      padding: 48px 40px;
+      padding: 56px 52px;
       position: relative;
       overflow: hidden;
       transition: background .4s;
@@ -1705,12 +1705,12 @@
 <section id="mentors">
   <div class="section-inner">
     <div class="mentors-intro">
-      <div class="section-label reveal" style="justify-content:center">Your Team</div>
+      <div class="section-label reveal" style="justify-content:center">Your Mentors</div>
       <h2 class="mentors-headline reveal reveal-delay-1">
-        Three specialists.<br><em>One institution.</em>
+        Two mentors.<br><em>One institution.</em>
       </h2>
       <p class="mentors-sub reveal reveal-delay-2">
-        Not one assistant wearing three hats. A teacher, a coach, and a guardian — each with one job, each aware of the others, each carrying your history.
+        Theo teaches you. Marcus coaches you. Each with one job, each carrying your history. Not one assistant wearing two hats — two people who get to know you.
       </p>
     </div>
     <div class="mentors-grid">
@@ -1762,29 +1762,13 @@
           <a href="/marcus" style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;transition:color .3s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">His office →</a>
         </div>
       </div>
-      <div class="mentor-card ashley reveal reveal-delay-2">
-        <div class="mentor-avatar">
-          <img src="/assets/iris-portrait.png" alt="Iris" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
-          <div class="mentor-avatar-inner" style="display:none;background:linear-gradient(135deg,#111814,#162016);border:1px solid rgba(74,92,74,0.5);color:var(--green-bright);">I</div>
-        </div>
-        <div class="mentor-role">Your Guardian · The Chamber</div>
-        <h3 class="mentor-name">Iris</h3>
-        <p class="mentor-bio">
-          Iris protects your capital. She watches your risk and steps in when you're about to hurt yourself — cooldowns, limits, a stand-down when you've taken one loss too many. Calm, precise, deliberate. You meet her through Marcus, when your trading needs protecting.
-        </p>
-        <div class="mentor-traits">
-          <span class="trait">Calm</span>
-          <span class="trait">Precise</span>
-          <span class="trait">Protective</span>
-          <span class="trait">Deliberate</span>
-        </div>
-        <blockquote class="mentor-quote">
-          "Three losses. Stand down. We talk before you re-enter."
-        </blockquote>
-        <div style="display:flex;align-items:center;gap:20px;">
-          <a href="/pricing.html" class="mentor-cta" style="margin-top:0;">Iris guards on Fellow →</a>
-        </div>
-      </div>
+    </div>
+    <div class="reveal" style="text-align:center;margin-top:64px;">
+      <a href="/iris" style="display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--green-bright,#8fae8f);text-decoration:none;opacity:0.5;transition:opacity .5s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--green-bright,#8fae8f);"></span>
+        And, for the days you need protecting — the guardian
+        <span aria-hidden="true">→</span>
+      </a>
     </div>
   </div>
 </section>
