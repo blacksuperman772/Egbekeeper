@@ -446,13 +446,14 @@
     }
     .mentors-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 2px;
       background: var(--border);
     }
+    @media (max-width: 1024px) { .mentors-grid { grid-template-columns: 1fr; } }
     .mentor-card {
       background: var(--obsidian);
-      padding: 64px;
+      padding: 48px 40px;
       position: relative;
       overflow: hidden;
       transition: background .4s;
@@ -1498,13 +1499,13 @@
       Whether you've never placed a trade or you've been at this for a decade, EdgeKeeper is the institution where your development begins and never stops. Foundation. Development. Performance. Every stage, with a mentor who knows the difference.
     </p>
     <div class="hero-ctas">
-      <a href="onboarding.html?mentor=mike" class="btn-mentor btn-mike">
+      <a href="onboarding.html" class="btn-mentor btn-mike">
         <span class="btn-dot"></span>
         Work with Marcus
       </a>
-      <a href="onboarding.html?mentor=ashley" class="btn-mentor btn-ashley">
+      <a href="/academy-onboarding" class="btn-mentor btn-ashley">
         <span class="btn-dot"></span>
-        Work with Iris
+        Learn with Theo
       </a>
     </div>
   </div>
@@ -1704,64 +1705,84 @@
 <section id="mentors">
   <div class="section-inner">
     <div class="mentors-intro">
-      <div class="section-label reveal" style="justify-content:center">Your Mentors</div>
+      <div class="section-label reveal" style="justify-content:center">Your Team</div>
       <h2 class="mentors-headline reveal reveal-delay-1">
-        Two people.<br><em>One institution.</em>
+        Three specialists.<br><em>One institution.</em>
       </h2>
       <p class="mentors-sub reveal reveal-delay-2">
-        Marcus and Iris are colleagues at EdgeKeeper. They share your history. They know your patterns. They remember everything.
+        Not one assistant wearing three hats. A teacher, a coach, and a guardian — each with one job, each aware of the others, each carrying your history.
       </p>
     </div>
     <div class="mentors-grid">
-      <div class="mentor-card mike reveal">
+      <div class="mentor-card theo reveal">
+        <div class="mentor-avatar">
+          <img src="/assets/theo-portrait.png" alt="Theo" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+          <div class="mentor-avatar-inner" style="display:none;background:linear-gradient(135deg,#1a1810,#2d2410);border:1px solid var(--gold-dim);color:var(--gold);">T</div>
+        </div>
+        <div class="mentor-role">Your Teacher · The Academy</div>
+        <h3 class="mentor-name">Theo</h3>
+        <p class="mentor-bio">
+          Theo teaches you to trade from the ground up. Patient, curious, and clear, he runs the Academy: structured lessons that build real competence, from what a market is to how professionals think — until you're ready to be coached.
+        </p>
+        <div class="mentor-traits">
+          <span class="trait">Patient</span>
+          <span class="trait">Curious</span>
+          <span class="trait">Clear</span>
+          <span class="trait">Encouraging</span>
+        </div>
+        <blockquote class="mentor-quote">
+          "What do you notice here? Say it back to me in your own words."
+        </blockquote>
+        <div style="display:flex;align-items:center;gap:20px;">
+          <a href="/academy-onboarding" class="mentor-cta" style="margin-top:0;">Learn with Theo →</a>
+        </div>
+      </div>
+      <div class="mentor-card mike reveal reveal-delay-1">
         <div class="mentor-avatar">
           <div class="mentor-avatar-inner" id="mike-avatar-inner" style="background:linear-gradient(135deg,#1a1810,#2d2410);border:1px solid var(--gold-dim);color:var(--gold);overflow:hidden;padding:0;">
             <img src="/assets/mike-portrait.png" alt="Marcus" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:inherit;" onerror="this.parentNode.innerHTML='M';">
           </div>
         </div>
-        <div class="mentor-role">Senior Mentor · EdgeKeeper</div>
+        <div class="mentor-role">Your Coach · The Office</div>
         <h3 class="mentor-name">Marcus</h3>
         <p class="mentor-bio">
-          Marcus doesn't let you off easy. He'll tell you what you already know but are avoiding. Direct, logical, and methodical, he builds structure where there is none and holds you to it without apology. He is calm in the way a surgeon is calm.
+          Marcus doesn't let you off easy. He coaches your actual trading — your journal, your reviews, your patterns — and holds you to it without apology. Direct, logical, methodical. He is calm in the way a surgeon is calm.
         </p>
         <div class="mentor-traits">
           <span class="trait">Direct</span>
           <span class="trait">Logical</span>
           <span class="trait">Structural</span>
           <span class="trait">Challenging</span>
-          <span class="trait">Patient</span>
         </div>
         <blockquote class="mentor-quote">
           "I don't think this is really about the trade."
         </blockquote>
         <div style="display:flex;align-items:center;gap:20px;">
-          <a href="onboarding.html?mentor=mike" class="mentor-cta" style="margin-top:0;">Begin with Marcus →</a>
+          <a href="onboarding.html" class="mentor-cta" style="margin-top:0;">Begin with Marcus →</a>
           <a href="/marcus" style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;transition:color .3s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">His office →</a>
         </div>
       </div>
       <div class="mentor-card ashley reveal reveal-delay-2">
         <div class="mentor-avatar">
           <img src="/assets/iris-portrait.png" alt="Iris" style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:50%;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
-          <div class="mentor-avatar-inner" style="display:none;background:linear-gradient(135deg,#111814,#162016);border:1px solid rgba(74,92,74,0.5);color:var(--green-bright);">A</div>
+          <div class="mentor-avatar-inner" style="display:none;background:linear-gradient(135deg,#111814,#162016);border:1px solid rgba(74,92,74,0.5);color:var(--green-bright);">I</div>
         </div>
-        <div class="mentor-role">Senior Mentor · EdgeKeeper</div>
+        <div class="mentor-role">Your Guardian · The Chamber</div>
         <h3 class="mentor-name">Iris</h3>
         <p class="mentor-bio">
-          Iris notices what you don't say. She reads between the trades, between the journal entries, between the silences. Warm but precise, she creates the space where patterns finally become visible. She's the mentor who makes the work feel possible.
+          Iris protects your capital. She watches your risk and steps in when you're about to hurt yourself — cooldowns, limits, a stand-down when you've taken one loss too many. Calm, precise, deliberate. You meet her through Marcus, when your trading needs protecting.
         </p>
         <div class="mentor-traits">
-          <span class="trait">Empathetic</span>
-          <span class="trait">Observant</span>
+          <span class="trait">Calm</span>
           <span class="trait">Precise</span>
-          <span class="trait">Warm</span>
-          <span class="trait">Insightful</span>
+          <span class="trait">Protective</span>
+          <span class="trait">Deliberate</span>
         </div>
         <blockquote class="mentor-quote">
-          "Tell me what was happening before you took that trade."
+          "Three losses. Stand down. We talk before you re-enter."
         </blockquote>
         <div style="display:flex;align-items:center;gap:20px;">
-          <a href="onboarding.html?mentor=ashley" class="mentor-cta" style="margin-top:0;">Begin with Iris →</a>
-          <a href="/iris" style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--green-bright);text-decoration:none;opacity:0.6;transition:opacity .3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Her office →</a>
+          <a href="/pricing.html" class="mentor-cta" style="margin-top:0;">Iris guards on Fellow →</a>
         </div>
       </div>
     </div>
@@ -2156,7 +2177,7 @@
         <div class="price-period">See yourself.</div>
         <ul class="price-features">
           <li class="included">The full Academy — all 6 tracks with Theo</li>
-          <li class="included">Your senior mentor, every day — Marcus and Iris</li>
+          <li class="included">Marcus, your performance coach — every day</li>
           <li class="included">Voice sessions included</li>
           <li class="included">Connect your account — read-only</li>
           <li class="included">Behavior analytics &amp; drawdown visibility</li>
@@ -2217,9 +2238,9 @@
         <span class="btn-dot"></span>
         Begin with Marcus
       </a>
-      <a href="onboarding.html?mentor=ashley" class="btn-mentor btn-ashley">
+      <a href="/academy-onboarding" class="btn-mentor btn-ashley">
         <span class="btn-dot"></span>
-        Begin with Iris
+        Learn with Theo
       </a>
     </div>
   </div>

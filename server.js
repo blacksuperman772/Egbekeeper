@@ -446,7 +446,6 @@ app.get('/workspace.html', requireAuthPage, async (req, res, next) => {
 app.get('/settings.html',    requireAuthPage, serveInjectedHtml(path.join(__dirname, 'settings.html')));
 app.get('/assessment.html',  requireAuthPage, serveInjectedHtml(path.join(__dirname, 'assessment.html')));
 app.get('/academy.html',              requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy.html')));
-app.get('/academy',                   requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy.html')));
 app.get('/academy-onboarding.html',   requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy-onboarding.html')));
 app.get('/academy-onboarding',        requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy-onboarding.html')));
 app.get('/study.html',                requireAuthPage, gateAcademyModule, serveInjectedHtml(path.join(__dirname, 'study.html')));
@@ -2022,7 +2021,7 @@ app.post('/api/assessment', requireAuthApi, apiLimiter, async (req, res) => {
 
 // ── Email helpers ─────────────────────────────────────────────────────────────
 const FROM_EMAIL = process.env.RESEND_FROM || 'EdgeKeeper <noreply@edgekeeper.io>';
-const APP_URL    = process.env.APP_URL     || 'https://edgekeeper.io';
+const APP_URL    = process.env.APP_URL     || 'https://edge-keeper.vercel.app';
 
 async function sendEmail(to, subject, html) {
   if (!resend) return; // silently skip if no key
@@ -2588,8 +2587,10 @@ app.get('/billing/success', requireAuthPage, async (req, res) => {
       const VALID_CB = ['free', 'starter', 'pro', 'professional', 'institutional'];
       const plan     = VALID_CB.includes(meta.plan) ? meta.plan : 'starter';
 
-      // Guard: session user must match checkout metadata
-      if (userId && userId !== req.user.id) {
+      // Guard: session user must match checkout metadata — fail closed if metadata
+      // is missing a user_id, so a succeeded checkout without it can't be replayed
+      // to grant an upgrade to whoever passes the checkout_id.
+      if (!userId || userId !== req.user.id) {
         console.error('Billing success user_id mismatch — possible tampering', {
           session_user: req.user.id,
           meta_user:    userId,

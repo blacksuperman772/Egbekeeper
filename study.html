@@ -179,6 +179,7 @@
     #voice-btn:hover { background: rgba(201,168,92,0.12); }
     #voice-btn.active { color: #c8786a; border-color: #c8786a; background: rgba(200,120,106,0.08); }
     #voice-btn:disabled { opacity: 0.5; cursor: default; }
+    .ai-disclaimer { padding: 8px 22px 14px; font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.04em; color: var(--muted); text-align: center; opacity: 0.7; }
     .companion-badge-label {
       font-family: var(--mono); font-size: 0.52rem;
       letter-spacing: 0.18em; text-transform: uppercase;
@@ -334,6 +335,7 @@
       <textarea id="study-input" placeholder="Ask a question about this module..." rows="1"></textarea>
       <button id="send-btn" onclick="sendMessage()">Ask</button>
     </div>
+    <div class="ai-disclaimer">AI education only — not financial advice. Your trading decisions are entirely your own.</div>
   </div>
 
 </div>
@@ -415,7 +417,11 @@ const isFirst    = p.get('first') === '1';
 const mod        = MODULES[moduleKey];
 
 if (!mod) {
+  // Unknown module slug (typo / stale link) — bounce to the Academy. location.replace
+  // does not halt synchronous execution, so throw to stop everything below from
+  // running against an undefined module and white-screening the page.
   window.location.replace('/academy.html');
+  throw new Error('Unknown module: ' + moduleKey);
 }
 
 // ── POPULATE MODULE PANEL ───────────────────────────────────────────────

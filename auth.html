@@ -681,8 +681,10 @@
     }
 
     // If redirected here from a protected page, send them back to it
+    // Only allow same-origin relative paths. Reject protocol-relative ("//evil.com")
+    // and absolute URLs to prevent an open redirect after login.
     const storedDest = sessionStorage.getItem('ek_post_auth_dest');
-    if (storedDest && storedDest.startsWith('/')) {
+    if (storedDest && /^\/[^/\\]/.test(storedDest)) {
       sessionStorage.removeItem('ek_post_auth_dest');
       window.location.href = storedDest;
       return;
@@ -713,7 +715,7 @@
         // Only trigger billing if they're not already on that plan or higher
         const currentPlan = profile?.subscription_status || 'free';
         const bypass      = profile?.bypass_subscription;
-        const planRank    = { free: 0, starter: 1, pro: 2, institutional: 3 };
+        const planRank    = { free: 0, starter: 1, pro: 2, professional: 3, institutional: 4 };
         const needsUpgrade = !bypass && (planRank[currentPlan] || 0) < (planRank[pendingPlan] || 1);
 
         if (needsUpgrade) {
