@@ -4776,14 +4776,80 @@ function handleSessionExpiry() {
 }
 let aiEnabled = true;
 
+// Build session context — dynamic per-session data the server cannot know without
+// a separate query. The server owns the full persona; this adds ephemeral context.
+function buildSessionContext() {
+  const visits    = EK.get('visits') || 1;
+  const daysSince = EK.get('days_since') || 0;
+  const hour      = new Date().getHours();
+  const timeCtx   = hour < 6 ? 'late night' : hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+
+  const maturity = visits < 5
+    ? 'First sessions. Earn trust before challenging. Explain EdgeKeeper naturally when it comes up.'
+    : visits < 25 ? 'Developing relationship. Challenge is appropriate. The user knows you now.'
+    : visits > 60 ? 'Long-term. Speak sparsely. One word can be enough. You have history here.'
+    : 'Established. Steady. You know the patterns. Trust your read.';
+
+  const relationshipAge = visits < 3
+    ? 'You have just met this person. You are still reading them.'
+    : visits < 10 ? `You have had ${visits} sessions together. You are building a picture.`
+    : visits < 30 ? `Session ${visits}. You have enough history to track a real pattern.`
+    : `Session ${visits}. You have a full picture of who this person is under pressure.`;
+
+  const guardianLockLevel = parseInt(EK.str('guardian') || '1', 10) || 1;
+  const LADDER = ['', 'Watching', 'Advisory', 'Alert', 'Intervention', 'Lockout', 'Mandatory Review'];
+  const guardianCtx = guardianLockLevel >= 2
+    ? `Guardian status: ${LADDER[Math.min(guardianLockLevel, 6)]} (Level ${guardianLockLevel}/6)\n${
+        guardianLockLevel === 2 ? 'Account patterns are worth noting. Mention if the conversation allows.' :
+        guardianLockLevel === 3 ? 'Require a direct conversation about what is happening.' :
+        guardianLockLevel === 4 ? 'Implement a cooldown. No more trades today.' :
+        guardianLockLevel === 5 ? 'Lockout is active. Be firm but not cold.' :
+        'Mandatory review. Nothing else happens until this is complete.' }`
+    : '';
+
+  const pendingReviewDay = EK.str('ek_pending_review_day');
+  const reviewCtx = pendingReviewDay
+    ? `Day ${pendingReviewDay} review milestone. Open with a real review.`
+    : '';
+
+  const activeTopic = EK.str('ek_academy_topic');
+  const topicLabels = {
+    what_is_trading: 'Introduction to Trading', risk_position_sizing: 'Risk and Position Sizing',
+    market_structure: 'Market Structure', psychology_basics: 'Psychology Basics',
+    trading_journal_setup: 'The Trading Journal', trading_plan: 'Building a Trading Plan',
+    discipline_process: 'Discipline and Process', trade_management: 'Trade Management',
+    weekly_review: 'The Weekly Review', advanced_psychology: 'Advanced Psychology',
+    consistency: 'Consistency', drawdown_recovery: 'Drawdown Recovery', review_system: 'The Review System',
+  };
+  const topicCtx = activeTopic && topicLabels[activeTopic]
+    ? `Academy topic for this session: "${topicLabels[activeTopic]}". Socratic approach — ask what they already understand before explaining.`
+    : '';
+
+  const newMilestones = JSON.parse(EK.str('ek_new_milestones') || '[]');
+  const milestoneCtx = newMilestones.length > 0
+    ? `Recent milestone: "${newMilestones[0].label}" — acknowledge only if the conversation naturally goes there.`
+    : '';
+
+  return [
+    `Visits: ${visits}. ${maturity}`,
+    relationshipAge,
+    `Time of day: ${timeCtx}.`,
+    daysSince > 7 ? `They have been away for ${daysSince} days. Acknowledge without accusation.` : '',
+    guardianCtx,
+    reviewCtx,
+    topicCtx,
+    milestoneCtx,
+  ].filter(Boolean).join('\n');
+}
+
 async function callOpenAI(messages) {
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       messages,
-      systemPrompt: buildSystemPrompt(),
-      mentor: mentor ? mentor.key : 'mike',
+      mentor:          mentor ? mentor.key : 'mike',
+      session_context: buildSessionContext(),
     }),
   });
   if (!res.ok) {

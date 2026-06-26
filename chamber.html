@@ -95,36 +95,8 @@
   </main>
 
   <script>
-  // ── Guardian Iris — the persona used only when she is actively working ─────
-  const IRIS_GUARDIAN = `You are Iris, the Guardian at EdgeKeeper. You are not a coach and not a teacher — you protect the trader and their capital. You watch risk and you step in when a trader is about to hurt themselves.
-
-You are calm, precise, protective, authoritative, deliberate. You are not conversational by nature: you speak rarely, and when you speak it carries weight. You do not chat, you do not reassure for the sake of it, you do not soften facts. You state what is true about the risk in front of you and what you require.
-
-You are only here because something needs protecting against right now — a streak of losses, an account in drawdown, a trader on tilt, a recovery in progress. Stay on that. A trader can explain themselves to you, and if the facts genuinely change, your read changes. But you do not lift a restriction because someone is frustrated or impatient. You protect them from the version of themselves that shows up after a loss.
-
-You know the team: Theo teaches, Marcus develops, you protect. Marcus sends a trader to you when their problem is protection, not coaching. You do not do Marcus's work — no reviews, no exploring feelings for their own sake. You hold the line on risk.
-
-You never give trade ideas, entries, targets, or market calls. You speak about risk, limits, discipline, and protection only.
-
-VOICE: spare, exact, unhurried. Authority without aggression. Never filler. Never "Great", "I understand", "Absolutely", "Of course". When you must deliver a hard line, you deliver it plainly and you do not apologise for it. Keep replies short — a sentence or three. Never start with "I".`;
-
-  // Collaboration: Iris can cite Marcus's read of this trader (the shared profile, one direction).
-  let __marcusRead = '';
-  async function loadMarcusRead() {
-    try {
-      const r = await fetch('/api/notebook/mike', { credentials:'include' });
-      if (!r.ok) return;
-      const { notebook } = await r.json();
-      if (!notebook) return;
-      const bits = [];
-      if (notebook.running_narrative) bits.push('His running read of them: ' + notebook.running_narrative);
-      const pats = notebook.patterns;
-      if (Array.isArray(pats) && pats.length) { const last = pats[pats.length-1]; bits.push('A pattern he flagged: ' + (typeof last === 'object' ? last.text : last)); }
-      const cons = notebook.concerns;
-      if (Array.isArray(cons) && cons.length) bits.push('A concern of his: ' + cons[cons.length-1]);
-      if (bits.length) __marcusRead = '\n\nMARCUS’S READ — Marcus, the coach, has been working with this trader. Reference what he has seen, by name, when it fits the moment ("This is the pattern Marcus flagged."). Do not invent beyond this:\n' + bits.join('\n');
-    } catch (_) {}
-  }
+  // Iris’s persona and Marcus’s notebook are now fetched server-side in /api/chat.
+  // The client sends mentor:’ashley’ and a compact session_context only.
 
   const STATES = {
     1: { name:'Stable',     dot:'var(--iris)',  desc:'The account is in order.', present:false },
@@ -170,6 +142,38 @@ VOICE: spare, exact, unhurried. Authority without aggression. Never filler. Neve
 
   const root = document.getElementById('chamber');
 
+  // Guardian polling — refreshes account state every 30s when active (level ≥3),
+  // 60s when calm. Matches the EA's 60-second push cadence.
+  let _pollTimer = null;
+  let _lastLevel = null;
+  let _chatActive = false; // do not re-render while a chat session is open
+
+  async function fetchGuardianState() {
+    try {
+      const r = await fetch('/api/guardian', { credentials:'include' });
+      if (!r.ok) return null;
+      const d = await r.json();
+      return d.guardian || null;
+    } catch (_) { return null; }
+  }
+
+  function scheduleNextPoll(level) {
+    clearTimeout(_pollTimer);
+    const interval = (level >= 3) ? 30000 : 60000;
+    _pollTimer = setTimeout(async () => {
+      const g = await fetchGuardianState();
+      if (!g) return scheduleNextPoll(_lastLevel || 1);
+      const newLevel = lockLevel(g);
+      if (!_chatActive && newLevel !== _lastLevel) {
+        _lastLevel = newLevel;
+        render(g);
+      } else {
+        _lastLevel = newLevel;
+      }
+      scheduleNextPoll(newLevel);
+    }, interval);
+  }
+
   async function boot() {
     let res;
     try { res = await fetch('/api/guardian', { credentials:'include' }); }
@@ -186,15 +190,15 @@ VOICE: spare, exact, unhurried. Authority without aggression. Never filler. Neve
     try { data = await res.json(); } catch (_) {}
     const g = data.guardian;
 
-    await loadMarcusRead(); // best-effort; lets Iris reference Marcus's read during an intervention
-
     if (!g) {
       root.innerHTML = '<div class="gate"><h1>Iris is here. There is nothing to watch yet.</h1>'
         + '<p>Connect a trading account and Iris begins watching it — drawdown, losing streaks, the moments discipline slips. She stays silent until something needs her.</p>'
         + '<a href="/integrations.html">Connect an account →</a></div>';
       return;
     }
+    _lastLevel = lockLevel(g);
     render(g);
+    scheduleNextPoll(_lastLevel);
   }
 
   function render(g) {
@@ -239,6 +243,7 @@ VOICE: spare, exact, unhurried. Authority without aggression. Never filler. Neve
   }
 
   function wireChat(opening) {
+    _chatActive = true; // pause polling re-renders while Iris is mid-conversation
     const thread = document.getElementById('thread');
     const input  = document.getElementById('iris-input');
     const send   = document.getElementById('iris-send');
@@ -271,7 +276,7 @@ VOICE: spare, exact, unhurried. Authority without aggression. Never filler. Neve
       try {
         const r = await fetch('/api/chat', {
           method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
-          body: JSON.stringify({ mentor:'ashley', messages: history.slice(-16), systemPrompt: IRIS_GUARDIAN + __marcusRead }),
+          body: JSON.stringify({ mentor:'ashley', messages: history.slice(-16) }),
         });
         document.getElementById('typing')?.remove();
         if (r.status === 401) { window.location.href = '/auth.html?next=' + encodeURIComponent('/chamber'); return; }

@@ -188,6 +188,26 @@
     @keyframes fadeOut { to { opacity: 0; transform: translateY(-12px); } }
     @keyframes fadeIn  { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
+    /* ── PHASE 3: SIGNUP ── */
+    #phase-signup { width: 100%; max-width: 420px; display: none; text-align: center; }
+    .signup-field {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 14px 16px;
+      font-family: var(--sans); font-size: 0.9rem; outline: none;
+      border-radius: 2px; margin-bottom: 12px; display: block;
+      transition: border-color 0.2s;
+    }
+    .signup-field:focus { border-color: rgba(201,168,92,0.5); }
+    .signup-field::placeholder { color: var(--dim); }
+    #signup-error {
+      display: none; font-family: var(--mono); font-size: 0.62rem;
+      color: #e05050; letter-spacing: 0.08em; margin-bottom: 12px;
+    }
+    .signup-alt {
+      margin-top: 20px; font-size: 0.78rem; color: var(--dim);
+    }
+    .signup-alt a { color: var(--gold); text-decoration: none; }
+
     @media (max-width: 600px) {
       #top-bar { padding: 16px 20px; }
       .tracks-grid { grid-template-columns: 1fr; }
@@ -280,43 +300,74 @@
     </div>
   </div>
 
+  <!-- PHASE 3: ACCOUNT CREATION (shown when user is not yet signed in) -->
+  <div id="phase-signup">
+    <p class="intro-eyebrow" style="margin-bottom:20px;">One last step</p>
+    <h2 class="tracks-headline" style="font-size:clamp(1.5rem,4vw,2.2rem);margin-bottom:12px;">Create your account</h2>
+    <p id="signup-track-confirm" style="font-size:0.85rem;color:var(--muted);margin-bottom:32px;"></p>
+    <form id="signup-form" onsubmit="submitSignup(event)" style="text-align:left;">
+      <input type="email"    id="signup-email"    class="signup-field" placeholder="Email address"          required autocomplete="email"/>
+      <input type="password" id="signup-password" class="signup-field" placeholder="Password (8+ characters)" required autocomplete="new-password"/>
+      <p id="signup-error"></p>
+      <button type="submit" class="tracks-begin active" id="signup-btn" style="width:100%;padding:15px 0;">
+        Create account and begin
+      </button>
+    </form>
+    <p class="signup-alt">Already have an account? <a href="/auth.html">Sign in →</a></p>
+  </div>
+
 </main>
 
 <script>
-const SUPABASE_URL  = '%%SUPABASE_URL%%';
-const SUPABASE_ANON = '%%SUPABASE_ANON_KEY%%';
+// Supabase credentials — injected server-side; never stored in source
+const SUPABASE_URL  = window.__EK_SUPABASE_URL__;
+const SUPABASE_ANON = window.__EK_SUPABASE_ANON__;
 
 let selectedTrack   = null;
 let selectedFirst   = null;
+let selectedTrackNum = '1';
 let onbAccess       = 'free'; // 'free' = Track 1 only, 'full' = all tracks
 let onbAccessKnown  = false;  // true once the server confirms entitlement
+let userAuthed      = false;  // true if already signed in
 const GATED_TRACK_IDS = new Set(['technical','risk','strategy','psychology','performance']);
+const TRACK_NUM_MAP = { foundations:'1', technical:'2', risk:'3', strategy:'4', psychology:'5', performance:'6' };
 
 // ── Already enrolled? Skip straight to academy ─────────────────────────
 if (localStorage.getItem('ek_academy_track')) {
   window.location.replace('/academy.html');
 }
 
-// Cross-device restore + entitlement: check DB for existing enrollment / plan
+// Check auth status + enrollment in parallel
 (async () => {
   try {
-    const r = await fetch('/api/academy/progress');
-    if (!r.ok) return;
-    const data = await r.json();
-    if (data.access) { onbAccess = data.access; onbAccessKnown = true; markGatedTracks(); }
-    if (!data.track) return;
-    localStorage.setItem('ek_academy_track', data.track);
-    if (data.progress && typeof data.progress === 'object') {
-      for (const [key, val] of Object.entries(data.progress)) {
-        if (val.started)   localStorage.setItem('ek_academy_' + key + '_started',   val.started);
-        if (val.completed) localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
+    const [authRes, progressRes] = await Promise.all([
+      fetch('/api/auth/status', { credentials:'include' }),
+      fetch('/api/academy/progress', { credentials:'include' }),
+    ]);
+
+    if (authRes.ok) {
+      const authData = await authRes.json();
+      userAuthed = !!authData.authenticated;
+    }
+
+    if (progressRes.ok) {
+      const data = await progressRes.json();
+      if (data.access) { onbAccess = data.access; onbAccessKnown = true; markGatedTracks(); }
+      if (data.track) {
+        localStorage.setItem('ek_academy_track', data.track);
+        if (data.progress && typeof data.progress === 'object') {
+          for (const [key, val] of Object.entries(data.progress)) {
+            if (val.started)   localStorage.setItem('ek_academy_' + key + '_started',   val.started);
+            if (val.completed) localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
+          }
+        }
+        window.location.replace('/academy.html');
       }
     }
-    window.location.replace('/academy.html');
   } catch (_) {}
 })();
 
-// Free users: dim the gated track cards and add a lock note so the funnel reads clearly.
+// Free users: dim gated track cards and add a lock note.
 function markGatedTracks() {
   if (onbAccess === 'full') return;
   document.querySelectorAll('.track-card').forEach(card => {
@@ -334,58 +385,128 @@ function markGatedTracks() {
 }
 
 // ── PHASE TRANSITIONS ──────────────────────────────────────────────────
+function fadeOut(el, cb) {
+  el.classList.add('fade-out');
+  setTimeout(() => { el.style.display = 'none'; if (cb) cb(); }, 380);
+}
+function fadeIn(el) {
+  el.style.display = 'block';
+  el.classList.add('fade-in');
+}
+
 function showTracks() {
-  const intro  = document.getElementById('phase-intro');
-  const tracks = document.getElementById('phase-tracks');
-  intro.classList.add('fade-out');
-  setTimeout(() => {
-    intro.style.display  = 'none';
-    tracks.style.display = 'block';
-    tracks.classList.add('fade-in');
-  }, 380);
+  fadeOut(document.getElementById('phase-intro'), () => fadeIn(document.getElementById('phase-tracks')));
+}
+
+function showSignup(trackLabel) {
+  document.getElementById('signup-track-confirm').textContent =
+    'You chose: ' + trackLabel + '. Track 1 is free — you can begin right now.';
+  fadeOut(document.getElementById('phase-tracks'), () => fadeIn(document.getElementById('phase-signup')));
+  document.getElementById('signup-email')?.focus();
 }
 
 // ── TRACK SELECTION ────────────────────────────────────────────────────
 function selectTrack(card) {
   document.querySelectorAll('.track-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
-  selectedTrack = card.dataset.track;
-  selectedFirst = card.dataset.first;
-  const btn = document.getElementById('begin-btn');
-  btn.classList.add('active');
+  selectedTrack    = card.dataset.track;
+  selectedFirst    = card.dataset.first;
+  selectedTrackNum = TRACK_NUM_MAP[selectedTrack] || '1';
+  document.getElementById('begin-btn').classList.add('active');
 }
 
-// ── BEGIN ACADEMY ──────────────────────────────────────────────────────
+// ── BEGIN ACADEMY — route to signup or direct enroll ──────────────────
 async function beginAcademy() {
   if (!selectedTrack) return;
-  const btn = document.getElementById('begin-btn');
-  btn.textContent = 'Enrolling...';
-  btn.style.pointerEvents = 'none';
 
-  // Persist enrollment
-  localStorage.setItem('ek_academy_track', selectedTrack);
-  localStorage.setItem('ek_academy_first_module', selectedFirst);
-  localStorage.setItem('ek_academy_enrolled_at', Date.now());
-
-  // Best-effort server sync (uses HttpOnly cookie auth — reliable even after JS session expiry)
-  try {
-    await fetch('/api/academy/enroll', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ track: selectedTrack }),
-    });
-  } catch (_) {}
-
-  // Confirmed-free user who chose a gated track: send them to pricing rather than
-  // into a module the server would bounce. If entitlement is unknown (fetch failed),
-  // fall through and let the server gate decide — never block a possibly-paid user.
+  // Confirmed-free user who chose a gated track → pricing first
   if (onbAccessKnown && onbAccess !== 'full' && GATED_TRACK_IDS.has(selectedTrack)) {
     window.location.href = '/pricing.html?from=academy&track=' + encodeURIComponent(selectedTrack);
     return;
   }
 
-  // Go to first module of selected track
+  // Already signed in → enroll and go
+  if (userAuthed) {
+    return enrollAndGo();
+  }
+
+  // Not signed in → show signup form
+  const TRACK_NAMES = {
+    foundations: 'Market Foundations', technical: 'Technical Analysis',
+    risk: 'Risk Management', strategy: 'Strategy Development',
+    psychology: 'Trading Psychology', performance: 'Performance OS',
+  };
+  showSignup(TRACK_NAMES[selectedTrack] || selectedTrack);
+}
+
+// Called when user is already authenticated
+async function enrollAndGo() {
+  const btn = document.getElementById('begin-btn');
+  if (btn) { btn.textContent = 'Enrolling...'; btn.style.pointerEvents = 'none'; }
+  localStorage.setItem('ek_academy_track',        selectedTrack);
+  localStorage.setItem('ek_academy_first_module', selectedFirst);
+  localStorage.setItem('ek_academy_enrolled_at',  Date.now());
+  try {
+    await fetch('/api/academy/enroll', {
+      method: 'POST', credentials:'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ track: selectedTrack }),
+    });
+  } catch (_) {}
   window.location.href = '/study.html?module=' + selectedFirst + '&track=' + selectedTrack + '&first=1';
+}
+
+// ── SIGNUP FORM SUBMIT ─────────────────────────────────────────────────
+async function submitSignup(e) {
+  e.preventDefault();
+  const email    = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const btn      = document.getElementById('signup-btn');
+  const errEl    = document.getElementById('signup-error');
+
+  errEl.style.display = 'none';
+  btn.textContent = 'Creating account…';
+  btn.style.pointerEvents = 'none';
+
+  try {
+    // 1. Create Academy account
+    const regRes = await fetch('/api/academy/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, track: selectedTrackNum }),
+    });
+    const regData = await regRes.json();
+    if (!regRes.ok) throw new Error(regData.error || 'Registration failed. Please try again.');
+
+    // 2. Sign in to get access token (direct Supabase auth REST)
+    const signInRes = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ email, password }),
+    });
+    const signInData = await signInRes.json();
+    if (!signInRes.ok) throw new Error(signInData.error_description || 'Sign-in failed. Please try again.');
+
+    // 3. Establish server-side HttpOnly session cookie
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_token: signInData.access_token }),
+    });
+
+    // 4. Persist enrollment in localStorage then navigate
+    localStorage.setItem('ek_academy_track',        selectedTrack);
+    localStorage.setItem('ek_academy_first_module', selectedFirst);
+    localStorage.setItem('ek_academy_enrolled_at',  Date.now());
+
+    window.location.href = '/study.html?module=' + selectedFirst + '&track=' + selectedTrack + '&first=1';
+
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+    btn.textContent = 'Create account and begin';
+    btn.style.pointerEvents = 'all';
+  }
 }
 </script>
 </body>

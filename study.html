@@ -918,10 +918,11 @@ async function callCompanion(userMsg) {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      mentor:       'study_companion',
+      mentor:          'study_companion',
       messages,
-      systemPrompt: sysPrompt,
-      is_opener:    !userMsg,
+      module_key:      moduleKey,
+      session_context: buildTheoMemory(),
+      is_opener:       !userMsg,
     }),
   });
 
