@@ -57,8 +57,11 @@
       font-family: var(--sans);
       font-weight: 300;
       line-height: 1.7;
-      cursor: none;
       overflow-x: hidden;
+    }
+
+    @media (pointer: fine) {
+      body { cursor: none; }
     }
 
     /* ── CUSTOM CURSOR ─────────────────────────────────────────── */
@@ -265,7 +268,8 @@
       font-family: var(--mono);
       font-size: 0.6rem;
       letter-spacing: 0.25em;
-      padding-left: 0.25em;
+      /* No padding-left — left-only padding shifts the optical center rightward
+         while flexbox centers by box edge, making text appear off-axis from the line */
       text-transform: uppercase;
       color: var(--dim);
     }

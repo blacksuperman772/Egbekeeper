@@ -3732,6 +3732,7 @@ async function hydrateProfileFromServer() {
     if (profile.guardian_level && !EK.str('guardian'))         EK.setStr('guardian',         profile.guardian_level);
     if (profile.guardian_level) applyGuardianBanner(profile.guardian_level);
     if (profile.plan) window.__ek_subscription__ = profile.plan;
+    if (profile.last_paid_plan) window.__ek_last_paid_plan__ = profile.last_paid_plan;
     // Compute and display relationship day counter
     if (profile.member_since) {
       const dayN = Math.max(1, Math.floor((Date.now() - new Date(profile.member_since).getTime()) / 86400000) + 1);
@@ -4467,6 +4468,19 @@ function buildSessionContext() {
     ? `Recent milestone: "${newMilestones[0].label}" — acknowledge only if the conversation naturally goes there.`
     : '';
 
+  // Downgrade acknowledgment — fires once per browser session after a cancellation.
+  // Set the ack here so subsequent messages in the same session don't repeat it.
+  const PLAN_LABELS = { starter: 'Resident', pro: 'Fellow', professional: 'Private Office', institutional: 'Institution' };
+  const lastPaid = window.__ek_last_paid_plan__;
+  const currentPlan = window.__ek_subscription__ || 'free';
+  const downgradeCtx = (lastPaid && currentPlan === 'free' && !sessionStorage.getItem('ek_downgrade_ack'))
+    ? (() => {
+        sessionStorage.setItem('ek_downgrade_ack', '1');
+        const planName = PLAN_LABELS[lastPaid] || lastPaid;
+        return `PRIVATE: This person recently came off the ${planName} plan and is now on the free tier. Do not lecture or push them to upgrade. One brief, warm acknowledgment — only if it fits naturally in the opening. Then move on.`;
+      })()
+    : '';
+
   return [
     `Visits: ${visits}. ${maturity}`,
     relationshipAge,
@@ -4476,6 +4490,7 @@ function buildSessionContext() {
     reviewCtx,
     topicCtx,
     milestoneCtx,
+    downgradeCtx,
   ].filter(Boolean).join('\n');
 }
 

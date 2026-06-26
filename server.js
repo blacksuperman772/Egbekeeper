@@ -1481,7 +1481,7 @@ app.post('/api/academy/progress', requireAuthApi, apiLimiter, async (req, res) =
 app.get('/api/profile', requireAuthApi, apiLimiter, async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('user_profiles')
-    .select('mentor, private_notes, north_star, living_identity, guardian_level, subscription_status, trader_stage, current_identity, target_identity, readiness_score, assessment_complete')
+    .select('mentor, private_notes, north_star, living_identity, guardian_level, subscription_status, last_paid_plan, trader_stage, current_identity, target_identity, readiness_score, assessment_complete')
     .eq('id', req.user.id)
     .maybeSingle();
 
@@ -1498,6 +1498,7 @@ app.get('/api/profile', requireAuthApi, apiLimiter, async (req, res) => {
       living_identity:     data.living_identity       || null,
       guardian_level:      data.guardian_level        || 'warn',
       plan:                data.subscription_status   || 'free',
+      last_paid_plan:      data.last_paid_plan        || null,
       trader_stage:        data.trader_stage          || 'explorer',
       current_identity:    data.current_identity      || null,
       target_identity:     data.target_identity       || null,
@@ -3456,15 +3457,26 @@ app.post(
 
       if (ACTIVATE_EVENTS.includes(event.type)) {
         if (userId && plan && VALID_PLANS.includes(plan)) {
+          // Clear last_paid_plan when they re-subscribe so the downgrade
+          // message doesn't fire again after they've already re-activated
           await supabaseAdmin.from('user_profiles')
-            .update({ subscription_status: plan })
+            .update({ subscription_status: plan, last_paid_plan: null })
             .eq('id', userId);
         }
       } else if (CANCEL_EVENTS.includes(event.type)) {
         const cancelUserId = userId || event.data?.user_id;
         if (cancelUserId && UUID_RE.test(cancelUserId)) {
+          // Capture the plan they're leaving before overwriting it
+          const { data: prevProfile } = await supabaseAdmin.from('user_profiles')
+            .select('subscription_status')
+            .eq('id', cancelUserId)
+            .maybeSingle();
+          const prevPlan = prevProfile?.subscription_status;
           await supabaseAdmin.from('user_profiles')
-            .update({ subscription_status: 'free' })
+            .update({
+              subscription_status: 'free',
+              last_paid_plan: (prevPlan && prevPlan !== 'free') ? prevPlan : null,
+            })
             .eq('id', cancelUserId);
           await supabaseAdmin.from('subscriptions')
             .update({ status: 'canceled' })
