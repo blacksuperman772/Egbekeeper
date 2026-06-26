@@ -3401,7 +3401,10 @@ app.post(
 
     try {
       // Standard Webhooks verification: HMAC-SHA256 over "id.timestamp.body"
-      const secretRaw = (process.env.POLAR_WEBHOOK_SECRET || '').replace(/^whsec_/, '');
+      // Polar secret format: polar_whs_<base64> — strip any known prefix before decoding
+      const secretRaw = (process.env.POLAR_WEBHOOK_SECRET || '')
+        .replace(/^polar_whs_/, '')
+        .replace(/^whsec_/, '');
       const secret    = Buffer.from(secretRaw, 'base64');
       const signed    = `${webhookId}.${webhookTimestamp}.${req.body.toString()}`;
       const computed  = crypto.createHmac('sha256', secret).update(signed).digest('base64');
@@ -3488,6 +3491,46 @@ app.post(
     }
   }
 );
+
+// ── Billing — cancel subscription ────────────────────────────────────────────
+app.delete('/api/billing/cancel', requireAuthApi, async (req, res) => {
+  try {
+    const { data: sub } = await supabaseAdmin
+      .from('subscriptions')
+      .select('payment_subscription_id, status')
+      .eq('user_id', req.user.id)
+      .maybeSingle();
+
+    if (!sub?.payment_subscription_id || sub.status === 'canceled') {
+      return res.status(400).json({ error: 'No active subscription found' });
+    }
+
+    const polarKey = process.env.POLAR_ACCESS_TOKEN;
+    if (!polarKey) return res.status(501).json({ error: 'Billing not configured' });
+
+    const upstream = await fetch(
+      `https://api.polar.sh/v1/subscriptions/${encodeURIComponent(sub.payment_subscription_id)}/`,
+      { method: 'DELETE', headers: { Authorization: `Bearer ${polarKey}` } }
+    );
+
+    if (!upstream.ok && upstream.status !== 404) {
+      const err = await upstream.json().catch(() => ({}));
+      console.error('Polar cancel error:', upstream.status, err);
+      return res.status(502).json({ error: 'Cancellation failed — contact support' });
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Billing cancel error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ── Billing — customer portal redirect ────────────────────────────────────────
+// Redirects authenticated users to Polar's self-serve portal (invoices, payment method)
+app.get('/api/billing/portal', requireAuthApi, (req, res) => {
+  res.json({ url: 'https://polar.sh/purchases' });
+});
 
 // ── Director AI — admin-only orchestration endpoint ───────────────────────────
 const DIRECTOR_SYSTEM_PROMPT = `You are the Director of EdgeKeeper's internal AI team. EdgeKeeper is a trading psychology AI mentorship platform for retail and prop traders. Features: AI mentors Marcus (analytical) and Iris (empathetic), voice sessions, trading journal, rules engine, Guardian Layer (live account monitoring), The Vault (intervention archive), and proactive mentor outreach. Stack: Node.js/Express, Supabase, OpenAI GPT-4o-mini, ElevenLabs voice, Polar.sh billing, Resend email.
@@ -4274,9 +4317,9 @@ if (require.main === module) {
     warnings.push('SUPABASE_URL not set — auth and data will fail');
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY.startsWith('placeholder'))
     warnings.push('SUPABASE_SERVICE_ROLE_KEY not set — server-side auth will fail');
-  if (!process.env.POLAR_ACCESS_TOKEN || process.env.POLAR_ACCESS_TOKEN.startsWith('polar_at_xxx'))
+  if (!process.env.POLAR_ACCESS_TOKEN || /^polar_(at|oat)_xxx/.test(process.env.POLAR_ACCESS_TOKEN))
     warnings.push('POLAR_ACCESS_TOKEN not set — payments will fail');
-  if (!process.env.POLAR_WEBHOOK_SECRET || process.env.POLAR_WEBHOOK_SECRET.startsWith('whsec_xxx'))
+  if (!process.env.POLAR_WEBHOOK_SECRET || process.env.POLAR_WEBHOOK_SECRET.includes('xxx'))
     warnings.push('POLAR_WEBHOOK_SECRET not set — webhook verification will fail');
   if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.startsWith('re_xxx'))
     warnings.push('RESEND_API_KEY not set — transactional emails will be skipped');

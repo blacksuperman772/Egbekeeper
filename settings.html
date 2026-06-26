@@ -158,8 +158,16 @@
       border: 1px solid var(--border);
       padding: 9px 18px;
       transition: color .2s, border-color .2s;
+      cursor: pointer;
+      background: none;
     }
     .plan-cta:hover { color: var(--text); border-color: var(--muted); }
+    .plan-cta.danger-cta {
+      color: rgba(180,60,60,0.55);
+      border-color: rgba(180,60,60,0.18);
+    }
+    .plan-cta.danger-cta:hover { color: rgba(180,60,60,0.9); border-color: rgba(180,60,60,0.45); }
+    .billing-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
     /* ── FORM FIELDS ── */
     .field { margin-bottom: 24px; }
@@ -369,7 +377,12 @@
         <span class="plan-price-display" id="plan-price">—</span>
         <span class="plan-badge-display" id="plan-badge">Active</span>
       </div>
-      <a href="/pricing.html" class="plan-cta">View Plans &amp; Upgrade</a>
+      <div class="billing-actions">
+        <a href="/pricing.html" class="plan-cta" id="billing-upgrade-btn">View Plans &amp; Upgrade</a>
+        <button class="plan-cta" id="billing-portal-btn" onclick="openBillingPortal()" style="display:none">Invoices &amp; Payment</button>
+        <button class="plan-cta danger-cta" id="billing-cancel-btn" onclick="cancelPlan()" style="display:none">Cancel Plan</button>
+      </div>
+      <div id="billing-status" class="status-msg" style="margin-top:12px"></div>
     </div>
 
     <!-- PROFILE -->
@@ -499,6 +512,11 @@
       document.getElementById('plan-badge').textContent =
         settings.subscription_status === 'free' ? 'Free' : 'Active';
 
+      const isPaid = settings.subscription_status && settings.subscription_status !== 'free';
+      document.getElementById('billing-upgrade-btn').textContent = isPaid ? 'Change Plan' : 'View Plans & Upgrade';
+      document.getElementById('billing-portal-btn').style.display = isPaid ? '' : 'none';
+      document.getElementById('billing-cancel-btn').style.display = isPaid ? '' : 'none';
+
       document.getElementById('display-name').value     = settings.display_name || '';
       document.getElementById('mentor-select').value    = settings.mentor || 'mike';
       document.getElementById('timezone-select').value  = settings.timezone || 'UTC';
@@ -593,6 +611,45 @@
       setStatus('security-status', 'Reset link sent to ' + currentEmail, 'ok');
     } catch (e) {
       setStatus('security-status', 'Could not send reset email. Please try again.', 'err');
+    }
+  }
+
+  async function openBillingPortal() {
+    const res = await fetch('/api/billing/portal', { credentials: 'include' }).catch(() => null);
+    if (res?.ok) {
+      const { url } = await res.json();
+      window.open(url, '_blank', 'noopener');
+    }
+  }
+
+  async function cancelPlan() {
+    const confirmed = window.confirm(
+      'Cancel your plan? You keep access until the end of your current billing period, then your account moves to Free Trial.'
+    );
+    if (!confirmed) return;
+
+    const btn = document.getElementById('billing-cancel-btn');
+    btn.disabled = true;
+    btn.textContent = 'Cancelling…';
+    setStatus('billing-status', 'Cancelling your plan…', '');
+
+    try {
+      const res = await fetch('/api/billing/cancel', { method: 'DELETE', credentials: 'include' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setStatus('billing-status', 'Plan cancelled. Access continues until your billing period ends.', 'success');
+        btn.style.display = 'none';
+        document.getElementById('billing-portal-btn').style.display = 'none';
+        document.getElementById('billing-upgrade-btn').textContent = 'View Plans & Upgrade';
+      } else {
+        setStatus('billing-status', data.error || 'Cancellation failed — contact support.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Cancel Plan';
+      }
+    } catch {
+      setStatus('billing-status', 'Network error — try again.', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Cancel Plan';
     }
   }
 
