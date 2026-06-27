@@ -532,6 +532,12 @@
 
     <!-- SIGN-UP PANEL — shown when arriving from pricing with ?plan= -->
     <div id="signup-state" style="display:none;">
+      <!-- Plan context strip — populated by JS -->
+      <div id="plan-context" style="display:none;margin-bottom:24px;padding:14px 18px;border:1px solid rgba(184,160,106,0.22);background:rgba(184,160,106,0.04);">
+        <div style="font-family:var(--mono);font-size:0.56rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:4px;">Selected plan</div>
+        <div id="plan-context-name" style="font-family:var(--serif);font-size:1.1rem;color:var(--bright);"></div>
+        <div id="plan-context-price" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);margin-top:2px;"></div>
+      </div>
       <div class="form-inner">
         <div class="field">
           <label for="su-email">Email</label>
@@ -541,7 +547,7 @@
           <label for="su-password">Password</label>
           <input type="password" id="su-password" autocomplete="new-password" placeholder="8 characters minimum" required />
         </div>
-        <button class="btn-primary" id="su-btn" onclick="handleSignUp()">Create account &amp; continue</button>
+        <button class="btn-primary" id="su-btn" onclick="handleSignUp()">Create account &amp; continue to payment</button>
       </div>
       <p style="text-align:center;margin-top:20px;font-size:0.75rem;color:var(--muted);">
         Already have an account?
@@ -642,6 +648,20 @@
     }
     if (_isPurchaseMode) {
       showSignUp();
+      const PLAN_META = {
+        starter:      { name: 'Resident',       price: '$99 / month' },
+        pro:          { name: 'Fellow',          price: '$249 / month' },
+        professional: { name: 'Private Office',  price: '$599 / month' },
+      };
+      const meta = PLAN_META[_plan];
+      if (meta) {
+        const ctx = document.getElementById('plan-context');
+        if (ctx) {
+          document.getElementById('plan-context-name').textContent  = meta.name;
+          document.getElementById('plan-context-price').textContent = meta.price;
+          ctx.style.display = '';
+        }
+      }
     }
   });
 

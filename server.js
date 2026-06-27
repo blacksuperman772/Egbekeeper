@@ -3410,7 +3410,22 @@ app.get('/billing/success', requireAuthPage, async (req, res) => {
     console.error('Billing success callback error:', err.message);
   }
 
-  res.redirect(paymentSucceeded ? '/workspace.html?subscribed=1' : '/workspace.html?payment=failed');
+  if (!paymentSucceeded) {
+    return res.redirect('/workspace.html?payment=failed');
+  }
+
+  // Route new paid users to intake before workspace
+  try {
+    const { data: profile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('onboarding_complete')
+      .eq('id', req.user.id)
+      .maybeSingle();
+    if (profile?.onboarding_complete) {
+      return res.redirect('/workspace.html?subscribed=1');
+    }
+  } catch (_) {}
+  res.redirect('/onboarding.html?subscribed=1');
 });
 
 // ── Billing — Polar.sh webhook (Standard Webhooks / Svix format) ──────────────
