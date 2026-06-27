@@ -38,27 +38,32 @@
       font-weight: 300;
       line-height: 1.8;
       overflow-x: hidden;
-      cursor: none;
     }
 
     /* ── CURSOR ── */
-    #cursor {
-      position: fixed; width: 7px; height: 7px;
-      background: var(--mentor-gold); border-radius: 50%;
-      pointer-events: none; z-index: 9999;
-      transform: translate(-50%,-50%);
-    }
-    #cursor-ring {
-      position: fixed; width: 32px; height: 32px;
-      border: 1px solid var(--mentor-gold-dim); border-radius: 50%;
-      pointer-events: none; z-index: 9998;
-      transform: translate(-50%,-50%);
-      transition: left .1s ease, top .1s ease;
+    #cursor, #cursor-ring { display: none; }
+    @media (pointer: fine) {
+      body { cursor: none; }
+      #cursor {
+        display: block;
+        position: fixed; width: 7px; height: 7px;
+        background: var(--mentor-gold); border-radius: 50%;
+        pointer-events: none; z-index: 9999;
+        transform: translate(-50%,-50%);
+      }
+      #cursor-ring {
+        display: block;
+        position: fixed; width: 32px; height: 32px;
+        border: 1px solid var(--mentor-gold-dim); border-radius: 50%;
+        pointer-events: none; z-index: 9998;
+        transform: translate(-50%,-50%);
+        transition: left .1s ease, top .1s ease;
+      }
     }
 
     /* ── NAV ── */
     nav {
-      position: sticky; top: 0; height: 64px;
+      position: fixed; top: 0; left: 0; right: 0; height: 58px;
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 48px;
       border-bottom: 1px solid var(--border);
@@ -103,7 +108,7 @@
     .page-inner {
       max-width: 840px;
       margin: 0 auto;
-      padding: 80px 64px 160px;
+      padding: 116px 64px 160px;
     }
 
     /* ── PAGE HEADER ── */
@@ -373,7 +378,7 @@
 
 <!-- NAV -->
 <nav>
-  <a href="/workspace.html" class="nav-logo">Edge<span>K</span>eeper</a>
+  <a href="/workspace.html" class="nav-logo">Edge<span>Keeper</span></a>
   <ul class="nav-links">
     <li><a href="/workspace.html">Workspace</a></li>
     <li><a href="/integrations.html" class="active">Integrations</a></li>

@@ -14,7 +14,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&family=Manrope:wght@300;400;600&display=swap" rel="stylesheet" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -79,40 +79,28 @@
     /* ── NAV ── */
     nav {
       position: fixed; top: 0; left: 0; right: 0;
-      height: 64px;
+      height: 58px;
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 48px;
       z-index: 100;
       border-bottom: 1px solid transparent;
-      transition: background .4s, border-color .4s;
+      transition: background .5s, border-color .5s;
     }
     nav.scrolled {
-      background: rgba(7,5,14,0.96);
+      background: rgba(5,5,5,0.96);
       border-bottom-color: var(--border);
+      backdrop-filter: blur(14px);
     }
     .nav-logo {
-      font-family: var(--serif);
-      font-size: 1rem;
-      font-weight: 400;
-      letter-spacing: 0.22em;
-      padding-left: 0.22em;
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
       text-transform: uppercase;
       color: rgba(255,255,255,0.85);
       text-decoration: none;
     }
     .nav-logo span { color: var(--gold); }
-    .nav-links {
-      display: flex; align-items: center; gap: 36px;
-      list-style: none;
-    }
-    .nav-links a {
-      font-family: var(--mono);
-      font-size: 0.6rem; letter-spacing: 0.18em;
-      text-transform: uppercase; color: var(--text-secondary);
-      text-decoration: none; transition: color .3s;
-    }
-    .nav-links a:hover { color: var(--text-primary); }
-    .nav-links a.active { color: var(--gold); }
     .nav-cta {
       font-family: var(--mono); font-size: 0.62rem;
       letter-spacing: 0.16em; text-transform: uppercase;
@@ -432,10 +420,7 @@
 
 <!-- NAV -->
 <nav id="main-nav">
-  <a href="/edgekeeper.html" class="nav-logo">Edge<span>K</span>eeper</a>
-  <ul class="nav-links">
-    <li><a href="/my-academy" class="active">Curriculum</a></li>
-  </ul>
+  <a href="/edgekeeper.html" class="nav-logo">Edge<span>Keeper</span></a>
   <div class="nav-right">
     <a href="/workspace.html" class="nav-cta" id="nav-workspace-btn" style="display:none">Workspace</a>
     <a href="/settings.html" class="nav-avatar" id="nav-avatar" title="Account settings">
