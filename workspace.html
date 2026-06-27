@@ -2394,6 +2394,8 @@ function applyGuardianBanner(level) {
 
 let mentor = null;
 let msgQueue = [];
+let __ek_from_academy__ = false;
+let __ek_academy_context__ = '';
 
 
 // ── THEME ─────────────────────────────────────────────────────────────
@@ -3874,6 +3876,11 @@ async function hydrateProfileFromServer() {
       }
     }
 
+    // Flag Academy-only users (enrolled via Theo, never completed mentor assessment)
+    if (!profile.assessment_complete) {
+      __ek_from_academy__ = true;
+    }
+
     // Fire milestone check (non-blocking)
     checkNewMilestones();
   } catch (_) { /* non-fatal — local state still works */ }
@@ -3942,6 +3949,17 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Resolve user identity first — sets __ekUserId so all EK reads/writes are user-scoped
   await hydrateProfileFromServer();
 
+  // If this user came from Theo's Academy, fetch their progress so Marcus has context
+  if (__ek_from_academy__) {
+    try {
+      const apRes = await fetch('/api/academy/progress');
+      if (apRes.ok) {
+        const apData = await apRes.json();
+        __ek_academy_context__ = buildAcademyContext(apData);
+      }
+    } catch (_) {}
+  }
+
   // After identity is resolved, move the pending academy topic into the scoped key
   const _pendingTopic = localStorage.getItem('ek__academy_topic_pending');
   if (_pendingTopic) {
@@ -4003,7 +4021,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       || 'foundation';
 
     const mentorKey = mentor?.key || 'mike';
-    const pool      = MENTOR_INTROS[mentorKey] || MENTOR_INTROS.mike;
+    const pool      = __ek_from_academy__ ? ACADEMY_ARRIVAL_INTROS : (MENTOR_INTROS[mentorKey] || MENTOR_INTROS.mike);
     const firstScript = pool[Math.floor(Math.random() * pool.length)];
 
     await renderMentorIntro(firstScript);
@@ -4567,8 +4585,64 @@ function buildSessionContext() {
     topicCtx,
     milestoneCtx,
     downgradeCtx,
+    __ek_academy_context__,
   ].filter(Boolean).join('\n');
 }
+
+function buildAcademyContext(data) {
+  if (!data) return '';
+  const progress = data.progress || {};
+  const completedModules = Object.keys(progress).filter(k => progress[k]?.completed);
+  const count = completedModules.length;
+
+  const TRACK_LABELS = {
+    track_01: 'Market Foundations', track_02: 'Technical Analysis',
+    track_03: 'Risk Management',    track_04: 'Strategy Development',
+    track_05: 'Trading Psychology', track_06: 'Performance OS',
+  };
+  const MODULE_TRACK = {
+    what_are_markets:'track_01',asset_classes:'track_01',how_orders_work:'track_01',
+    reading_a_chart:'track_01',candlestick_basics:'track_01',market_sessions:'track_01',
+    market_participants:'track_01',paper_trading:'track_01',choosing_a_broker:'track_01',what_risk_means:'track_01',
+    support_resistance:'track_02',trend_identification:'track_02',moving_averages:'track_02',
+    volume_basics:'track_02',rsi_macd:'track_02',chart_patterns:'track_02',
+    multi_timeframe:'track_02',entry_exit_mechanics:'track_02',setting_stops_targets:'track_02',
+    position_sizing:'track_03',one_percent_rule:'track_03',risk_reward_ratio:'track_03',
+    daily_loss_limits:'track_03',drawdown_management:'track_03',account_preservation:'track_03',
+    compounding_principles:'track_03',when_to_stop:'track_03',
+    what_is_edge:'track_04',backtesting_basics:'track_04',journaling_for_refinement:'track_04',
+    building_your_rulebook:'track_04',mechanical_vs_discretionary:'track_04',your_trading_system:'track_04',
+    what_is_trading:'track_05',risk_position_sizing:'track_05',market_structure:'track_05',
+    psychology_basics:'track_05',trading_journal_setup:'track_05',trading_plan:'track_05',
+    discipline_process:'track_05',trade_management:'track_05',weekly_review:'track_05',
+    advanced_psychology:'track_05',consistency:'track_05',drawdown_recovery:'track_05',review_system:'track_05',
+    behavioral_analytics:'track_06',pattern_recognition_self:'track_06',scaling_responsibly:'track_06',
+    sustained_performance:'track_06',mentor_candidate:'track_06',
+  };
+  const TRACK_TOTALS = Object.values(MODULE_TRACK).reduce((acc, t) => { acc[t] = (acc[t] || 0) + 1; return acc; }, {});
+
+  if (count === 0) {
+    return 'ACADEMY CONTEXT: This person is enrolled in Theo\'s Academy but has not completed any modules yet. They are starting fresh with you — no Academy foundation established.';
+  }
+
+  const trackCounts = {};
+  completedModules.forEach(k => { const t = MODULE_TRACK[k]; if (t) trackCounts[t] = (trackCounts[t] || 0) + 1; });
+  const certified = Object.keys(trackCounts).filter(t => trackCounts[t] >= (TRACK_TOTALS[t] || 99)).map(t => TRACK_LABELS[t]);
+  const active    = [...new Set(completedModules.map(k => MODULE_TRACK[k]).filter(Boolean))].map(t => TRACK_LABELS[t] || t);
+
+  let ctx = `ACADEMY CONTEXT: This person studied with Theo in the Academy before coming to you. Completed ${count} module${count !== 1 ? 's' : ''}.`;
+  if (certified.length)  ctx += ` Certified: ${certified.join(', ')}.`;
+  else if (active.length) ctx += ` Studied: ${active.join(', ')}.`;
+  ctx += ' Build on what Theo taught. Do not re-teach covered fundamentals. Focus on their actual trading practice, not theory.';
+  return ctx;
+}
+
+const ACADEMY_ARRIVAL_INTROS = [
+  "Theo told me you'd find your way here eventually. That's not a guess — it's how this works. You've covered the ground with him. What I do from here is different: less classroom, more coaching. Tell me where you are with your actual trading right now.",
+  "So you've been in the Academy with Theo. Good. You know the theory. What I'm interested in is the gap between what you know and what you actually do when a trade runs against you. That's my territory. Where are you with your trading right now?",
+  "Academy graduate. Theo teaches it clean. Now you're here, which means you're ready for the messier version — the part where you know exactly what you should do and still don't do it. Tell me: are you trading live, on paper, or not yet?",
+  "You come from Theo's side of this. That means you've got the foundation. What Marcus does is different — we work on what happens to everything you learned when real money and real pressure are involved. What does your trading situation actually look like right now?",
+];
 
 async function callOpenAI(messages) {
   const res = await fetch('/api/chat', {
