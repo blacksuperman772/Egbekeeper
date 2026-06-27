@@ -265,7 +265,7 @@ async function gateAcademyModule(req, res, next) {
     if (can(data, 'academy_paid')) return next();
   } catch (_) { /* on lookup failure, fail closed to the locked view */ }
   // Not entitled — send them back to the curriculum with the lock surfaced
-  return res.redirect('/academy.html?locked=' + encodeURIComponent(moduleKey));
+  return res.redirect('/my-academy?locked=' + encodeURIComponent(moduleKey));
 }
 
 // ── Admin middleware — uses is_admin boolean from DB, fails closed ────────────
@@ -344,6 +344,25 @@ app.get('/api/auth/status', (req, res) => {
   res.json({ authenticated: !!req.user });
 });
 
+// GET /api/auth/me — basic user info for authenticated pages (account indicator etc.)
+app.get('/api/auth/me', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+  let onboardingComplete = false;
+  try {
+    const { data } = await supabaseAdmin
+      .from('user_profiles')
+      .select('onboarding_complete')
+      .eq('id', req.user.id)
+      .maybeSingle();
+    onboardingComplete = data?.onboarding_complete || false;
+  } catch (_) {}
+  res.json({
+    email: req.user.email || null,
+    name: req.user.user_metadata?.full_name || null,
+    workspaceAccess: onboardingComplete,
+  });
+});
+
 // ── Root redirect ─────────────────────────────────────────────────────────────
 app.get('/', (req, res) => res.redirect('/edgekeeper.html'));
 
@@ -364,7 +383,7 @@ app.get('/auth.html', async (req, res, next) => {
       .eq('id', req.user.id)
       .maybeSingle();
     if (data?.academy_track && !data?.onboarding_complete) {
-      return res.redirect('/academy.html');
+      return res.redirect('/my-academy');
     }
   } catch (_) { /* fallthrough to workspace */ }
   return res.redirect('/workspace.html');
@@ -386,7 +405,10 @@ app.get(['/theo', '/theo.html'], (req, res) => res.sendFile(path.join(__dirname,
 app.get(['/mike', '/mike.html'],     (req, res) => res.redirect(301, '/marcus'));
 app.get(['/ashley', '/ashley.html'], (req, res) => res.redirect(301, '/iris'));
 app.get('/method',  (req, res) => res.sendFile(path.join(__dirname, 'method.html')));
-app.get('/academy', requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy.html')));
+// Public academy overview — visible to everyone, no auth required
+app.get('/academy', (req, res) => res.sendFile(path.join(__dirname, 'academy-public.html')));
+// Authenticated curriculum — the actual track/module page
+app.get('/my-academy', requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy.html')));
 
 app.get('/pricing.html',    (req, res) => {
   const f = path.join(__dirname, 'pricing.html');
@@ -463,7 +485,7 @@ app.post('/api/onboarding/register', apiLimiter, async (req, res) => {
 // ── Academy standalone registration ──────────────────────────────────────────
 // Called from academy-onboarding.html after the user selects a track. Creates
 // an account with academy_track set and onboarding_complete=false so these users
-// are routed to /academy.html on login rather than /workspace.html.
+// are routed to /my-academy on login rather than /workspace.html.
 app.post('/api/academy/register', apiLimiter, async (req, res) => {
   const { email, password, track } = req.body || {};
 
@@ -514,14 +536,14 @@ app.get('/workspace.html', requireAuthPage, async (req, res, next) => {
       .maybeSingle();
     // Academy-only users don't have a workspace yet
     if (data?.academy_track && !data?.onboarding_complete) {
-      return res.redirect('/academy.html');
+      return res.redirect('/my-academy');
     }
   } catch (_) { /* let them through — worst case is empty workspace */ }
   next();
 }, serveInjectedHtml(path.join(__dirname, 'workspace.html')));
 app.get('/settings.html',    requireAuthPage, serveInjectedHtml(path.join(__dirname, 'settings.html')));
 app.get('/assessment.html',  requireAuthPage, serveInjectedHtml(path.join(__dirname, 'assessment.html')));
-app.get('/academy.html',              requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy.html')));
+app.get('/academy.html',              (req, res) => res.redirect(301, '/my-academy'));
 // Academy onboarding is intentionally public — new users arrive before signup
 app.get('/academy-onboarding.html',   serveInjectedHtml(path.join(__dirname, 'academy-onboarding.html')));
 app.get('/academy-onboarding',        serveInjectedHtml(path.join(__dirname, 'academy-onboarding.html')));

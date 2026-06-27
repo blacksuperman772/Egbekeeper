@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Academy — EdgeKeeper</title>
+  <meta name="description" content="The EdgeKeeper Academy. Six tracks, fifty-one modules. Structured from your first trade through full performance. Track 1 — Market Foundations — is always free." />
+  <meta property="og:title" content="The Academy — EdgeKeeper" />
+  <meta property="og:description" content="Six tracks. Fifty-one modules. From first trade to full performance. Track 1 is free." />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://edgekeeper.io/academy" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:    #050505;
+      --border:   #1e1e1e;
+      --muted:    #555555;
+      --faint:    #888888;
+      --text:     #d4d0c8;
+      --bright:   #e8e4dc;
+      --gold:     #b8a06a;
+      --gold-dim: #7a6a45;
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'Inter', sans-serif;
+      --mono:     'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    @media (pointer: fine) { body { cursor: none; } }
+
+    /* CURSOR */
+    #cursor, #cursor-ring { display: none; }
+    @media (pointer: fine) {
+      #cursor {
+        display: block; position: fixed;
+        width: 8px; height: 8px;
+        background: var(--gold); border-radius: 50%;
+        pointer-events: none; z-index: 9999;
+        transform: translate(-50%, -50%);
+      }
+      #cursor-ring {
+        display: block; position: fixed;
+        width: 30px; height: 30px;
+        border: 1px solid rgba(184,160,106,0.3); border-radius: 50%;
+        pointer-events: none; z-index: 9998;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      z-index: 100;
+      border-bottom: 1px solid transparent;
+      transition: background .4s, border-color .4s;
+    }
+    nav.scrolled { background: rgba(5,5,5,0.96); border-bottom-color: var(--border); }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1rem; font-weight: 400;
+      letter-spacing: 0.22em; padding-left: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.85); text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links {
+      display: flex; align-items: center; gap: 36px; list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.6rem; letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4); text-decoration: none; transition: color .3s;
+    }
+    .nav-links a:hover { color: rgba(255,255,255,0.85); }
+    .nav-links a.active { color: var(--gold); }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-signin {
+      font-family: var(--mono);
+      font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--faint); text-decoration: none; transition: color .3s;
+    }
+    .nav-signin:hover { color: var(--text); }
+    .nav-cta {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gold);
+      border: 1px solid rgba(184,160,106,0.35);
+      padding: 9px 20px; text-decoration: none; transition: all .3s;
+    }
+    .nav-cta:hover { background: var(--gold); color: #050505; border-color: var(--gold); }
+
+    /* HAMBURGER */
+    .hamburger {
+      display: none; flex-direction: column; justify-content: space-between;
+      width: 22px; height: 14px;
+      background: none; border: none; padding: 0; cursor: pointer; z-index: 101;
+    }
+    .hamburger span {
+      display: block; width: 100%; height: 1px;
+      background: rgba(255,255,255,0.5);
+      transition: background .3s, transform .3s, opacity .3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); background: var(--gold); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); background: var(--gold); }
+
+    #mobile-nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(5,5,5,0.98); z-index: 99;
+      padding: 90px 32px 48px;
+      display: flex; flex-direction: column;
+      transform: translateY(-100%);
+      transition: transform .4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-bottom: 1px solid var(--border);
+    }
+    #mobile-nav.open { transform: translateY(0); }
+    #mobile-nav a {
+      font-family: var(--mono);
+      font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--faint); text-decoration: none;
+      padding: 18px 0; border-bottom: 1px solid var(--border); transition: color .3s;
+    }
+    #mobile-nav a:hover { color: var(--text); }
+    #mobile-nav a.active { color: var(--gold); }
+    .mobile-nav-enter {
+      margin-top: 28px; text-align: center; padding: 16px 0;
+      color: var(--gold) !important;
+      border: 1px solid rgba(184,160,106,0.35) !important;
+      border-bottom: 1px solid rgba(184,160,106,0.35) !important;
+      transition: background .3s !important;
+    }
+    .mobile-nav-enter:hover { background: rgba(184,160,106,0.07) !important; }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .8s ease, transform .8s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    .d1.in { transition-delay: .08s; }
+    .d2.in { transition-delay: .16s; }
+    .d3.in { transition-delay: .24s; }
+    .d4.in { transition-delay: .32s; }
+    .d5.in { transition-delay: .40s; }
+
+    /* HERO */
+    .hero {
+      min-height: 58dvh;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 140px 60px 72px;
+      max-width: 860px; margin: 0 auto;
+    }
+    .hero-eyebrow {
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold-dim); margin-bottom: 24px;
+      opacity: 0; animation: fadeUp .7s ease .15s forwards;
+    }
+    .hero-heading {
+      font-family: var(--serif);
+      font-size: clamp(3.2rem, 6vw, 5.5rem);
+      font-weight: 300; line-height: 1.08;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 28px;
+      opacity: 0; animation: fadeUp .9s ease .3s forwards;
+    }
+    .hero-sub {
+      font-size: 0.9375rem;
+      color: rgba(255,255,255,0.38);
+      line-height: 1.85; max-width: 520px;
+      opacity: 0; animation: fadeUp .8s ease .5s forwards;
+    }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* TRACKS */
+    .tracks-section {
+      padding: 72px 60px 80px;
+      max-width: 860px; margin: 0 auto;
+    }
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.56rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(255,255,255,0.16);
+      margin-bottom: 44px;
+    }
+    .track-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 100px;
+      gap: 0 24px;
+      align-items: start;
+      padding: 28px 0;
+      border-top: 1px solid rgba(255,255,255,0.055);
+    }
+    .track-row:last-child { border-bottom: 1px solid rgba(255,255,255,0.055); }
+    .track-num {
+      font-family: var(--mono); font-size: 0.54rem;
+      letter-spacing: 0.1em; color: rgba(255,255,255,0.16);
+      padding-top: 5px;
+    }
+    .track-body { display: flex; flex-direction: column; gap: 4px; }
+    .track-name {
+      font-family: var(--serif); font-size: 1.4rem;
+      font-weight: 300; color: rgba(255,255,255,0.88); line-height: 1.2;
+    }
+    .track-level {
+      font-family: var(--mono); font-size: 0.52rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(255,255,255,0.22); margin-top: 2px;
+    }
+    .track-desc {
+      font-size: 0.84rem; color: rgba(255,255,255,0.36);
+      line-height: 1.72; margin-top: 10px; max-width: 500px;
+    }
+    .track-meta {
+      display: flex; flex-direction: column;
+      align-items: flex-end; gap: 8px; padding-top: 5px;
+    }
+    .track-mods {
+      font-family: var(--mono); font-size: 0.52rem;
+      letter-spacing: 0.08em; color: rgba(255,255,255,0.18);
+    }
+    .badge {
+      font-family: var(--mono); font-size: 0.5rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 4px 9px; white-space: nowrap;
+    }
+    .badge-free { color: var(--gold); border: 1px solid rgba(184,160,106,0.28); }
+    .badge-paid { color: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.09); }
+
+    /* SEPARATOR */
+    .sep {
+      width: 1px; height: 56px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.07), transparent);
+      margin: 0 auto;
+    }
+
+    /* ACCESS */
+    .access-section {
+      padding: 48px 60px 96px;
+      max-width: 860px; margin: 0 auto;
+    }
+    .access-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: rgba(255,255,255,0.055);
+    }
+    .access-card {
+      padding: 36px 40px 40px;
+      background: var(--black);
+    }
+    .access-label {
+      font-family: var(--mono); font-size: 0.54rem;
+      letter-spacing: 0.24em; text-transform: uppercase;
+      color: rgba(255,255,255,0.2); margin-bottom: 16px;
+    }
+    .access-heading {
+      font-family: var(--serif); font-size: 1.55rem;
+      font-weight: 300; color: rgba(255,255,255,0.82);
+      line-height: 1.2; margin-bottom: 12px;
+    }
+    .access-desc {
+      font-size: 0.84rem; color: rgba(255,255,255,0.32);
+      line-height: 1.75; margin-bottom: 28px;
+    }
+    .btn {
+      display: inline-block; font-family: var(--mono);
+      font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase;
+      padding: 11px 26px; text-decoration: none; transition: all .3s;
+    }
+    .btn-gold { color: var(--gold); border: 1px solid rgba(184,160,106,0.35); }
+    .btn-gold:hover { background: var(--gold); color: #050505; border-color: var(--gold); }
+    .btn-dim { color: rgba(255,255,255,0.28); border: 1px solid rgba(255,255,255,0.1); }
+    .btn-dim:hover { color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.25); }
+
+    /* FOOTER */
+    footer {
+      padding: 36px 60px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: var(--serif); font-size: 0.875rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+    }
+    .footer-logo span { color: var(--gold); }
+    .footer-links { display: flex; gap: 24px; list-style: none; }
+    .footer-links a {
+      font-size: 0.8rem; color: rgba(255,255,255,0.2);
+      text-decoration: none; transition: color .2s;
+    }
+    .footer-links a:hover { color: rgba(255,255,255,0.45); }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .nav-links, .nav-signin, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+      nav { padding: 0 28px; }
+      .hero { padding: 120px 28px 56px; }
+      .tracks-section { padding: 56px 28px 64px; }
+      .track-row { grid-template-columns: 24px 1fr; }
+      .track-meta { display: none; }
+      .access-section { padding: 36px 28px 72px; }
+      .access-grid { grid-template-columns: 1fr; }
+      .access-card { padding: 28px 24px 32px; }
+      footer { padding: 28px 28px; flex-direction: column; gap: 14px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="/edgekeeper.html" class="nav-logo">Edge<span>K</span>eeper</a>
+  <ul class="nav-links">
+    <li><a href="/edgekeeper.html#institution">Philosophy</a></li>
+    <li><a href="/edgekeeper.html#mentors">Mentors</a></li>
+    <li><a href="/method">The Method</a></li>
+    <li><a href="/academy" class="active">Academy</a></li>
+    <li><a href="/edgekeeper.html#pricing">Membership</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="/auth.html" class="nav-signin">Sign In</a>
+    <a href="/academy-onboarding" class="nav-cta" id="nav-enter">Enter Academy</a>
+    <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div id="mobile-nav">
+  <a href="/edgekeeper.html#institution" onclick="closeMobileNav()">Philosophy</a>
+  <a href="/edgekeeper.html#mentors" onclick="closeMobileNav()">Mentors</a>
+  <a href="/method" onclick="closeMobileNav()">The Method</a>
+  <a href="/academy" class="active" onclick="closeMobileNav()">Academy</a>
+  <a href="/edgekeeper.html#pricing" onclick="closeMobileNav()">Membership</a>
+  <a href="/auth.html" onclick="closeMobileNav()">Sign In</a>
+  <a href="/academy-onboarding" id="mobile-enter" class="mobile-nav-enter" onclick="closeMobileNav()">Enter Academy</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <p class="hero-eyebrow">Track 1 is always free</p>
+  <h1 class="hero-heading">The Academy.</h1>
+  <p class="hero-sub">Six tracks. Fifty-one modules. Built from the ground up for traders who want to learn correctly — not just learn. Market Foundations through full performance, with everything that matters in between.</p>
+</div>
+
+<!-- TRACKS -->
+<section class="tracks-section">
+  <p class="section-label reveal">Curriculum — 51 modules across 6 tracks</p>
+
+  <div class="track-row reveal d1">
+    <span class="track-num">01</span>
+    <div class="track-body">
+      <span class="track-name">Market Foundations</span>
+      <span class="track-level">Foundation</span>
+      <p class="track-desc">What markets are, how they move, and how to read what price is actually doing. The structure that makes everything after it possible.</p>
+    </div>
+    <div class="track-meta">
+      <span class="track-mods">8 modules</span>
+      <span class="badge badge-free">Free</span>
+    </div>
+  </div>
+
+  <div class="track-row reveal d2">
+    <span class="track-num">02</span>
+    <div class="track-body">
+      <span class="track-name">Technical Analysis</span>
+      <span class="track-level">Foundation</span>
+      <p class="track-desc">Price action, structure, and pattern recognition. Learning to read what the market is actually saying — not what you want it to say.</p>
+    </div>
+    <div class="track-meta">
+      <span class="track-mods">7 modules</span>
+      <span class="badge badge-paid">Any plan</span>
+    </div>
+  </div>
+
+  <div class="track-row reveal d3">
+    <span class="track-num">03</span>
+    <div class="track-body">
+      <span class="track-name">Risk Management</span>
+      <span class="track-level">Foundation · Intermediate</span>
+      <p class="track-desc">Capital preservation, position sizing, and the discipline to stay in the game long enough for skill to compound into something real.</p>
+    </div>
+    <div class="track-meta">
+      <span class="track-mods">8 modules</span>
+      <span class="badge badge-paid">Any plan</span>
+    </div>
+  </div>
+
+  <div class="track-row reveal d4">
+    <span class="track-num">04</span>
+    <div class="track-body">
+      <span class="track-name">Strategy Development</span>
+      <span class="track-level">Intermediate</span>
+      <p class="track-desc">Building a tradeable edge. From concept through backtesting to a rule-based system you can actually execute under pressure.</p>
+    </div>
+    <div class="track-meta">
+      <span class="track-mods">6 modules</span>
+      <span class="badge badge-paid">Any plan</span>
+    </div>
+  </div>
+
+  <div class="track-row reveal d5">
+    <span class="track-num">05</span>
+    <div class="track-body">
+      <span class="track-name">Trading Psychology</span>
+      <span class="track-level">Intermediate · Advanced</span>
+      <p class="track-desc">The technical and psychological sides of trading are inseparable. Behavioral patterns, emotional response, identity work, and how decisions actually get made under pressure.</p>
+    </div>
+    <div class="track-meta">
+      <span class="track-mods">13 modules</span>
+      <span class="badge badge-paid">Any plan</span>
+    </div>
+  </div>
+
+  <div class="track-row reveal">
+    <span class="track-num">06</span>
+    <div class="track-body">
+      <span class="track-name">Performance &amp; Identity</span>
+      <span class="track-level">Advanced</span>
+      <p class="track-desc">Elite-level refinement. Behavioral analytics, consistency work, and the final layer of development that separates a skilled trader from a complete one.</p>
+    </div>
+    <div class="track-meta">
+      <span class="track-mods">9 modules</span>
+      <span class="badge badge-paid">Any plan</span>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ACCESS -->
+<section class="access-section">
+  <div class="access-grid">
+    <div class="access-card reveal">
+      <p class="access-label">Start free</p>
+      <h3 class="access-heading">Track 1 is always free.</h3>
+      <p class="access-desc">Market Foundations — all eight modules — with no payment required. The first track is free because the foundation matters. Start there before anything else.</p>
+      <a href="/academy-onboarding" class="btn btn-gold" id="begin-btn">Begin now →</a>
+    </div>
+    <div class="access-card reveal d2">
+      <p class="access-label">Full access</p>
+      <h3 class="access-heading">All six tracks with a plan.</h3>
+      <p class="access-desc">Tracks 2 through 6 unlock with any EdgeKeeper membership — Resident, Fellow, or Private Office. Everything in the curriculum, from foundation to performance.</p>
+      <a href="/edgekeeper.html#pricing" class="btn btn-dim">View plans →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Edge<span>K</span>eeper</div>
+  <ul class="footer-links">
+    <li><a href="/edgekeeper.html">Home</a></li>
+    <li><a href="/method">The Method</a></li>
+    <li><a href="/privacy.html">Privacy</a></li>
+    <li><a href="/terms.html">Terms</a></li>
+  </ul>
+</footer>
+
+<script>
+  // Cursor
+  if (window.matchMedia('(pointer: fine)').matches) {
+    const c = document.getElementById('cursor');
+    const r = document.getElementById('cursor-ring');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    (function tick() {
+      c.style.left = mx + 'px'; c.style.top = my + 'px';
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      r.style.left = rx + 'px'; r.style.top = ry + 'px';
+      requestAnimationFrame(tick);
+    })();
+  }
+
+  // Nav scroll
+  window.addEventListener('scroll', () => {
+    document.getElementById('main-nav').classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // Reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // Mobile nav
+  function toggleMobileNav() {
+    const btn = document.getElementById('hamburger-btn');
+    const nav = document.getElementById('mobile-nav');
+    btn.classList.toggle('open');
+    nav.classList.toggle('open');
+    document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
+  }
+  function closeMobileNav() {
+    document.getElementById('hamburger-btn').classList.remove('open');
+    document.getElementById('mobile-nav').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Auth-aware CTAs: enrolled users go straight to /my-academy
+  fetch('/api/auth/me').then(r => r.ok ? r.json() : null).then(data => {
+    if (!data?.email) return;
+    const navBtn = document.getElementById('nav-enter');
+    const mobileBtn = document.getElementById('mobile-enter');
+    const beginBtn = document.getElementById('begin-btn');
+    if (navBtn)    { navBtn.textContent = 'Your Academy';    navBtn.href = '/my-academy'; }
+    if (mobileBtn) { mobileBtn.textContent = 'Your Academy'; mobileBtn.href = '/my-academy'; }
+    if (beginBtn)  { beginBtn.textContent = 'Enter your Academy →'; beginBtn.href = '/my-academy'; }
+  }).catch(() => {});
+</script>
+</body>
+</html>

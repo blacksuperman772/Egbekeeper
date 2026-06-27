@@ -14,17 +14,17 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Space+Grotesk:wght@300;400&family=Space+Mono:wght@400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --void:          #07050E;
+      --void:          #050505;
       --surface:       #0D0B15;
       --obsidian:      #0a0812;
-      --gold:          #C9A85C;
-      --gold-dim:      rgba(201, 168, 92, 0.45);
+      --gold:          #b8a06a;
+      --gold-dim:      rgba(184, 160, 106, 0.45);
       --green-bright:  #4ADE80;
       --green:         rgba(74, 222, 128, 0.7);
       --violet:        #7C3AED;
@@ -32,15 +32,15 @@
       --text-primary:  rgba(255,255,255,0.82);
       --text-secondary:rgba(255,255,255,0.45);
       --text-dim:      rgba(255,255,255,0.2);
-      --mono:          'Space Mono', monospace;
+      --mono:          'DM Mono', monospace;
       --serif:         'Cormorant Garamond', Georgia, serif;
-      --sans:          'Space Grotesk', 'Manrope', sans-serif;
+      --sans:          'Inter', sans-serif;
 
       --track-1: rgba(100,160,255,0.6);
       --track-2: rgba(150,220,180,0.6);
       --track-3: rgba(239,68,68,0.5);
-      --track-4: rgba(201,168,92,0.6);
-      --track-5: rgba(201,168,92,0.9);
+      --track-4: rgba(184,160,106,0.6);
+      --track-5: rgba(184,160,106,0.9);
       --track-6: rgba(255,255,255,0.4);
     }
 
@@ -52,23 +52,28 @@
       font-family: var(--sans);
       font-weight: 300;
       line-height: 1.7;
-      cursor: none;
       overflow-x: hidden;
     }
 
     /* ── CURSOR ── */
-    #cursor {
-      position: fixed; width: 7px; height: 7px;
-      background: var(--gold); border-radius: 50%;
-      pointer-events: none; z-index: 9999;
-      transform: translate(-50%,-50%);
-    }
-    #cursor-ring {
-      position: fixed; width: 32px; height: 32px;
-      border: 1px solid rgba(201,168,92,0.3); border-radius: 50%;
-      pointer-events: none; z-index: 9998;
-      transform: translate(-50%,-50%);
-      transition: left .1s ease, top .1s ease;
+    #cursor, #cursor-ring { display: none; }
+    @media (pointer: fine) {
+      body { cursor: none; }
+      #cursor {
+        display: block;
+        position: fixed; width: 7px; height: 7px;
+        background: var(--gold); border-radius: 50%;
+        pointer-events: none; z-index: 9999;
+        transform: translate(-50%,-50%);
+      }
+      #cursor-ring {
+        display: block;
+        position: fixed; width: 32px; height: 32px;
+        border: 1px solid rgba(184,160,106,0.3); border-radius: 50%;
+        pointer-events: none; z-index: 9998;
+        transform: translate(-50%,-50%);
+        transition: left .1s ease, top .1s ease;
+      }
     }
 
     /* ── NAV ── */
@@ -112,13 +117,29 @@
       font-family: var(--mono); font-size: 0.62rem;
       letter-spacing: 0.16em; text-transform: uppercase;
       color: var(--text-primary); background: transparent;
-      border: 1px solid rgba(201,168,92,0.35);
+      border: 1px solid rgba(184,160,106,0.35);
       padding: 9px 20px; text-decoration: none;
       transition: all .4s;
     }
     .nav-cta:hover {
       background: var(--gold); color: var(--void);
       border-color: var(--gold);
+    }
+    .nav-right {
+      display: flex; align-items: center; gap: 16px;
+    }
+    .nav-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(184,160,106,0.07);
+      border: 1px solid rgba(184,160,106,0.28);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.06em;
+      color: var(--gold); cursor: pointer;
+      transition: border-color .2s, background .2s;
+      text-decoration: none;
+    }
+    .nav-avatar:hover {
+      border-color: var(--gold); background: rgba(184,160,106,0.13);
     }
 
     /* ── REVEAL ── */
@@ -348,12 +369,12 @@
       font-family: var(--mono); font-size: 0.65rem;
       letter-spacing: 0.18em; text-transform: uppercase;
       text-decoration: none;
-      border: 1px solid rgba(201,168,92,0.3);
+      border: 1px solid rgba(184,160,106,0.3);
       padding: 14px 32px;
       transition: all .3s;
     }
     .cta-link.mike  { color: var(--gold); }
-    .cta-link.mike:hover  { background: rgba(201,168,92,0.08); border-color: var(--gold); }
+    .cta-link.mike:hover  { background: rgba(184,160,106,0.08); border-color: var(--gold); }
     .cta-link.ashley { color: var(--green-bright); border-color: rgba(74,222,128,0.3); }
     .cta-link.ashley:hover { background: rgba(74,222,128,0.06); border-color: var(--green-bright); }
 
@@ -413,13 +434,14 @@
 <nav id="main-nav">
   <a href="/edgekeeper.html" class="nav-logo">Edge<span>K</span>eeper</a>
   <ul class="nav-links">
-    <li><a href="/edgekeeper.html#institution">Philosophy</a></li>
-    <li><a href="/marcus">Marcus</a></li>
-    <li><a href="/iris">Iris</a></li>
-    <li><a href="/edgekeeper.html#pricing">Membership</a></li>
-    <li><a href="/academy" class="active">Academy</a></li>
+    <li><a href="/my-academy" class="active">Curriculum</a></li>
   </ul>
-  <a href="/workspace.html" class="nav-cta">Open Workspace</a>
+  <div class="nav-right">
+    <a href="/workspace.html" class="nav-cta" id="nav-workspace-btn" style="display:none">Workspace</a>
+    <a href="/settings.html" class="nav-avatar" id="nav-avatar" title="Account settings">
+      <span id="nav-avatar-initial">—</span>
+    </a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -836,7 +858,7 @@
   <p class="footer-copy">&copy; 2025 EdgeKeeper. A Private Mentorship Institution.</p>
   <ul class="footer-links">
     <li><a href="/edgekeeper.html">Home</a></li>
-    <li><a href="/academy">Academy</a></li>
+    <li><a href="/my-academy">Academy</a></li>
     <li><a href="/privacy.html">Privacy</a></li>
   </ul>
 </footer>
@@ -847,34 +869,51 @@
 let academyAccess = 'free';
 
 // ── ENROLLMENT GUARD ────────────────────────────────────────────────────
-// First-time academy visitors must enroll before seeing the curriculum.
-// On a new device: check DB before redirecting so returning users skip re-enrollment.
+// localStorage is device-scoped, not user-scoped. We must verify the stored
+// data belongs to the current session before trusting it — otherwise a previous
+// user's track and module progress would be visible to whoever logs in next.
 (async () => {
-  if (localStorage.getItem('ek_academy_track')) return; // already enrolled locally
+  // Step 1: identify current user
+  let currentUserId = null;
+  try {
+    const meRes = await fetch('/api/auth/me');
+    if (meRes.ok) { const me = await meRes.json(); currentUserId = me.email || null; }
+  } catch (_) {}
+
+  // Step 2: if the stored user doesn't match, purge all stale academy data
+  const storedUserId = localStorage.getItem('ek_academy_user');
+  if (storedUserId !== currentUserId) {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('ek_academy_'))
+      .forEach(k => localStorage.removeItem(k));
+  }
+
+  // Step 3: trust cached track only if identity confirmed
+  if (currentUserId && localStorage.getItem('ek_academy_track')) return;
+
+  // Step 4: no valid cache — fetch from server
   try {
     const r = await fetch('/api/academy/progress');
     if (r.ok) {
       const data = await r.json();
       if (data.access) { academyAccess = data.access; applyGates(); }
       if (data.track) {
+        if (currentUserId) localStorage.setItem('ek_academy_user', currentUserId);
         localStorage.setItem('ek_academy_track', data.track);
-        // Restore module progress too
         if (data.progress && typeof data.progress === 'object') {
           for (const [key, val] of Object.entries(data.progress)) {
             if (val.started)   localStorage.setItem('ek_academy_' + key + '_started',   val.started);
             if (val.completed) localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
           }
-          // Re-render dots and gates once DOM is ready
           if (typeof allModuleKeys !== 'undefined') {
             allModuleKeys.forEach(key => updateModuleStatus(key));
             applyGates();
           }
         }
-        return; // stay on the page
+        return;
       }
     }
   } catch (_) {}
-  // Not enrolled anywhere — go to onboarding
   window.location.replace('/academy-onboarding');
 })();
 
@@ -1049,7 +1088,7 @@ function renderGuidedPath() {
   const esc = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; };
   mount.innerHTML =
     '<div style="max-width:1000px;margin:0 auto;padding:8px 40px 0;">'
-    + '<a href="' + href + '" style="display:block;text-decoration:none;border:1px solid var(--gold-dim,#8a6a2a);background:rgba(201,168,92,0.05);padding:26px 30px;border-radius:2px;">'
+    + '<a href="' + href + '" style="display:block;text-decoration:none;border:1px solid var(--gold-dim,#7a6a45);background:rgba(184,160,106,0.05);padding:26px 30px;border-radius:2px;">'
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;">'
     + '<div><div style="font-family:var(--mono,monospace);font-size:0.54rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold,#c9a85c);margin-bottom:8px;">' + esc(eyebrow) + '</div>'
     + '<div style="font-family:var(--serif,Georgia),serif;font-size:1.5rem;color:var(--text,#ece6db);line-height:1.25;">' + esc(title) + '</div>'
@@ -1063,6 +1102,22 @@ function renderGuidedPath() {
 }
 
 applyGates();
+
+// ── ACCOUNT INDICATOR ────────────────────────────────────────────────────
+(async () => {
+  try {
+    const r = await fetch('/api/auth/me');
+    if (!r.ok) return;
+    const { email, name, workspaceAccess } = await r.json();
+    const initial = ((name && name[0]) || (email && email[0]) || '?').toUpperCase();
+    const el = document.getElementById('nav-avatar-initial');
+    const btn = document.getElementById('nav-avatar');
+    if (el) el.textContent = initial;
+    if (btn && email) btn.setAttribute('title', email);
+    const wsBtn = document.getElementById('nav-workspace-btn');
+    if (wsBtn && workspaceAccess) wsBtn.style.display = '';
+  } catch (_) {}
+})();
 
 // If the server bounced the user here from a gated module, surface why.
 (function handleLockedRedirect() {

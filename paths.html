@@ -12,8 +12,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -41,24 +39,29 @@
       font-family: var(--sans);
       font-weight: 300;
       line-height: 1.7;
-      cursor: none;
       overflow-x: hidden;
     }
 
     /* ── CURSOR ──────────────────────────────────────────────── */
-    #cursor {
-      position: fixed; width: 8px; height: 8px;
-      background: var(--gold); border-radius: 50%;
-      pointer-events: none; z-index: 9999;
-      transform: translate(-50%, -50%);
-      transition: transform 0.1s ease, opacity 0.2s ease;
-    }
-    #cursor-ring {
-      position: fixed; width: 32px; height: 32px;
-      border: 1px solid rgba(184,160,106,0.3); border-radius: 50%;
-      pointer-events: none; z-index: 9998;
-      transform: translate(-50%, -50%);
-      transition: opacity 0.3s ease;
+    #cursor, #cursor-ring { display: none; }
+    @media (pointer: fine) {
+      body { cursor: none; }
+      #cursor {
+        display: block;
+        position: fixed; width: 8px; height: 8px;
+        background: var(--gold); border-radius: 50%;
+        pointer-events: none; z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: transform 0.1s ease, opacity 0.2s ease;
+      }
+      #cursor-ring {
+        display: block;
+        position: fixed; width: 32px; height: 32px;
+        border: 1px solid rgba(184,160,106,0.3); border-radius: 50%;
+        pointer-events: none; z-index: 9998;
+        transform: translate(-50%, -50%);
+        transition: opacity 0.3s ease;
+      }
     }
 
     /* ── AMBIENT ─────────────────────────────────────────────── */

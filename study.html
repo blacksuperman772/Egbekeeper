@@ -283,7 +283,7 @@
     <span class="top-track-label" id="top-track-label">Academy</span>
   </div>
   <div class="top-right">
-    <a href="/academy.html" class="curriculum-link">← Curriculum</a>
+    <a href="/my-academy" class="curriculum-link">← Curriculum</a>
   </div>
 </div>
 
@@ -420,7 +420,7 @@ if (!mod) {
   // Unknown module slug (typo / stale link) — bounce to the Academy. location.replace
   // does not halt synchronous execution, so throw to stop everything below from
   // running against an undefined module and white-screening the page.
-  window.location.replace('/academy.html');
+  window.location.replace('/my-academy');
   throw new Error('Unknown module: ' + moduleKey);
 }
 
@@ -478,26 +478,37 @@ async function syncProgress(payload) {
   } catch (_) {}
 }
 
-// Restore progress from DB on load (handles new device / cleared cache)
+// Restore progress from DB on load — identity check first so a new user
+// on a shared device never sees the previous user's cached progress.
 (async () => {
   try {
-    const r    = await fetch('/api/academy/progress');
+    // 1. Establish who is logged in right now
+    let currentUserId = null;
+    try {
+      const meRes = await fetch('/api/auth/me');
+      if (meRes.ok) { const me = await meRes.json(); currentUserId = me.email || null; }
+    } catch (_) {}
+
+    // 2. Purge stale cache when the user changed
+    const storedUserId = localStorage.getItem('ek_academy_user');
+    if (storedUserId !== currentUserId) {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('ek_academy_'))
+        .forEach(k => localStorage.removeItem(k));
+      if (currentUserId) localStorage.setItem('ek_academy_user', currentUserId);
+    }
+
+    // 3. Pull authoritative server state — always overwrite local (server wins)
+    const r = await fetch('/api/academy/progress');
     if (!r.ok) return;
     const data = await r.json();
-    // Restore track if missing
-    if (data.track && !localStorage.getItem('ek_academy_track')) {
-      localStorage.setItem('ek_academy_track', data.track);
-    }
-    // Merge server progress into localStorage
+    if (data.track) localStorage.setItem('ek_academy_track', data.track);
     if (data.progress && typeof data.progress === 'object') {
       for (const [key, val] of Object.entries(data.progress)) {
-        if (val.started   && !localStorage.getItem('ek_academy_' + key + '_started'))
-          localStorage.setItem('ek_academy_' + key + '_started',   val.started);
-        if (val.completed && !localStorage.getItem('ek_academy_' + key + '_completed'))
-          localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
+        if (val.started)   localStorage.setItem('ek_academy_' + key + '_started',   val.started);
+        if (val.completed) localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
       }
     }
-    // Re-render status after merge
     loadProgress();
   } catch (_) {}
 })();

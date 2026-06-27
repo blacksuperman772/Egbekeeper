@@ -356,7 +356,7 @@ const TRACK_NUM_MAP = { foundations:'1', technical:'2', risk:'3', strategy:'4', 
             if (val.completed) localStorage.setItem('ek_academy_' + key + '_completed', val.completed);
           }
         }
-        window.location.replace('/academy.html');
+        window.location.replace('/my-academy');
       }
     }
   } catch (_) {}
@@ -439,6 +439,11 @@ async function beginAcademy() {
 async function enrollAndGo() {
   const btn = document.getElementById('begin-btn');
   if (btn) { btn.textContent = 'Enrolling...'; btn.style.pointerEvents = 'none'; }
+  // Stamp the current user so the academy guard can detect a user switch
+  try {
+    const meRes = await fetch('/api/auth/me');
+    if (meRes.ok) { const me = await meRes.json(); if (me.email) localStorage.setItem('ek_academy_user', me.email); }
+  } catch (_) {}
   localStorage.setItem('ek_academy_track',        selectedTrack);
   localStorage.setItem('ek_academy_first_module', selectedFirst);
   localStorage.setItem('ek_academy_enrolled_at',  Date.now());
@@ -491,7 +496,8 @@ async function submitSignup(e) {
       body: JSON.stringify({ access_token: signInData.access_token, refresh_token: signInData.refresh_token }),
     });
 
-    // 4. Persist enrollment in localStorage then navigate
+    // 4. Persist enrollment in localStorage then navigate (stamp email so identity guard works)
+    localStorage.setItem('ek_academy_user',         email);
     localStorage.setItem('ek_academy_track',        selectedTrack);
     localStorage.setItem('ek_academy_first_module', selectedFirst);
     localStorage.setItem('ek_academy_enrolled_at',  Date.now());
