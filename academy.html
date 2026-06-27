@@ -52,10 +52,9 @@
       font-family: var(--sans);
       font-weight: 300;
       line-height: 1.7;
+      cursor: none;
       overflow-x: hidden;
     }
-
-    @media (pointer: fine) { body { cursor: none; } }
 
     /* ── CURSOR ── */
     #cursor {
@@ -379,46 +378,6 @@
     }
     .footer-links a:hover { color: var(--text-secondary); }
 
-    /* ── TRACK JUMPER (mobile sticky bottom bar) ── */
-    #track-jumper {
-      display: none;
-    }
-    @media (max-width: 768px) {
-      #track-jumper {
-        display: flex;
-        position: fixed; bottom: 0; left: 0; right: 0;
-        background: rgba(7,5,14,0.97);
-        border-top: 1px solid var(--border);
-        z-index: 200;
-        padding: 0;
-      }
-      .track-jump-btn {
-        flex: 1;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        padding: 10px 4px 14px;
-        font-family: var(--mono); font-size: 0.48rem;
-        letter-spacing: 0.12em; text-transform: uppercase;
-        color: var(--text-dim);
-        text-decoration: none;
-        border-right: 1px solid var(--border);
-        transition: color .2s, background .2s;
-        gap: 4px;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .track-jump-btn:last-child { border-right: none; }
-      .track-jump-btn.active { color: var(--gold); }
-      .track-jump-btn.locked { color: var(--text-dim); opacity: 0.4; pointer-events: none; }
-      .track-jump-num {
-        font-size: 0.7rem; font-weight: 400;
-        line-height: 1;
-      }
-      .track-jump-dot {
-        width: 4px; height: 4px; border-radius: 50%;
-        background: currentColor; opacity: 0.4;
-      }
-      .track-jump-btn.active .track-jump-dot { opacity: 1; }
-    }
-
     /* ── MOBILE ── */
     @media (max-width: 768px) {
       nav { padding: 0 24px; }
@@ -428,25 +387,15 @@
       .track-header { padding-top: 60px; }
       .gate-banner { padding: 32px 24px; }
       .module-row {
-        grid-template-columns: 28px 1fr auto;
+        grid-template-columns: 28px 1fr;
         grid-template-rows: auto auto;
         gap: 8px 12px;
         padding: 16px 0;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
       }
       .module-status { grid-column: 2; grid-row: 2; }
-      .module-link {
-        grid-column: 3; grid-row: 1 / 3;
-        font-size: 0.7rem;
-        display: flex; align-items: center;
-        padding-left: 8px;
-        opacity: 0.5;
-      }
-      /* extra bottom clearance so last modules aren't behind track jumper */
-      .tracks-wrapper { padding-bottom: 72px; }
-      #academy-cta { padding: 80px 24px 140px; }
-      footer { flex-direction: column; gap: 16px; text-align: center; padding: 36px 24px 100px; }
+      .module-link { display: none; }
+      #academy-cta { padding: 80px 24px; }
+      footer { flex-direction: column; gap: 16px; text-align: center; padding: 36px 24px; }
       .footer-links { justify-content: center; }
     }
 
@@ -458,34 +407,6 @@
 
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
-
-<!-- MOBILE TRACK JUMPER -->
-<nav id="track-jumper" aria-label="Jump to track">
-  <a class="track-jump-btn active" href="#track-1" data-track="1">
-    <span class="track-jump-num">T1</span>
-    <span class="track-jump-dot"></span>
-  </a>
-  <a class="track-jump-btn" href="#track-2" data-track="2">
-    <span class="track-jump-num">T2</span>
-    <span class="track-jump-dot"></span>
-  </a>
-  <a class="track-jump-btn" href="#track-3" data-track="3">
-    <span class="track-jump-num">T3</span>
-    <span class="track-jump-dot"></span>
-  </a>
-  <a class="track-jump-btn" href="#track-4" data-track="4">
-    <span class="track-jump-num">T4</span>
-    <span class="track-jump-dot"></span>
-  </a>
-  <a class="track-jump-btn" href="#track-5" data-track="5">
-    <span class="track-jump-num">T5</span>
-    <span class="track-jump-dot"></span>
-  </a>
-  <a class="track-jump-btn" href="#track-6" data-track="6">
-    <span class="track-jump-num">T6</span>
-    <span class="track-jump-dot"></span>
-  </a>
-</nav>
 <div class="page-ambient" aria-hidden="true" style="position:fixed;inset:0;z-index:0;background:url('/assets/academy-ambient.png') center/cover no-repeat;opacity:0.05;pointer-events:none;"></div>
 
 <!-- NAV -->
@@ -958,71 +879,21 @@ let academyAccess = 'free';
 })();
 
 // ── CURSOR ──────────────────────────────────────────────────────────────
-const cursorEl = document.getElementById('cursor');
-const ringEl   = document.getElementById('cursor-ring');
-if (cursorEl && ringEl && window.matchMedia('(pointer: fine)').matches) {
-  let mx = 0, my = 0, rx = 0, ry = 0;
-  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-  (function tick() {
-    cursorEl.style.left = mx + 'px'; cursorEl.style.top = my + 'px';
-    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-    ringEl.style.left = rx + 'px'; ringEl.style.top = ry + 'px';
-    requestAnimationFrame(tick);
-  })();
-} else {
-  if (cursorEl) cursorEl.style.display = 'none';
-  if (ringEl)   ringEl.style.display   = 'none';
-}
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function tick() {
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(tick);
+})();
 
 // ── NAV SCROLL ──────────────────────────────────────────────────────────
 const nav = document.getElementById('main-nav');
 window.addEventListener('scroll', () => {
   nav.classList.toggle('scrolled', window.scrollY > 40);
-});
-
-// ── TRACK JUMPER — active state on scroll ───────────────────────────────
-(function initTrackJumper() {
-  const jumperBtns = document.querySelectorAll('.track-jump-btn');
-  if (!jumperBtns.length) return;
-
-  const trackSections = Array.from({ length: 6 }, (_, i) =>
-    document.getElementById('track-' + (i + 1))
-  ).filter(Boolean);
-
-  function updateJumper() {
-    const mid = window.scrollY + window.innerHeight * 0.4;
-    let active = 0;
-    trackSections.forEach((sec, i) => {
-      if (sec.getBoundingClientRect().top + window.scrollY <= mid) active = i;
-    });
-    jumperBtns.forEach((btn, i) => {
-      btn.classList.toggle('active', i === active);
-    });
-  }
-
-  window.addEventListener('scroll', updateJumper, { passive: true });
-  updateJumper();
-
-  // Mark gated tracks locked in the jumper once gates are applied
-  const origApply = window._jumperGateHook;
-  window._jumperGateHook = function(lockedTracks) {
-    jumperBtns.forEach(btn => {
-      const t = parseInt(btn.dataset.track, 10);
-      btn.classList.toggle('locked', lockedTracks.includes(t));
-      if (lockedTracks.includes(t)) btn.removeAttribute('href');
-    });
-  };
-})();
-
-// ── MODULE ROWS — whole row tappable on mobile ───────────────────────────
-document.querySelectorAll('.module-row').forEach(row => {
-  const link = row.querySelector('.module-link');
-  if (!link) return;
-  row.addEventListener('click', e => {
-    if (e.target.closest('a')) return; // let real link handle it
-    if (row.classList.contains('locked')) return;
-    window.location.href = link.href;
-  });
 });
 
 // ── REVEAL ON SCROLL ────────────────────────────────────────────────────
@@ -1129,9 +1000,6 @@ function unlockTrack(n) {
 function applyGates() {
   const full = academyAccess === 'full';
   GATED_TRACKS.forEach(n => full ? unlockTrack(n) : lockTrack(n));
-  if (typeof window._jumperGateHook === 'function') {
-    window._jumperGateHook(full ? [] : GATED_TRACKS);
-  }
   renderGuidedPath();
 }
 
