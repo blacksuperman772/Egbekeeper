@@ -551,14 +551,24 @@
       </p>
     </div>
 
-    <!-- NEW HERE LINK -->
-    <p id="new-here-p" style="text-align:center; margin-top:28px; font-size:0.78rem; color:var(--muted);">
-      New to EdgeKeeper?
-      <a href="/onboarding.html" id="new-here-link" style="color:var(--gold-dim); text-decoration:none; transition:color .2s;"
-         onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">
-        Begin your intake →
-      </a>
-    </p>
+    <!-- NEW HERE — two entry paths -->
+    <div id="new-here-p" style="margin-top:32px;padding-top:28px;border-top:1px solid var(--border);">
+      <p style="text-align:center;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim);margin-bottom:14px;">New to EdgeKeeper?</p>
+      <div style="display:flex;gap:10px;">
+        <a href="/onboarding.html" id="new-here-link"
+           style="flex:1;text-align:center;padding:12px 8px;border:1px solid var(--border);font-family:var(--mono);font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold-dim);text-decoration:none;transition:border-color .2s,color .2s;"
+           onmouseover="this.style.borderColor='var(--gold-dim)';this.style.color='var(--gold)'"
+           onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--gold-dim)'">
+          Begin with Marcus →
+        </a>
+        <a href="/academy-onboarding"
+           style="flex:1;text-align:center;padding:12px 8px;border:1px solid var(--border);font-family:var(--mono);font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:border-color .2s,color .2s;"
+           onmouseover="this.style.borderColor='var(--dim)';this.style.color='var(--faint)'"
+           onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+          Learn with Theo →
+        </a>
+      </div>
+    </div>
 
     <!-- PRIVACY NOTICE -->
     <p class="privacy-note" id="privacy-note">
