@@ -576,20 +576,7 @@ app.post('/api/academy/register', apiLimiter, async (req, res) => {
 
 app.get('/profile.html',     requireAuthPage, serveInjectedHtml(path.join(__dirname, 'profile.html')));
 app.get('/profile',          requireAuthPage, (req, res) => res.redirect('/profile.html'));
-app.get('/workspace.html', requireAuthPage, async (req, res, next) => {
-  try {
-    const { data } = await supabaseAdmin
-      .from('user_profiles')
-      .select('onboarding_complete, academy_track')
-      .eq('id', req.user.id)
-      .maybeSingle();
-    // Academy-only users don't have a workspace yet
-    if (data?.academy_track && !data?.onboarding_complete) {
-      return res.redirect('/my-academy');
-    }
-  } catch (_) { /* let them through — worst case is empty workspace */ }
-  next();
-}, serveInjectedHtml(path.join(__dirname, 'workspace.html')));
+app.get('/workspace.html', requireAuthPage, serveInjectedHtml(path.join(__dirname, 'workspace.html')));
 app.get('/settings.html',    requireAuthPage, serveInjectedHtml(path.join(__dirname, 'settings.html')));
 app.get('/assessment.html',  requireAuthPage, serveInjectedHtml(path.join(__dirname, 'assessment.html')));
 app.get('/academy.html',              (req, res) => res.redirect(301, '/my-academy'));
