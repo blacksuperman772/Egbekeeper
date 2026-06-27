@@ -1428,6 +1428,70 @@ app.post('/api/intake-chat', intakeLimiter, async (req, res) => {
   }
 });
 
+// ── Intake session persistence ────────────────────────────────────────────────
+// Mirrors in-progress intake conversations server-side so they survive tab close,
+// device switch, or private browsing. Falls back gracefully — localStorage is still
+// the primary store; these endpoints layer durability on top.
+
+app.post('/api/intake/save', requireAuthApi, apiLimiter, async (req, res) => {
+  const { mentor, exchangeCount, history, level } = req.body || {};
+  const safeMentor = ['mike', 'ashley'].includes(mentor) ? mentor : 'mike';
+  const safeHistory = Array.isArray(history) ? history.slice(-30) : [];
+  const safeCount   = Math.max(0, parseInt(exchangeCount) || 0);
+  const safeLevel   = typeof level === 'string' ? level.slice(0, 64) : '';
+
+  try {
+    await supabaseAdmin.from('intake_sessions').upsert({
+      user_id:        req.user.id,
+      mentor_key:     safeMentor,
+      exchange_count: safeCount,
+      history:        safeHistory,
+      level:          safeLevel,
+      updated_at:     new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('intake/save error:', err.message);
+    res.status(500).json({ error: 'Save failed' });
+  }
+});
+
+app.get('/api/intake/restore', requireAuthApi, apiLimiter, async (req, res) => {
+  try {
+    const { data } = await supabaseAdmin
+      .from('intake_sessions')
+      .select('mentor_key, exchange_count, history, level, updated_at')
+      .eq('user_id', req.user.id)
+      .maybeSingle();
+
+    if (!data) return res.json(null);
+    // Don't restore sessions older than 7 days
+    if (Date.now() - new Date(data.updated_at).getTime() > 7 * 24 * 60 * 60 * 1000) {
+      return res.json(null);
+    }
+    res.json({
+      mentor:        data.mentor_key,
+      exchangeCount: data.exchange_count,
+      history:       data.history,
+      level:         data.level,
+      savedAt:       new Date(data.updated_at).getTime(),
+    });
+  } catch (err) {
+    console.error('intake/restore error:', err.message);
+    res.json(null);
+  }
+});
+
+app.delete('/api/intake/save', requireAuthApi, apiLimiter, async (req, res) => {
+  try {
+    await supabaseAdmin.from('intake_sessions').delete().eq('user_id', req.user.id);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('intake/delete error:', err.message);
+    res.status(500).json({ error: 'Delete failed' });
+  }
+});
+
 // ── Notebook sync ─────────────────────────────────────────────────────────────
 app.get('/api/notebook/:mentor', requireAuthApi, apiLimiter, async (req, res) => {
   const { mentor } = req.params;
@@ -1563,7 +1627,7 @@ app.post('/api/academy/progress', requireAuthApi, apiLimiter, async (req, res) =
 app.get('/api/profile', requireAuthApi, apiLimiter, async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('user_profiles')
-    .select('mentor, private_notes, north_star, living_identity, guardian_level, subscription_status, last_paid_plan, trader_stage, current_identity, target_identity, readiness_score, assessment_complete')
+    .select('mentor, private_notes, north_star, living_identity, guardian_level, subscription_status, last_paid_plan, trader_stage, current_identity, target_identity, readiness_score, assessment_complete, display_name')
     .eq('id', req.user.id)
     .maybeSingle();
 
@@ -1586,6 +1650,7 @@ app.get('/api/profile', requireAuthApi, apiLimiter, async (req, res) => {
       target_identity:     data.target_identity       || null,
       readiness_score:     data.readiness_score       ?? 0,
       assessment_complete: data.assessment_complete   || false,
+      display_name:        data.display_name          || null,
     },
   });
 });

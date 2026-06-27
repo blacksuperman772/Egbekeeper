@@ -5,14 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Network — EdgeKeeper</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/shared.css" />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --obsidian:  #07050E;
@@ -347,13 +344,6 @@
   <script>
     /* ── CURSOR ── */
     const cur = document.getElementById('cursor');
-    const ring = document.getElementById('cursor-ring');
-    document.addEventListener('mousemove', e => {
-      cur.style.left = e.clientX + 'px';
-      cur.style.top  = e.clientY + 'px';
-      ring.style.left = e.clientX + 'px';
-      ring.style.top  = e.clientY + 'px';
-    });
     document.querySelectorAll('a, button').forEach(el => {
       el.addEventListener('mouseenter', () => { cur.style.width = '14px'; cur.style.height = '14px'; cur.style.opacity = '0.6'; });
       el.addEventListener('mouseleave', () => { cur.style.width = '7px';  cur.style.height = '7px';  cur.style.opacity = '1'; });
@@ -615,5 +605,6 @@
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
+<script src="/assets/cursor.js"></script>
 </body>
 </html>

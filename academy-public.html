@@ -10,12 +10,9 @@
   <meta property="og:type" content="website" />
   <link rel="canonical" href="https://edgekeeper.io/academy" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/shared.css" />
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --black:    #050505;
@@ -478,19 +475,6 @@
 </footer>
 
 <script>
-  // Cursor
-  if (window.matchMedia('(pointer: fine)').matches) {
-    const c = document.getElementById('cursor');
-    const r = document.getElementById('cursor-ring');
-    let mx = 0, my = 0, rx = 0, ry = 0;
-    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-    (function tick() {
-      c.style.left = mx + 'px'; c.style.top = my + 'px';
-      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-      r.style.left = rx + 'px'; r.style.top = ry + 'px';
-      requestAnimationFrame(tick);
-    })();
-  }
 
   // Nav scroll
   window.addEventListener('scroll', () => {
@@ -528,5 +512,6 @@
     if (beginBtn)  { beginBtn.textContent = 'Enter the Academy →'; beginBtn.href = '/my-academy'; }
   }).catch(() => {});
 </script>
+<script src="/assets/cursor.js"></script>
 </body>
 </html>

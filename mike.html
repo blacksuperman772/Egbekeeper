@@ -12,14 +12,11 @@
   <meta name="twitter:title" content="Marcus — Performance Coach — EdgeKeeper" />
   <meta name="twitter:description" content="Marcus is Performance Coach at EdgeKeeper. Whether you are placing your first trade or breaking through a performance ceiling, Marcus builds the structure — and holds you to it." />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/shared.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --black:    #050505;
@@ -679,17 +676,6 @@
 </footer>
 
 <script>
-// Cursor
-const cursor = document.getElementById('cursor');
-const ring   = document.getElementById('cursor-ring');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
-(function tick() {
-  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
-  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
-  ring.style.left=rx+'px'; ring.style.top=ry+'px';
-  requestAnimationFrame(tick);
-})();
 
 // Nav scroll
 const nav = document.getElementById('main-nav');
@@ -703,5 +689,6 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
+<script src="/assets/cursor.js"></script>
 </body>
 </html>

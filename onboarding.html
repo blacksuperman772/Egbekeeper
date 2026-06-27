@@ -4,11 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EdgeKeeper — Private Intake</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/shared.css" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --black:     #050505;
@@ -770,17 +767,6 @@ let exchangeCount = 0;
 let awaitingReply = false;
 const history = []; // {role, content}
 
-// ── CURSOR ────────────────────────────────────────────────────────────
-const curEl  = document.getElementById('cursor');
-const ringEl = document.getElementById('cursor-ring');
-let mx=0, my=0, rx=0, ry=0;
-document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
-(function animCursor() {
-  curEl.style.left=mx+'px'; curEl.style.top=my+'px';
-  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
-  ringEl.style.left=rx+'px'; ringEl.style.top=ry+'px';
-  requestAnimationFrame(animCursor);
-})();
 
 // ── BG ────────────────────────────────────────────────────────────────
 (function initBg() {
@@ -1338,23 +1324,29 @@ const INTAKE_SAVE_KEY = 'ek_intake_progress';
 
 function saveIntakeProgress() {
   if (!mentor || exchangeCount === 0) return;
-  try {
-    localStorage.setItem(INTAKE_SAVE_KEY, JSON.stringify({
-      mentor:       mentor.key,
-      exchangeCount,
-      history:      history.slice(-30),
-      level:        sessionStorage.getItem('ek_selected_level') || localStorage.getItem('ek_selected_level_onboarding') || '',
-      savedAt:      Date.now(),
-    }));
-  } catch (_) {}
+  const data = {
+    mentor:       mentor.key,
+    exchangeCount,
+    history:      history.slice(-30),
+    level:        sessionStorage.getItem('ek_selected_level') || localStorage.getItem('ek_selected_level_onboarding') || '',
+    savedAt:      Date.now(),
+  };
+  try { localStorage.setItem(INTAKE_SAVE_KEY, JSON.stringify(data)); } catch (_) {}
+  // Mirror to server (fire-and-forget — localStorage is the primary store)
+  fetch('/api/intake/save', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ mentor: data.mentor, exchangeCount: data.exchangeCount, history: data.history, level: data.level }),
+  }).catch(() => {});
 }
 
 function clearIntakeProgress() {
   localStorage.removeItem(INTAKE_SAVE_KEY);
+  fetch('/api/intake/save', { method: 'DELETE' }).catch(() => {});
 }
 
 // ── AUTO INIT ─────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   const p = new URLSearchParams(window.location.search);
 
   // Capture plan selection from pricing CTAs
@@ -1379,12 +1371,36 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // ── Refresh recovery: restore mid-intake session ───────────────────
   // Only restore when arriving fresh (no ?mentor= means it's not a forced new session)
-  const savedRaw = !p.get('mentor') && localStorage.getItem(INTAKE_SAVE_KEY);
-  if (savedRaw) {
+  if (!p.get('mentor')) {
+    let saved = null;
+
+    // 1. Try localStorage first (fast, no network round-trip)
     try {
-      const saved = JSON.parse(savedRaw);
+      const raw = localStorage.getItem(INTAKE_SAVE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.history?.length && Date.now() - (parsed.savedAt || 0) < 7200000) {
+          saved = parsed;
+        } else {
+          localStorage.removeItem(INTAKE_SAVE_KEY);
+        }
+      }
+    } catch (_) { localStorage.removeItem(INTAKE_SAVE_KEY); }
+
+    // 2. Fall back to server (covers device switch and private browsing)
+    if (!saved) {
+      try {
+        const r = await fetch('/api/intake/restore');
+        if (r.ok) {
+          const serverData = await r.json();
+          if (serverData?.history?.length) saved = serverData;
+        }
+      } catch (_) {}
+    }
+
+    if (saved) {
       const m = MENTORS[saved.mentor];
-      if (m && saved.history?.length && Date.now() - (saved.savedAt || 0) < 7200000) {
+      if (m) {
         mentor = m;
         applyTheme(m);
         history.push(...saved.history);
@@ -1417,7 +1433,7 @@ window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => document.getElementById('user-input')?.focus(), 100);
         return;
       }
-    } catch (_) { localStorage.removeItem(INTAKE_SAVE_KEY); }
+    }
   }
 
   // Normal fresh flow
@@ -1432,5 +1448,6 @@ window.addEventListener('DOMContentLoaded', () => {
   selectMentor('mike');
 });
 </script>
+<script src="/assets/cursor.js"></script>
 </body>
 </html>

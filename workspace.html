@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EdgeKeeper — Workspace</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/shared.css" />
 
   <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.19.2/dist/livekit-client.umd.js"></script>
   <script>window.livekitClient = window.LivekitClient;</script>
@@ -15,7 +13,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --black:    #050505;
@@ -2398,22 +2395,6 @@ function applyGuardianBanner(level) {
 let mentor = null;
 let msgQueue = [];
 
-// ── CURSOR ───────────────────────────────────────────────────────────
-const curEl = document.getElementById('cursor');
-const ringEl = document.getElementById('cursor-ring');
-if (curEl && ringEl) {
-  let mx = 0, my = 0, rx = 0, ry = 0;
-  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-  (function animCursor() {
-    curEl.style.left = mx+'px'; curEl.style.top = my+'px';
-    rx += (mx-rx)*.12; ry += (my-ry)*.12;
-    ringEl.style.left = rx+'px'; ringEl.style.top = ry+'px';
-    requestAnimationFrame(animCursor);
-  })();
-} else {
-  // Custom cursor elements missing — restore default system cursor
-  document.body.style.cursor = 'default';
-}
 
 // ── THEME ─────────────────────────────────────────────────────────────
 function applyTheme(m) {
@@ -5289,5 +5270,6 @@ async function endVoiceSession() {
 }
 
 </script>
+<script src="/assets/cursor.js"></script>
 </body>
 </html>

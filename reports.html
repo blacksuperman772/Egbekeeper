@@ -6,12 +6,9 @@
   <title>Behavioral Reports — EdgeKeeper</title>
   <meta name="robots" content="noindex, nofollow" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/shared.css" />
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --obsidian:    #07050E;
@@ -599,13 +596,6 @@
 
     // ── CURSOR ─────────────────────────────────────────────────────
     const cursor = document.getElementById('cursor');
-    const cursorRing = document.getElementById('cursor-ring');
-    document.addEventListener('mousemove', e => {
-      cursor.style.left = e.clientX + 'px';
-      cursor.style.top = e.clientY + 'px';
-      cursorRing.style.left = e.clientX + 'px';
-      cursorRing.style.top = e.clientY + 'px';
-    });
     document.addEventListener('mousedown', () => {
       cursor.style.width = '5px'; cursor.style.height = '5px';
     });
@@ -806,5 +796,6 @@
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
+<script src="/assets/cursor.js"></script>
 </body>
 </html>

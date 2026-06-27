@@ -4,14 +4,11 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Study — EdgeKeeper Academy</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/shared.css" />
   <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.19.2/dist/livekit-client.umd.js"></script>
   <script>window.livekitClient = window.LivekitClient;</script>
   <script src="https://cdn.jsdelivr.net/npm/@11labs/client@0.2.0/dist/lib.umd.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --void:      #07050E;
@@ -205,13 +202,13 @@
     #thread::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
 
     .msg { max-width: 680px; }
-    .msg.companion { align-self: flex-start; }
-    .msg.user { align-self: flex-end; }
+    .msg.companion { align-self: flex-start; width: 100%; }
+    .msg.user { align-self: flex-end; max-width: 62%; }
 
     .msg-label {
-      font-family: var(--mono); font-size: 0.52rem;
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--dim); margin-bottom: 7px;
+      font-family: var(--mono); font-size: 0.48rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 10px;
     }
     .msg.user .msg-label { text-align: right; }
 
@@ -219,8 +216,30 @@
       font-size: 0.88rem; line-height: 1.8;
       color: rgba(255,255,255,0.78);
     }
+    .msg.companion .msg-body {
+      font-family: var(--serif);
+      font-size: 1.02rem;
+      font-weight: 300;
+      line-height: 1.9;
+      color: rgba(245,242,236,0.88);
+      padding-left: 18px;
+      border-left: 1px solid rgba(201,168,92,0.45);
+      letter-spacing: 0.01em;
+    }
+    .msg.companion .msg-body strong { font-weight: 500; color: rgba(245,242,236,0.96); }
+    .msg.companion .msg-body em { font-style: italic; color: rgba(201,168,92,0.85); }
+    .msg.companion .msg-body code {
+      font-family: var(--mono); font-size: 0.8em;
+      background: rgba(255,255,255,0.05); padding: 1px 5px;
+      border-radius: 2px; color: var(--gold);
+    }
     .msg.user .msg-body {
-      color: var(--muted); text-align: right;
+      font-size: 0.845rem;
+      color: rgba(212,208,200,0.6);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 14px;
+      line-height: 1.7;
     }
 
     .thinking-dots {
@@ -283,6 +302,8 @@
     <span class="top-track-label" id="top-track-label">Academy</span>
   </div>
   <div class="top-right">
+    <a href="/settings" class="curriculum-link">Account</a>
+    <a href="/workspace" class="curriculum-link">Marcus →</a>
     <a href="/my-academy" class="curriculum-link">← Curriculum</a>
   </div>
 </div>
@@ -322,6 +343,16 @@
         <div class="companion-badge-desc">Your Academy mentor for this module. Ask Theo anything: he explains, gives examples, and checks your understanding before you move on.</div>
       </div>
     </div>
+
+    <a href="/workspace" style="text-decoration:none;">
+      <div class="companion-badge" style="margin-top:12px; opacity:0.65; transition:opacity 0.2s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.65'">
+        <img class="companion-badge-avatar" src="/assets/mike-portrait.png" alt="Marcus" onerror="this.style.display='none'" />
+        <div>
+          <div class="companion-badge-label">Marcus · Performance Coach</div>
+          <div class="companion-badge-desc">Ready to apply what you're learning? Marcus coaches your trading performance, accountability, and development.</div>
+        </div>
+      </div>
+    </a>
   </div>
 
   <!-- COMPANION THREAD -->
@@ -482,11 +513,18 @@ async function syncProgress(payload) {
 // on a shared device never sees the previous user's cached progress.
 (async () => {
   try {
-    // 1. Establish who is logged in right now
+    // 1. Establish who is logged in right now + fetch display name for Theo
     let currentUserId = null;
     try {
-      const meRes = await fetch('/api/auth/me');
+      const [meRes, profRes] = await Promise.all([
+        fetch('/api/auth/me'),
+        fetch('/api/profile'),
+      ]);
       if (meRes.ok) { const me = await meRes.json(); currentUserId = me.email || null; }
+      if (profRes.ok) {
+        const prof = await profRes.json();
+        if (prof?.profile?.display_name) studentName = prof.profile.display_name;
+      }
     } catch (_) {}
 
     // 2. Purge stale cache when the user changed
@@ -620,6 +658,18 @@ const input     = document.getElementById('study-input');
 const sendBtn   = document.getElementById('send-btn');
 const history   = [];
 let   busy      = false;
+let   studentName = null;
+
+function renderMarkdown(raw) {
+  if (!raw) return '';
+  const s = escText(raw);
+  return s
+    .replace(/\*\*([^*\r\n]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\r\n]+)\*/g, '<em>$1</em>')
+    .replace(/_([^_\r\n]+)_/g, '<em>$1</em>')
+    .replace(/`([^`\r\n]+)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
+}
 
 function addMsg(role, text) {
   const wrap = document.createElement('div');
@@ -629,7 +679,11 @@ function addMsg(role, text) {
   label.textContent = role === 'companion' ? 'Theo' : 'You';
   const body = document.createElement('div');
   body.className = 'msg-body';
-  body.textContent = text;
+  if (role === 'companion') {
+    body.innerHTML = renderMarkdown(text);
+  } else {
+    body.textContent = text;
+  }
   wrap.appendChild(label);
   wrap.appendChild(body);
   thread.appendChild(wrap);
@@ -833,17 +887,20 @@ const LESSON_SPECS = {
 // ── THEO'S MEMORY — a light summary of what this student has done across the Academy,
 // hydrated from progress already merged into localStorage from the DB.
 function buildTheoMemory() {
+  const nameLine = studentName
+    ? `\nSTUDENT NAME: ${studentName}. Use their name naturally and sparingly — at most once or twice per conversation, never as a verbal tic.`
+    : '';
   const done = [];
   for (const key in MODULES) {
     const ts = localStorage.getItem('ek_academy_' + key + '_completed');
     if (ts) done.push({ title: MODULES[key].title, ts: parseInt(ts, 10) || 0 });
   }
   if (!done.length) {
-    return '\nYOUR MEMORY OF THIS STUDENT: This may be one of your first lessons together. Set the tone warmly and assume no prior knowledge.';
+    return nameLine + '\nYOUR MEMORY OF THIS STUDENT: This may be one of your first lessons together. Set the tone warmly and assume no prior knowledge.';
   }
   done.sort((a, b) => a.ts - b.ts);
   const recent = done.slice(-6).map(d => d.title).join(', ');
-  return `\nYOUR MEMORY OF THIS STUDENT (refer to it naturally; never recite it as a list): They have completed ${done.length} module(s) with you, most recently ${recent}. Connect this lesson to what they already know wherever it genuinely helps.`;
+  return nameLine + `\nYOUR MEMORY OF THIS STUDENT (refer to it naturally; never recite it as a list): They have completed ${done.length} module(s) with you, most recently ${recent}. Connect this lesson to what they already know wherever it genuinely helps.`;
 }
 
 async function callCompanion(userMsg) {

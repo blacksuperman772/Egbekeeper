@@ -7,12 +7,9 @@
   <meta name="description" content="Your development record at EdgeKeeper. Where you began, what has happened, and where you are becoming." />
   <meta name="robots" content="noindex, nofollow" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Grotesk:wght@300;400&family=Space+Mono:wght@400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/shared.css" />
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --void:           #07050E;
@@ -684,23 +681,6 @@
 (function () {
   'use strict';
 
-  /* ── CURSOR ─────────────────────────────────────────────────────── */
-  const cursor     = document.getElementById('cursor');
-  const cursorRing = document.getElementById('cursor-ring');
-  let mx = -100, my = -100;
-
-  document.addEventListener('mousemove', e => {
-    mx = e.clientX; my = e.clientY;
-    cursor.style.left = mx + 'px';
-    cursor.style.top  = my + 'px';
-  });
-
-  (function animateRing() {
-    cursorRing.style.left = mx + 'px';
-    cursorRing.style.top  = my + 'px';
-    requestAnimationFrame(animateRing);
-  })();
-
   /* ── NAV SCROLL ────────────────────────────────────────────────── */
   const nav = document.getElementById('main-nav');
   window.addEventListener('scroll', () => {
@@ -1012,5 +992,6 @@
 
 })();
 </script>
+<script src="/assets/cursor.js"></script>
 </body>
 </html>
