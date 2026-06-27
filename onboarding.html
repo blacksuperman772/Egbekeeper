@@ -607,7 +607,7 @@ const MENTORS = {
       "Growth motivation appears genuine, not performative.",
       "Beginning to trust the room.",
     ],
-    guardianQ: "One last thing — and this one matters. When I can see your account and I can see you're about to do something you'll regret, what do you want me to do?",
+    guardianQ: "One last thing before you go inside. Iris needs to know how far you want her to go when she sees you about to make a decision you will regret.",
     transition: "I've got what I need.\nThere's real material here to work with.\nLet's get started.",
   },
   ashley: {
@@ -630,7 +630,7 @@ const MENTORS = {
       "Hope is present and feels earned, not naive.",
       "Beginning to let their guard down.",
     ],
-    guardianQ: "Before I take you to your workspace — I want to ask you something important. If I'm ever watching and I see you spiralling, what do you want me to do? I want to know before that moment comes.",
+    guardianQ: "Before I take you inside, there is one thing Iris needs from you. When she sees you in that spiral, she needs to know how far you want her to go.",
     transition: "I've got what I need.\nI can already see what we need to work on.\nLet's begin.",
   },
 };
@@ -1061,7 +1061,9 @@ Under ${isFreeAssessment ? '100' : '140'} words. First person. Human. Never robo
     });
     if (!res.ok) throw new Error();
     const data = await res.json();
-    const text = (data.content||'').trim().replace(/<[^>]*>/g,'');
+    let text = (data.content||'').trim();
+    try { const p = JSON.parse(text); if (p.reply) text = p.reply; } catch (_) {}
+    text = text.replace(/<[^>]*>/g,'');
     if (text.length > 20) {
       document.getElementById('assessment-body').textContent = text;
     } else {
