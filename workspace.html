@@ -3966,8 +3966,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   refreshUnreadBadge();
 
   // Load mentor notebook — localStorage first, then sync from server (cross-device)
-  mentorNotebook = loadNotebook(m);
-  await syncHistoryFromServer(m);
+  mentorNotebook = loadNotebook(mentor.key);
+  await syncHistoryFromServer(mentor.key);
   mentorNotebook.sessionCount = (mentorNotebook.sessionCount || 0) + 1;
   saveNotebook(mentorNotebook);
 
