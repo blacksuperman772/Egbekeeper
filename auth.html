@@ -530,10 +530,31 @@
       </p>
     </div>
 
+    <!-- SIGN-UP PANEL — shown when arriving from pricing with ?plan= -->
+    <div id="signup-state" style="display:none;">
+      <div class="form-inner">
+        <div class="field">
+          <label for="su-email">Email</label>
+          <input type="email" id="su-email" autocomplete="email" placeholder="you@example.com" required />
+        </div>
+        <div class="field">
+          <label for="su-password">Password</label>
+          <input type="password" id="su-password" autocomplete="new-password" placeholder="8 characters minimum" required />
+        </div>
+        <button class="btn-primary" id="su-btn" onclick="handleSignUp()">Create account &amp; continue</button>
+      </div>
+      <p style="text-align:center;margin-top:20px;font-size:0.75rem;color:var(--muted);">
+        Already have an account?
+        <a href="#" style="color:var(--gold-dim);text-decoration:none;transition:color .2s;"
+           onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'"
+           onclick="showSignIn();return false;">Sign in instead →</a>
+      </p>
+    </div>
+
     <!-- NEW HERE LINK -->
-    <p style="text-align:center; margin-top:28px; font-size:0.78rem; color:var(--muted);">
+    <p id="new-here-p" style="text-align:center; margin-top:28px; font-size:0.78rem; color:var(--muted);">
       New to EdgeKeeper?
-      <a href="/onboarding.html" style="color:var(--gold-dim); text-decoration:none; transition:color .2s;"
+      <a href="/onboarding.html" id="new-here-link" style="color:var(--gold-dim); text-decoration:none; transition:color .2s;"
          onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--gold-dim)'">
         Begin your intake →
       </a>
@@ -597,14 +618,21 @@
   // ── Academy mode — when the user arrives via "Learn with Theo" the whole auth
   // surface points at the Academy, not the Marcus intake. (Fixes the inconsistency
   // where every path funnelled into "Begin your intake → Marcus".)
-  const _isAcademy = (_next && _next.indexOf('/academy') === 0) || sessionStorage.getItem('ek_auth_intent') === 'academy';
+  const _isAcademy     = (_next && _next.indexOf('/academy') === 0) || sessionStorage.getItem('ek_auth_intent') === 'academy';
   if (_isAcademy) sessionStorage.setItem('ek_auth_intent', 'academy');
+
+  const _isPurchaseMode = !!(_plan && _plan !== 'free');
+
   window.addEventListener('DOMContentLoaded', () => {
-    if (!_isAcademy) return;
-    const newHere = document.querySelector('a[href="/onboarding.html"]');
-    if (newHere) { newHere.setAttribute('href', '/academy-onboarding'); newHere.textContent = 'Start the Academy →'; }
-    const body = document.getElementById('confirm-body');
-    if (body) body.dataset.academy = '1';
+    if (_isAcademy) {
+      const newHere = document.getElementById('new-here-link');
+      if (newHere) { newHere.setAttribute('href', '/academy-onboarding'); newHere.textContent = 'Start the Academy →'; }
+      const body = document.getElementById('confirm-body');
+      if (body) body.dataset.academy = '1';
+    }
+    if (_isPurchaseMode) {
+      showSignUp();
+    }
   });
 
   // ── State ────────────────────────────────────────────────────────────────────
@@ -689,15 +717,12 @@
       body: JSON.stringify({ access_token: accessToken, refresh_token: refreshToken }),
     });
 
-    // If the landing page explicitly asked for onboarding, honour it
     if (_next === 'onboarding') {
       window.location.href = '/onboarding.html';
       return;
     }
 
-    // If redirected here from a protected page, send them back to it
-    // Only allow same-origin relative paths. Reject protocol-relative ("//evil.com")
-    // and absolute URLs to prevent an open redirect after login.
+    // Only allow same-origin relative paths — prevents open redirect after login
     const storedDest = sessionStorage.getItem('ek_post_auth_dest');
     if (storedDest && /^\/[^/\\]/.test(storedDest)) {
       sessionStorage.removeItem('ek_post_auth_dest');
@@ -705,10 +730,26 @@
       return;
     }
 
-    // Resolve plan — URL param takes precedence over sessionStorage
     const pendingPlan    = _plan || sessionStorage.getItem('ek_plan');
     const pendingBilling = sessionStorage.getItem('ek_billing') || 'monthly';
     const isPaidPlan     = pendingPlan && pendingPlan !== 'free';
+
+    // Initiate a Polar checkout and redirect; returns true if redirect happened
+    async function attemptBilling() {
+      const res  = await fetch('/api/billing/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: pendingPlan, billing: pendingBilling }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        sessionStorage.removeItem('ek_plan');
+        sessionStorage.removeItem('ek_billing');
+        window.location.href = data.url;
+        return true;
+      }
+      return false;
+    }
 
     try {
       const { data: profile } = await sb
@@ -716,46 +757,99 @@
         .select('onboarding_complete, subscription_status, bypass_subscription, academy_track')
         .single();
 
-      const onboarded     = profile?.onboarding_complete;
-      const academyTrack  = profile?.academy_track;
+      const onboarded    = profile?.onboarding_complete;
+      const academyTrack = profile?.academy_track;
 
-      // Academy-enrolled users who haven't done mentor onboarding → academy dashboard
       if (academyTrack && !onboarded && !isPaidPlan) {
         window.location.href = '/academy.html';
         return;
       }
 
-      // User has a paid plan intent AND has finished onboarding → go straight to billing
-      if (isPaidPlan && onboarded) {
-        // Only trigger billing if they're not already on that plan or higher
-        const currentPlan = profile?.subscription_status || 'free';
-        const bypass      = profile?.bypass_subscription;
-        const planRank    = { free: 0, starter: 1, pro: 2, professional: 3, institutional: 4 };
+      // Paid intent → go straight to billing regardless of onboarding status.
+      // Direct buyers shouldn't be forced through intake before their card clears.
+      if (isPaidPlan) {
+        const currentPlan  = profile?.subscription_status || 'free';
+        const bypass       = profile?.bypass_subscription;
+        const planRank     = { free: 0, starter: 1, pro: 2, professional: 3, institutional: 4 };
         const needsUpgrade = !bypass && (planRank[currentPlan] || 0) < (planRank[pendingPlan] || 1);
-
         if (needsUpgrade) {
-          try {
-            const billingRes = await fetch('/api/billing/initiate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ plan: pendingPlan, billing: pendingBilling }),
-            });
-            const billingData = await billingRes.json();
-            if (billingData.url) {
-              sessionStorage.removeItem('ek_plan');
-              sessionStorage.removeItem('ek_billing');
-              window.location.href = billingData.url;
-              return;
-            }
-          } catch (_) { /* fall through to workspace */ }
+          try { if (await attemptBilling()) return; } catch (_) {}
         }
-        window.location.href = '/workspace.html';
+        window.location.href = onboarded ? '/workspace.html' : '/onboarding.html';
         return;
       }
 
       window.location.href = onboarded ? '/workspace.html' : '/onboarding.html';
     } catch (_) {
+      // No profile yet (brand-new sign-up) — still try billing if a paid plan is pending
+      if (isPaidPlan) {
+        try { if (await attemptBilling()) return; } catch (_2) {}
+      }
       window.location.href = '/onboarding.html';
+    }
+  }
+
+  // ── Sign-up / sign-in mode toggle ────────────────────────────────────────────
+  function showSignUp() {
+    document.getElementById('form-state').style.display    = 'none';
+    document.getElementById('signup-state').style.display  = '';
+    document.getElementById('new-here-p').style.display    = 'none';
+    document.querySelector('.auth-eyebrow').textContent    = 'New membership';
+    document.querySelector('.auth-headline').textContent   = 'Create your account.';
+    document.querySelector('.auth-subline').textContent    = 'One step from your membership. Takes 30 seconds.';
+    document.getElementById('su-email')?.focus();
+  }
+
+  function showSignIn() {
+    document.getElementById('signup-state').style.display  = 'none';
+    document.getElementById('form-state').style.display    = '';
+    document.getElementById('new-here-p').style.display    = '';
+    document.querySelector('.auth-eyebrow').textContent    = 'Private Access';
+    document.querySelector('.auth-headline').textContent   = _isPurchaseMode ? 'Sign in to continue.' : 'Welcome back.';
+    document.querySelector('.auth-subline').textContent    = _isPurchaseMode
+      ? 'Sign in to complete your membership.'
+      : 'Your mentor is where you left them.';
+    document.getElementById('email')?.focus();
+  }
+
+  // ── Sign-up handler (purchase path) ──────────────────────────────────────────
+  async function handleSignUp() {
+    const email    = document.getElementById('su-email').value.trim();
+    const password = document.getElementById('su-password').value;
+
+    if (!email)                    { showError('Please enter your email address.'); return; }
+    if (password.length < 8)       { showError('Password must be at least 8 characters.'); return; }
+
+    const btn = document.getElementById('su-btn');
+    btn.disabled    = true;
+    btn.textContent = 'Creating account…';
+    clearError();
+
+    try {
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) throw error;
+
+      if (data.session) {
+        // Email confirmation not required — session returned immediately
+        await redirectAfterAuth(data.session.access_token, data.session.refresh_token);
+      } else {
+        // Supabase requires email confirmation first
+        document.getElementById('signup-state').style.display = 'none';
+        document.getElementById('confirm-body').innerHTML =
+          `We've sent a confirmation link to <strong>${email}</strong>.<br>
+           Verify your email, then sign in to complete your purchase.`;
+        document.getElementById('confirm-state').classList.add('visible');
+      }
+    } catch (err) {
+      const msg = err?.message || '';
+      if (/already registered|already exists|User already registered/i.test(msg)) {
+        showError('An account with this email already exists.');
+        showSignIn();
+      } else {
+        showError(msg || 'Could not create account. Please try again.');
+        btn.disabled    = false;
+        btn.textContent = 'Create account & continue';
+      }
     }
   }
 

@@ -1389,6 +1389,7 @@
     @media (max-width: 900px) {
       nav { padding: 20px 24px; }
       .nav-links { display: none; }
+      .nav-signin { display: none; }
       .hamburger { display: flex; }
       .section-inner { padding: 0 24px; }
       .inst-grid, .engine-grid, .mentor-card { grid-template-columns: 1fr; }
@@ -1556,7 +1557,7 @@
     <li><a href="#pricing">Membership</a></li>
   </ul>
   <div style="display:flex;align-items:center;gap:20px;position:relative;">
-    <a href="/auth.html" style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--faint);text-decoration:none;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--faint)'">Sign In</a>
+    <a href="/auth.html" class="nav-signin" style="font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--faint);text-decoration:none;transition:color .3s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--faint)'">Sign In</a>
     <a href="#invitation" class="nav-cta">Apply</a>
     <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu" onclick="toggleMobileNav()">
       <span></span><span></span><span></span>

@@ -414,8 +414,9 @@ function selectTrack(card) {
 async function beginAcademy() {
   if (!selectedTrack) return;
 
-  // Confirmed-free user who chose a gated track → pricing first
-  if (onbAccessKnown && onbAccess !== 'full' && GATED_TRACK_IDS.has(selectedTrack)) {
+  // Any user without confirmed paid access who chose a gated track → pricing first.
+  // onbAccess defaults to 'free', so unauthenticated users are caught here too.
+  if (GATED_TRACK_IDS.has(selectedTrack) && onbAccess !== 'full') {
     window.location.href = '/pricing.html?from=academy&track=' + encodeURIComponent(selectedTrack);
     return;
   }
