@@ -437,6 +437,13 @@ app.get('/terms.html',    serveInjectedHtml(path.join(__dirname, 'terms.html')))
 app.get('/404.html',      (req, res) => { res.status(404); serveInjectedHtml(path.join(__dirname, '404.html'))(req, res); });
 app.get('/robots.txt',    (req, res) => res.type('text/plain').sendFile(path.join(__dirname, 'robots.txt')));
 app.get('/sitemap.xml',   (req, res) => res.type('application/xml').sendFile(path.join(__dirname, 'sitemap.xml')));
+// Favicon — browsers auto-request /favicon.ico; serve the brand SVG for both.
+// Modern browsers render an SVG favicon when the content-type is image/svg+xml.
+app.get(['/favicon.ico', '/favicon.svg'], (req, res) => {
+  res.type('image/svg+xml');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.sendFile(path.join(__dirname, 'favicon.svg'));
+});
 // ── Mentor + Method pages (public) ───────────────────────────────────────────
 // Mentor office pages. Public URLs use the display names (/marcus, /iris).
 // Internal slugs stay mike/ashley everywhere else (DB, API, voice config).
