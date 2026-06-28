@@ -441,31 +441,30 @@ app.get('/auth.html', async (req, res, next) => {
 }, serveInjectedHtml(path.join(__dirname, 'auth.html')));
 
 app.get('/reset-password.html', serveInjectedHtml(path.join(__dirname, 'reset-password.html')));
-app.get('/privacy.html',  (req, res) => res.sendFile(path.join(__dirname, 'privacy.html')));
-app.get('/terms.html',    (req, res) => res.sendFile(path.join(__dirname, 'terms.html')));
-app.get('/404.html',      (req, res) => res.status(404).sendFile(path.join(__dirname, '404.html')));
+app.get('/privacy.html',  serveInjectedHtml(path.join(__dirname, 'privacy.html')));
+app.get('/terms.html',    serveInjectedHtml(path.join(__dirname, 'terms.html')));
+app.get('/404.html',      (req, res) => { res.status(404); serveInjectedHtml(path.join(__dirname, '404.html'))(req, res); });
 app.get('/robots.txt',    (req, res) => res.type('text/plain').sendFile(path.join(__dirname, 'robots.txt')));
 app.get('/sitemap.xml',   (req, res) => res.type('application/xml').sendFile(path.join(__dirname, 'sitemap.xml')));
 // ── Mentor + Method pages (public) ───────────────────────────────────────────
 // Mentor office pages. Public URLs use the display names (/marcus, /iris).
 // Internal slugs stay mike/ashley everywhere else (DB, API, voice config).
-app.get('/marcus',  (req, res) => res.sendFile(path.join(__dirname, 'mike.html')));
-app.get('/iris',    (req, res) => res.sendFile(path.join(__dirname, 'ashley.html')));
-app.get(['/theo', '/theo.html'], (req, res) => res.sendFile(path.join(__dirname, 'theo.html')));
+app.get('/marcus',  serveInjectedHtml(path.join(__dirname, 'mike.html')));
+app.get('/iris',    serveInjectedHtml(path.join(__dirname, 'ashley.html')));
+app.get(['/theo', '/theo.html'], serveInjectedHtml(path.join(__dirname, 'theo.html')));
 // 301 the old slug URLs so existing links and bookmarks still resolve.
 app.get(['/mike', '/mike.html'],     (req, res) => res.redirect(301, '/marcus'));
 app.get(['/ashley', '/ashley.html'], (req, res) => res.redirect(301, '/iris'));
-app.get('/method',  (req, res) => res.sendFile(path.join(__dirname, 'method.html')));
+app.get('/method',  serveInjectedHtml(path.join(__dirname, 'method.html')));
 // Public academy overview — visible to everyone, no auth required
-app.get('/academy', (req, res) => res.sendFile(path.join(__dirname, 'academy-public.html')));
+app.get('/academy', serveInjectedHtml(path.join(__dirname, 'academy-public.html')));
 // Authenticated curriculum — the actual track/module page
 app.get('/my-academy', requireAuthPage, serveInjectedHtml(path.join(__dirname, 'academy.html')));
 
 app.get('/pricing.html',    (req, res) => {
   const f = path.join(__dirname, 'pricing.html');
   if (fs.existsSync(f)) {
-    res.setHeader('Cache-Control', 'no-cache');
-    res.sendFile(f);
+    serveInjectedHtml(f)(req, res);
   } else {
     res.redirect('/edgekeeper.html#pricing');
   }
@@ -599,8 +598,8 @@ app.get('/network.html',      requireAuthPage, serveInjectedHtml(path.join(__dir
 app.get('/network',           requireAuthPage, serveInjectedHtml(path.join(__dirname, 'network.html')));
 app.get('/research.html',     requireAuthPage, serveInjectedHtml(path.join(__dirname, 'research.html')));
 app.get('/research',          requireAuthPage, serveInjectedHtml(path.join(__dirname, 'research.html')));
-app.get('/paths.html',        (req, res) => res.sendFile(path.join(__dirname, 'paths.html')));
-app.get('/paths',             (req, res) => res.sendFile(path.join(__dirname, 'paths.html')));
+app.get('/paths.html',        serveInjectedHtml(path.join(__dirname, 'paths.html')));
+app.get('/paths',             serveInjectedHtml(path.join(__dirname, 'paths.html')));
 
 // ── Admin dashboard (admin only) ──────────────────────────────────────────────
 app.get('/admin.html', requireAuthPage, requireAdminPage, serveInjectedHtml(path.join(__dirname, 'admin.html')));
@@ -4401,7 +4400,7 @@ app.post('/api/network/message', requireAdmin, adminLimiter, async (req, res) =>
 // ── Catch-all 404 ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
   const page404 = path.join(__dirname, '404.html');
-  if (fs.existsSync(page404)) res.status(404).sendFile(page404);
+  if (fs.existsSync(page404)) { res.status(404); serveInjectedHtml(page404)(req, res); }
   else res.status(404).send('Not found');
 });
 
