@@ -66,8 +66,11 @@ app.use((req, res, next) => {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      // No unsafe-inline; HTML pages inject a per-request nonce via serveInjectedHtml
-      "script-src 'self' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net",
+      // 'unsafe-inline' is required: the site wires interactivity through inline
+      // event handlers (onclick/onsubmit/etc., 160+ across pages). A nonce-based
+      // policy does NOT cover inline event handlers and silently disables them,
+      // which breaks the menu, intake form, and every interactive control.
+      "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src https://fonts.gstatic.com",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.openai.com https://api.polar.sh https://api.elevenlabs.io wss://api.elevenlabs.io wss://livekit.rtc.elevenlabs.io https://livekit.rtc.elevenlabs.io",
@@ -147,23 +150,11 @@ function serveInjectedHtml(filePath) {
   return (req, res) => {
     try {
       const raw   = htmlCache.get(filePath) ?? fs.readFileSync(filePath, 'utf8');
-      const nonce = crypto.randomBytes(16).toString('base64');
-      let html    = injectSupabaseConfig(raw);
-      html        = injectNonce(html, nonce);
+      const html  = injectSupabaseConfig(raw);
 
-      // Per-page CSP overrides the global header — adds nonce to script-src
-      res.setHeader(
-        'Content-Security-Policy',
-        [
-          "default-src 'self'",
-          `script-src 'self' 'nonce-${nonce}' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net`,
-          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-          "font-src https://fonts.gstatic.com",
-          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.openai.com https://api.polar.sh https://api.elevenlabs.io wss://api.elevenlabs.io wss://livekit.rtc.elevenlabs.io https://livekit.rtc.elevenlabs.io",
-          "img-src 'self' data:",
-          "frame-ancestors 'none'",
-        ].join('; ')
-      );
+      // The global CSP (set in the security middleware above) already allows the
+      // inline scripts and event handlers this page relies on. No per-page CSP
+      // override or nonce injection — that approach breaks inline event handlers.
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.send(html);
