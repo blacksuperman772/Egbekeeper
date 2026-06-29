@@ -575,6 +575,7 @@ app.get('/profile.html',     requireAuthPage, serveInjectedHtml(path.join(__dirn
 app.get('/profile',          requireAuthPage, (req, res) => res.redirect('/profile.html'));
 app.get('/workspace.html', requireAuthPage, serveInjectedHtml(path.join(__dirname, 'workspace.html')));
 app.get('/settings.html',    requireAuthPage, serveInjectedHtml(path.join(__dirname, 'settings.html')));
+app.get('/settings',         (req, res) => res.redirect('/settings.html'));
 app.get('/assessment.html',  requireAuthPage, serveInjectedHtml(path.join(__dirname, 'assessment.html')));
 app.get('/academy.html',              (req, res) => res.redirect(301, '/my-academy'));
 // Academy onboarding is intentionally public — new users arrive before signup

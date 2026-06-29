@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate icon" href="/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EdgeKeeper — Workspace</title>
 
@@ -2095,6 +2097,10 @@
       </button>
 
       <div class="nav-group-label" style="margin-top:8px">Institution</div>
+      <button class="nav-item" onclick="window.location='/my-academy'">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4.5L8 2l6 2.5L8 7z"/><path d="M2 4.5v5L8 12l6-2.5v-5"/></svg>
+        Theo's Academy
+      </button>
       <button class="nav-item" onclick="window.location='/settings.html'">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.5 3.5l.7.7M11.8 11.8l.7.7M3.5 12.5l.7-.7M11.8 4.2l.7-.7"/></svg>
         Settings
@@ -2574,6 +2580,15 @@ async function sendChat() {
   if (panel === 'breakroom') {
     await getAIResponse('The user wants to enter the break room. Respond briefly, then the break room will activate.', true);
     setTimeout(() => triggerBreakRoom(4), 2000);
+  } else if (panel && isPanelGated(panel)) {
+    // Gated tool: don't pretend it opened. Marcus names the limit in his own voice,
+    // then a working upgrade link follows. finally{} guarantees the nudge shows even
+    // if the AI acknowledgment is slow or fails.
+    try {
+      await getAIResponse(`The user tried to open the "${panel}" tool, but it lives in a membership tier above their current plan. In your own voice — plain, warm, not a sales pitch — tell them that one's behind the membership and they can open it whenever they decide to step up. One or two sentences, then stop.`, true);
+    } finally {
+      showUpgradeNudge();
+    }
   } else if (panel) {
     showPanel(panel);
     await getAIResponse(`The user opened the ${panel} panel. Acknowledge it naturally and invite them to share what's on their mind around that area.`, true);
@@ -2618,16 +2633,36 @@ function mobileNav(key) {
   }
 }
 
+// Plan gating for tool panels. Shared by showPanel and the chat-command path so a
+// gated command never silently no-ops while the mentor "acknowledges" opening it.
+const PANEL_RANK = { journal: 1, rules: 1, guardian: 1, analytics: 2, passport: 2, vault: 2, reports: 2 };
+const PLAN_RANK  = { free: 0, starter: 1, pro: 2, professional: 3, institutional: 3 };
+function isPanelGated(name) {
+  const minRank  = PANEL_RANK[name] ?? 0;
+  const userRank = PLAN_RANK[window.__ek_subscription__ || 'free'] ?? 0;
+  return userRank < minRank;
+}
+
+// A short in-thread upgrade affordance. /pricing.html runs initiateCheckout for
+// logged-in users, so this is a working in-app path to payment.
+function showUpgradeNudge() {
+  const msgs = document.getElementById('chat-messages');
+  if (!msgs) return;
+  const el = document.createElement('div');
+  el.className = 'cmsg cmsg-mentor';
+  el.innerHTML = `<div style="margin-top:6px;">
+    <a href="/pricing.html" style="display:inline-block;font-family:var(--mono);font-size:0.64rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--mentor-color,#b8a06a);text-decoration:none;border:1px solid var(--mentor-color-dim,rgba(184,160,106,0.35));padding:9px 18px;">Unlock with a membership →</a>
+  </div>`;
+  msgs.appendChild(el);
+  if (window.gsap) gsap.fromTo(el, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5, onComplete: () => el.classList.add('show') });
+  else el.classList.add('show');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
 function showPanel(name) {
   clearInterval(guardianPollTimer);
   guardianPollTimer = null;
-  if (name) {
-    const PANEL_RANK = { journal: 1, rules: 1, guardian: 1, analytics: 2, passport: 2, vault: 2, reports: 2 };
-    const RANK = { free: 0, starter: 1, pro: 2, institutional: 3 };
-    const minRank = PANEL_RANK[name] ?? 0;
-    const userRank = RANK[window.__ek_subscription__ || 'free'] ?? 0;
-    if (userRank < minRank) return;
-  }
+  if (name && isPanelGated(name)) return;
   currentPanel = name;
   syncMobileNav(name);
   const col = document.getElementById('panel-col');
@@ -5051,13 +5086,18 @@ function showVoicePanel() {
 function hideVoicePanel() {
   const overlay = document.getElementById('voice-overlay');
   if (!overlay) return;
-  if (window.gsap) {
-    gsap.to(overlay, { opacity: 0, scale: 0.97, duration: 0.4, ease: 'power2.in', onComplete: () => {
-      overlay.classList.remove('active');
-      gsap.set(overlay, { clearProps: 'opacity,scale' });
-    }});
-  } else {
+  // showVoicePanel/showVoiceLocked set an inline display:flex; the .active CSS class
+  // alone can't hide the overlay because the inline style wins. Clear both, or the
+  // overlay fades out then "reopens" when gsap restores opacity.
+  const finish = () => {
     overlay.classList.remove('active');
+    overlay.style.display = 'none';
+    if (window.gsap) gsap.set(overlay, { clearProps: 'opacity,scale' });
+  };
+  if (window.gsap) {
+    gsap.to(overlay, { opacity: 0, scale: 0.97, duration: 0.4, ease: 'power2.in', onComplete: finish });
+  } else {
+    finish();
   }
 }
 

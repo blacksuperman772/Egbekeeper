@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate icon" href="/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Academy — EdgeKeeper</title>
   <link rel="stylesheet" href="/assets/shared.css" />
@@ -216,8 +218,23 @@
 
 <div id="top-bar">
   <a href="/edgekeeper.html" class="brand">Edge<span>K</span>eeper</a>
-  <span class="top-label">Academy · Enrollment</span>
+  <span class="top-label" id="top-account">Academy · Enrollment</span>
 </div>
+<script>
+  // Surface the signed-in account + a settings link, so users can see whose
+  // academy this is and reach their account. Anonymous visitors keep the label.
+  (async () => {
+    try {
+      const r = await fetch('/api/auth/me');
+      if (!r.ok) return;
+      const { email, name } = await r.json();
+      const who = (name || email || '').replace(/[<>&]/g, '');
+      if (!who) return;
+      const el = document.getElementById('top-account');
+      if (el) el.innerHTML = '<a href="/settings.html" style="color:inherit;text-decoration:none;" title="Account settings">' + who + ' · Settings</a>';
+    } catch (_) {}
+  })();
+</script>
 
 <main>
 
