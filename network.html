@@ -463,22 +463,22 @@
     }
 
     /* ── SUPABASE CLIENT ── */
-    let supabase = null;
+    let sbClient = null;
     let realtimeChannel = null;
 
     function initSupabase() {
       const url  = window.__EK_SUPABASE_URL__;
       const anon = window.__EK_SUPABASE_ANON__;
       if (url && anon && window.supabase) {
-        supabase = window.supabase.createClient(url, anon);
+        sbClient = window.supabase.createClient(url, anon);
       }
     }
 
     function subscribeToRoom(roomSlug) {
-      if (!supabase) return;
-      if (realtimeChannel) supabase.removeChannel(realtimeChannel);
+      if (!sbClient) return;
+      if (realtimeChannel) sbClient.removeChannel(realtimeChannel);
 
-      realtimeChannel = supabase
+      realtimeChannel = sbClient
         .channel('network-' + roomSlug)
         .on('postgres_changes', {
           event: 'INSERT',
